@@ -1,0 +1,14 @@
+{
+  "name": "koter",
+  "owner": {
+    "name": "Koter",
+    "url": "https://koter.app"
+  },
+  "plugins": [
+    {
+      "name": "koter",
+      "source": "./",
+      "description": "O Koter dentro de qualquer IA: onboarding e configuração da corretora ponta a ponta, mais os agentes especialistas que operam a rotina."
+    }
+  ]
+}

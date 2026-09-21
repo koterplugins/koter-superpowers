@@ -1,0 +1,24 @@
+{
+  "name": "koter",
+  "version": "0.1.0",
+  "description": "O Koter dentro de qualquer IA: onboarding e configuração da corretora de seguros ponta a ponta, via MCP, mais os agentes especialistas que operam a rotina. Comece por /introducao; organize seu time de IA com /especialistas.",
+  "author": {
+    "name": "Koter",
+    "url": "https://koter.app"
+  },
+  "homepage": "https://koter.app",
+  "keywords": [
+    "koter",
+    "corretora",
+    "seguros",
+    "crm",
+    "gestao",
+    "comissao",
+    "whatsapp",
+    "chatbot",
+    "onboarding",
+    "agentes",
+    "especialistas",
+    "subagentes"
+  ]
+}
