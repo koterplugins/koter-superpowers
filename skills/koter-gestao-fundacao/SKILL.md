@@ -75,6 +75,8 @@ Numa conta já rodando, os status padrão trazem `defaultType`: `REVIEW`, `PENDI
 
 > "Quando uma proposta é recusada pela operadora, para onde ela vai hoje?"
 
+### Conta zerada e conta com carteira são duas conversas
+
 Numa conta zerada (`statuses: []`, o caso da Koter Day) o funil inteiro é seu para criar:
 
 > "Da cotação até o cliente com carteirinha na mão, por quantas etapas a proposta passa aí?"
@@ -94,6 +96,19 @@ gestao_config_edit_management_status(statusId, name, defaultType: "REVIEW" | "PE
 **Funil sem `IMPLANTED` não conta venda em lugar nenhum** — nem em analytics, nem na apuração de campanha, nem na renovação. Depois de criar o funil, pergunte qual etapa significa "vendido de verdade" e marque:
 
 > "Qual dessas etapas quer dizer que a venda entrou mesmo? É ela que vai contar no relatório e puxar a renovação."
+
+### Numa conta que já tem proposta, mexer no funil é mexer no histórico
+
+Meça antes de propor qualquer coisa: `gestao_list_proposals(pageSize: 1)` devolve o `total` em uma chamada, e com `statusIds` devolve quantas estão em cada etapa. **Diga o número antes de tocar** — é a regra 5 do plugin.
+
+| O que ele quer | O que de fato acontece | O que fazer |
+|---|---|---|
+| **renomear etapa** | renomeia para todo mundo, inclusive no histórico das propostas antigas. "Em análise" vira "Na operadora" também nas de janeiro | tudo bem na maioria dos casos, mas **diga** que vale para trás |
+| **apagar etapa** | é onde mora a proposta de alguém. Existe `gestao_config_transfer_proposals_status`, e é essa tool existir que diz o caminho: **transfira antes, apague depois** | conte quantas estão lá, pergunte para onde vão, transfira, então apague |
+| **reordenar** | seguro: posição é visual | pode |
+| **acrescentar etapa** | seguro, e é quase sempre a resposta certa | prefira isto a renomear |
+
+**A saída boa é quase sempre acrescentar, não renomear.** Funil de corretora que roda há dois anos reflete como ela trabalha, e o corretor que vê o histórico mudar de nome debaixo dele perde a confiança no que você fizer depois. O que **sempre** vale conferir, mesmo em conta madura, é o `defaultType`: funil sem `IMPLANTED` não conta venda em lugar nenhum, e isso é conserto, não reforma.
 
 
 ## 5 · Entidades — só para quem vende adesão

@@ -50,6 +50,7 @@ skills/
     references/passada-unica.md        a ordem ENTRE as três trilhas, e a lista de tela do corretor
     references/handshake.md            o que a primeira chamada responde e como reagir à falta de permissão
     references/estado.md               onde mora o progresso do onboarding
+    references/conexao-por-modulo.md   os 12 toolsets e a URL de cada especialista
     references/trilha-gestao.md        as 12 skills do Gestão em ordem de dependência
     references/trilha-crm.md           as 6 skills do CRM em ordem de dependência
     references/trilha-koterzap.md      as 4 skills do KoterZap em ordem de dependência
@@ -76,7 +77,7 @@ skills/
   koter-chatbot-fluxo/                 triagem, horário, desvio pelo CRM, transbordo
   koter-chatbot-ia/                    o agente que qualifica, cota e manda PDF
   koter-especialistas/                 recorta as 22 skills em agentes especialistas dentro da IA do corretor
-    references/catalogo.md             as 7 fichas prontas, com os 8 campos de cada uma
+    references/catalogo.md             as 7 fichas prontas, com os 9 campos de cada uma
     references/hospedeiros.md          a sonda de capacidade da IA e os três caminhos de entrega
 ```
 
@@ -90,13 +91,14 @@ lê o perfil do estado → pergunta só o delta → aplica via MCP →
 valida relendo → grava o estado → sugere a próxima
 ```
 
-## As cinco regras
+## As seis regras
 
 1. Detectar antes de perguntar.
 2. Toda pergunta é uma escolha de 2 a 4 opções, com consequência e recomendação.
 3. Toda skill termina em configuração aplicada e conferida.
 4. Nada é apagado sem pedido explícito do corretor, na mesma conversa.
-5. O `companyId` é reconferido antes de cada rodada de escrita, não só no handshake.
+5. Na conta que já tem histórico, mudança de configuração é retroativa até prova em contrário: meça quantos registros ela alcança e diga o número antes de aplicar.
+6. O `companyId` é reconferido antes de cada rodada de escrita, não só no handshake.
 
 ## A passada única
 
@@ -126,6 +128,8 @@ As 22 skills são o que o Koter sabe fazer. **Ninguém opera 22 skills de cabeç
 | **Implantação** | `introducao` | só existe em conta nova |
 
 A lista é podada pelo diagnóstico, não servida inteira: corretora solo junta Vendas e CRM, sem KoterZap não há Atendimento, e cargo sem escrita em comissão recebe o Financeiro em modo leitura.
+
+**E cada especialista recebe a sua própria conexão.** A conexão completa do Koter tem 356 ferramentas; o MCP aceita filtro por toolset na URL (`?toolsets=crm,crm-config`), então o de atendimento fica com 51 e o secretário com 25. A trava deixa de ser promessa de texto e passa a ser o que a conexão permite. A tabela dos 12 toolsets e o recorte de cada um estão em `skills/introducao/references/conexao-por-modulo.md`; quem monta ficha e URL juntas é `koter-especialistas`. A única que não se recorta é a `/introducao`, que precisa do handshake e diagnostica os três módulos na mesma rodada.
 
 **A trava é a parte que rende**, e é por isso que "o que eu NÃO posso" nunca sai da ficha: o especialista de vendas que não mexe no funil não quebra o funil às quintas.
 

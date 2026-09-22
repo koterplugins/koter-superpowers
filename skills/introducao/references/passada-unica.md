@@ -17,6 +17,22 @@ ATO 3 · O que roda sozinho                comissão, repasse, automação, Kote
 
 O corretor sai do ato 1 com **uma proposta cadastrada por ele**, e do ato 2 com **um lead cadastrado por ele**. Antes disso, nada do ato 3 é oferecido — configuração avançada em cima de uma ferramenta que ele nunca usou é o jeito mais confiável de perder o corretor.
 
+### E quando ele já usou
+
+Esse destino pressupõe conta nova, e **conta nova é a minoria**. Numa corretora que já rodou o ano inteiro, "a primeira proposta" e "o primeiro lead" aconteceram muito antes de o plugin existir, e pedir um cadastro de teste queima a credibilidade que o ato 0 acabou de ganhar.
+
+O sinal é o volume que o ato 0 já leu — `crm_list_leads(pageSize: 1)` e `gestao_list_proposals(pageSize: 1)`, duas chamadas, o `total` de cada. **E ele é por módulo, não pela conta**: o caso mais comum medido numa corretora real em 22/09/2026 foi CRM com 274 leads e Gestão com 2 propostas, as duas rascunho. Um módulo em produção, o outro no começo, na mesma corretora e no mesmo dia.
+
+| `total` do módulo | O ato daquele módulo |
+|---|---|
+| zero | o ato original: instalar até a primeira de verdade |
+| baixo e recente | pule a instalação; vá direto à `koter-proposta` ou à `koter-crm-lead` |
+| alto | **o ato vira leitura.** Abra o registro mais recente com ele, confira ali o que o 2c consertou, e siga |
+
+E o caso que rende mais: **proposta presa em rascunho** (`gestao_list_proposals(draft: true)`). Não é cadastrar a primeira — é destravar a que ele já tentou, e a trava quase sempre é uma das duas da `koter-proposta`: beneficiário obrigatório, ou campo personalizado que virou obrigatório depois de a proposta existir.
+
+Numa conta em uso, o ato 3 **pode ser oferecido antes**, porque o pré-requisito dele nunca foi a configuração: era o corretor ter usado a ferramenta. Ele já usou.
+
 ---
 
 ## Ato 0 · Handshake e diagnóstico

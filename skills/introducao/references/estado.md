@@ -28,6 +28,7 @@ O diagnóstico do passo 2 é **idempotente**: ele reconstrói o mapa de maturida
 | `lacunas` e a ferramenta que ele usa no lugar | **não** | nunca esteve no Koter |
 | `etapas.*.artefatos` | **sim** | `key` de campo, id de base de conhecimento e nome de tag saem todos de listagem |
 | `usou_de_verdade` | **sim** | `list_proposals` e `list_leads` trazem `createdAt` |
+| volume da conta (nova ou em uso) | **sim, e nunca se guarda** | `crm_list_leads(pageSize: 1)` e `gestao_list_proposals(pageSize: 1)` devolvem o `total` em duas chamadas. Volume muda toda semana: guardar é garantir ficar errado. **Leia sempre** — é ele que decide o destino dos atos 1 e 2 |
 
 **O que o arquivo de fato carrega, então, são três coisas:** a prioridade, as lacunas adiadas (com a ferramenta alternativa) e o registro de que a tarefa de tela foi oferecida, com a data. O único pré-requisito que sobrou — Cloud API conectada — se confere por leitura.
 
@@ -88,7 +89,7 @@ Estado de pré-requisito: `pendente`, `feito`, `nao_se_aplica`, `dispensado` (el
 
 ### Idempotência
 
-Reentrar numa skill já `concluida` não pode duplicar nada. Por isso toda skill filha **detecta antes de criar** e casa por nome normalizado (sem acento, caixa dobrada) — `create_origin` não deduplica e `create_lead_tag` só dedupe em nome literal. Gravar a etapa como `concluida` é registro do que aconteceu, nunca autorização para pular a releitura.
+Reentrar numa skill já `concluida` não pode duplicar nada. Por isso toda skill filha **detecta antes de criar** e casa por nome normalizado (sem acento, caixa dobrada). Desde 21/09/2026 o backend ajuda: `create_origin` **recusa** variante de caixa ou acento e devolve o id da existente, e `create_lead_tag` devolve a tag de mesmo nome. Mas ajuda só na criação nova — **o par antigo continua separado**, e é isso que a checagem 1 do passo 2c acha em conta com histórico. `create_loss_reason` não deduplica de jeito nenhum (checagem 7). Gravar a etapa como `concluida` é registro do que aconteceu, nunca autorização para pular a releitura.
 
 Grave depois de **cada** skill filha, nunca só no fim. Corretor fecha a janela no meio — e deve reabrir de onde parou.
 
