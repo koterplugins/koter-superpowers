@@ -78,9 +78,9 @@ O resultado típico de uma corretora com vendedores e os três módulos são **c
 
 > "Pelo que li da sua conta, cinco fazem sentido: cadastro (proposta e beneficiário), financeiro (comissão, repasse, caixa), vendas (lead e renovação), CRM (funil, origem, automação) e atendimento (WhatsApp e bot). O secretário geral eu explico à parte, porque ele não é do Koter. Corto algum?"
 
-## 4 · O molde da ficha — oito campos, nenhum opcional
+## 4 · O molde da ficha — nove campos, nenhum opcional
 
-Todo especialista nasce com os oito. Faltando um, o agente improvisa justamente onde dói: escreve sem reconferir a corretora, promete mensagem sem Cloud API, apaga origem com lead dentro.
+Todo especialista nasce com os nove. Faltando um, o agente improvisa justamente onde dói: escreve sem reconferir a corretora, promete mensagem sem Cloud API, apaga origem com lead dentro.
 
 ```
 1 · Nome e quando me chamar        uma linha, na língua do corretor
@@ -91,6 +91,7 @@ Todo especialista nasce com os oito. Faltando um, o agente improvisa justamente 
 6 · As armadilhas do meu assunto   3 a 5, literais, com o conserto junto
 7 · Por onde eu começo             a primeira leitura, sempre leitura
 8 · As regras que eu herdo         o núcleo comum, copiado inteiro
+9 · A conexão que eu uso           a URL do Koter com os toolsets do meu assunto
 ```
 
 **O campo 8 é copiado igual em todos**, e é ele que faz seis agentes soarem como um produto:
@@ -106,7 +107,44 @@ Todo especialista nasce com os oito. Faltando um, o agente improvisa justamente 
 
 A última linha é a que só existe aqui, e é o que separa um time de especialistas de seis cópias do mesmo assistente.
 
+**O campo 9 é o que faz o campo 4 valer.** Sem ele, "eu não mexo no seu funil" é uma promessa de texto, que a IA quebra na primeira vez que se confundir. Com ele, a tool nem está na lista. Ver a seção 4b.
+
 **O campo 6 não se inventa.** Cada ficha do catálogo já traz as armadilhas do assunto dela, tiradas de execução real na corretora de demonstração — `create_origin` e caixa alta, `LEAD_OWNER` sem dono, `AGENCIAMENTO` × `ANGARIACAO`, a base que indexa depois. Se você montar um especialista novo, vá buscar as dele nas `SKILL.md` das skills que ele carrega; ficha sem armadilha é ficha que ainda não foi escrita.
+
+## 4b · O campo 9 na prática
+
+O campo 9 é uma linha na ficha e uma URL que o corretor cola na IA dele:
+
+```
+9 · A conexão que eu uso
+https://api.koter.app/mcp-user/koter?toolsets=crm-config,crm-automation,gestao-automacao
+Se a sua IA só aceita uma conexão do Koter, use a completa e me diga — eu desligo
+o resto da lista com disable_toolset assim que a conversa começa.
+```
+
+**A cada ficha, a sua.** A conexão completa tem **356 tools**, medidas em 22/09/2026:
+
+| Especialista | `?toolsets=` | Tools |
+|---|---|---:|
+| Secretário Geral | `crm` | 25 |
+| Atendimento | `koterzap-configuracao,koterzap-atendimento` | 51 |
+| Cadastro | `gestao,gestao-config` | 55 |
+| CRM | `crm-config,crm-automation,gestao-automacao` | 66 |
+| Vendas | `crm,crm-config,gestao-automacao,gestao` | 100 |
+| Financeiro | `gestao-comissao,gestao-financeiro,gestao-config` | 150 |
+| Implantação | *(a conexão completa, sem filtro)* | 356 |
+
+Três coisas que essa tabela ensina e que não são óbvias:
+
+- **A implantação não se recorta.** A `/introducao` precisa do handshake (`admin-cargos`) e diagnostica os três módulos na mesma rodada. É a única que fica com tudo.
+- **Três especialistas atravessam módulo**, e é por isso que o recorte por especialista rende mais que "um link por módulo": Vendas e CRM levam `gestao-automacao`, porque o motor com relógio — o gatilho por data que arma a renovação — é do Gestão, e Vendas leva `gestao` porque ligar o lead ganho à proposta é `gestao_set_proposal_leads`.
+- **O financeiro é o que menos ganha**, e diga isso em vez de fingir: `gestao-comissao` sozinho é 72 tools. Se incomodar, parta em dois — `gestao-comissao,gestao-config` para comissão e repasse, `gestao-financeiro` para caixa.
+
+**O que fica de fora de todos:** `admin-usuarios` (31 tools — convidar, remover, trocar cargo, mesclar pessoa). Só `koter-gestao-vendedores` precisa dele, para cadastrar e convidar vendedor, e isso é ato de implantação, não de rotina. Fica na conexão completa; o Financeiro trabalha sobre os vendedores que já existem e encaminha o resto.
+
+A íntegra do raciocínio em `../introducao/references/conexao-por-modulo.md`.
+
+Se você **não montou a ficha pela `/introducao`**, não invente a URL: chame `list_toolsets` na conexão que estiver ligada e monte a partir do que ela devolver. Os números mudam — em 21/09/2026 saíram 15 tools e `gestao-config` caiu de 47 para 32.
 
 ## 5 · O encaminhamento — a tabela que todo especialista carrega
 
@@ -158,7 +196,7 @@ Entre um e outro, **pare e mostre**. Seis fichas despejadas de uma vez não são
 
 | Caminho | A releitura |
 |---|---|
-| **A** | releia cada arquivo escrito e confira que os **oito campos** estão lá. Diga o caminho completo de cada um |
+| **A** | releia cada arquivo escrito e confira que os **nove campos** estão lá. Diga o caminho completo de cada um |
 | **B** | pergunte um por um: "o financeiro já está colado?". Só marque o seguinte quando ele confirmar o anterior |
 | **C** | peça para ele **abrir uma conversa nova e colar o de cadastro**. A prova é a IA respondendo já sabendo o assunto |
 
@@ -201,7 +239,7 @@ Ao reentrar, **releia antes de recriar**: no caminho A, o arquivo diz a verdade;
 A sonda e o molde foram **rodados**, não só escritos:
 
 - **A sonda do passo 2 correu num hospedeiro real** que escreve arquivo e não tinha nenhuma das convenções conhecidas. Resultado: caminho A com `.claude/agents/` criada, que é exatamente a saída que o degrau 2 prescreve quando nenhuma pasta existe.
-- **A ficha do Financeiro foi gerada como arquivo de agente e relida**: os oito campos presentes, cabeçalho com `name` e `description`, **3.300 caracteres**. Duas consequências úteis: o molde cabe folgado no campo de instruções de um projeto (caminho B), e reler conferindo os oito títulos é um teste de dois segundos.
+- **A ficha do Financeiro foi gerada como arquivo de agente e relida**: os oito campos de então presentes (o nono, a conexão, entrou em 22/09/2026), cabeçalho com `name` e `description`, **3.300 caracteres**. Duas consequências úteis: o molde cabe folgado no campo de instruções de um projeto (caminho B), e reler conferindo os títulos numerados é um teste de dois segundos.
 - **As 22 skills do plugin estão cobertas**, conferido por comparação entre os nomes citados nas fichas e as pastas de `skills/` — nenhuma skill ficou sem especialista, e nenhum nome citado aponta para pasta inexistente.
 
 ## Pendente de validação
