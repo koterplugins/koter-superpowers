@@ -54,7 +54,7 @@ Duas ações fazem a ponte do Gestão para o CRM. As duas exigem **proposta no c
 
 `CREATE_LEAD` reaproveita o contato da proposta (cria um se faltar), vincula o lead de volta à proposta e **não duplica**: se a proposta já tem lead aberto naquele time, o passo é sucesso sem criar outro.
 
-> ⚠️ **Defeito medido na Koter Day em 21/09/2026.** Na primeira execução, `CREATE_LEAD` criou o lead e o contato mas a execução terminou `FAILED` com `Invalid prisma.proposal.update() invocation: Unique constraint failed on the fields: (id)` — o vínculo do lead de volta à proposta não gravou. E como a dedupe é feita por esse vínculo, **o disparo seguinte criou um segundo card**. Do terceiro disparo em diante, com o vínculo gravado, não duplicou mais. Enquanto isso não for corrigido: **depois de criar uma automação com `CREATE_LEAD`, leia `get_management_automation_logs` e confira o funil** — um `FAILED` ali significa card órfão e duplicata no próximo disparo.
+Revalidado na Koter Day em 22/09/2026: o primeiro disparo terminou `SUCCESS` e **gravou o vínculo do lead na proposta**; o segundo disparo voltou `SUCCESS` sem criar um segundo card. O defeito antigo (`Unique constraint failed on the fields: (id)`, que deixava o vínculo sem gravar e duplicava o card no disparo seguinte) está corrigido — não é mais preciso ler os logs à caça de card órfão.
 
 **Os nomes dos campos de contexto mentem, e o próprio MCP avisa.** `list_management_automation_triggers` e `fetch_management_automation_context` trazem `contextFieldNotes`, que traduz as três chaves históricas do contexto de proposta:
 

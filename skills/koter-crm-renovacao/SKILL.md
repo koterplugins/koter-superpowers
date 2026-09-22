@@ -103,9 +103,7 @@ ACTION CREATE_LEAD
   assigneeType  ← PROPOSAL_OWNER (padrão) ou SPECIFIC_USER + assigneeUserId
 ```
 
-Ela reaproveita o contato da proposta (cria um se faltar), vincula o lead de volta à proposta e **não duplica**: se a proposta já tem lead aberto naquele time, o passo é sucesso sem criar outro. Comprovado na Koter Day em 21/09/2026: o card nasceu no time Renovação, na etapa "A renovar", com o dono da proposta, e o terceiro disparo não criou um quarto card.
-
-> ⚠️ **Confira os logs depois de armar.** No primeiro disparo medido, a execução terminou `FAILED` com `Unique constraint failed on the fields: (id)` — o lead e o contato foram criados, mas o vínculo com a proposta não gravou, e **o disparo seguinte criou um segundo card do mesmo cliente**, porque é esse vínculo que faz a dedupe. Depois que o vínculo existe, a dedupe segura. Enquanto o defeito não for corrigido: leia `gestao_automacao_get_management_automation_logs` depois de armar a renovação e apague o card órfão se houver.
+Ela reaproveita o contato da proposta (cria um se faltar), vincula o lead de volta à proposta e **não duplica**: se a proposta já tem lead aberto naquele time, o passo é sucesso sem criar outro. Revalidado na Koter Day em 22/09/2026: o primeiro disparo terminou `SUCCESS`, criou o lead e o contato e **gravou os dois vínculos na proposta**; o segundo disparo na mesma proposta voltou `SUCCESS` sem criar um segundo card. O defeito antigo do vínculo está corrigido.
 
 **Tarefa e card não são a mesma decisão.** `CREATE_TASK` avisa quem cuida; `CREATE_LEAD` abre o trabalho no funil. Uma automação pode ter os dois passos — e para quem tem pessoa dedicada à renovação, deve ter.
 
