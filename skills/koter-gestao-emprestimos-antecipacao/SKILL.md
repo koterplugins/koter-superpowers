@@ -13,20 +13,21 @@ Nona etapa. Existe porque **"me adianta aí" na boca do vendedor pode ser duas c
 |---|---|---|
 | O que é | comissão que **já é dele**, paga antes da data | dinheiro da casa, que **não é comissão** |
 | O que acontece | a parcela é re-datada e entra no lote, com deságio abatido no item | vira dívida amortizada nos lotes seguintes |
-| Tools | `schedule_installment_payout_advance`, `cancel_installment_payout_advance` | `create_seller_loan` e família |
+| Tools | `set_installment_payout_advance` | `save_seller_loan` e família |
 
 **Pergunte uma linha antes de escolher:** *"É comissão dele que ainda não venceu, ou é dinheiro da casa?"* Errar aqui faz a corretora emprestar o que já devia, ou descontar duas vezes.
 
 ## 2 · Antecipação
 
 ```
-gestao_comissao_schedule_installment_payout_advance(installmentIds, date?, discountPercent?)
+gestao_comissao_set_installment_payout_advance(installmentIds, date?, discountPercent?)   ← agenda
+gestao_comissao_set_installment_payout_advance(installmentIds, cancel: true)          ← cancela
 ```
 
 - **Agendar não é pagar.** O repasse continua `PENDENTE`, só muda de data — e entra no lote da rodada escolhida. Antecipação nunca sai por fora do lote.
 - **O deságio é congelado na parcela** no momento do agendamento. `discountPercent` omitido aplica o default da corretora (`advanceDiscountPercent`); `null` ou `0` é sem deságio.
-- Re-marcar uma parcela já agendada **atualiza data e deságio**. Parcelas com repasse já resolvido são puladas em silêncio — confira depois.
-- `cancel_installment_payout_advance` desfaz, re-ancora a data na rotina e **tira o item dos lotes abertos**.
+- Re-marcar uma parcela já agendada **atualiza data e deságio**. Parcelas com repasse já resolvido ficam como estão, e as de vendedor que não permite antecipação voltam em `skipped` — confira depois.
+- `cancel: true` desfaz (sem `date` nem `discountPercent`), re-ancora a data na rotina e **tira o item dos lotes abertos**.
 
 Quem pode antecipar é decidido por vendedor, em `allowsPayoutAdvance`.
 
@@ -35,8 +36,8 @@ Quem pode antecipar é decidido por vendedor, em `allowsPayoutAdvance`.
 ## 3 · Empréstimo
 
 ```
-gestao_comissao_create_seller_loan(sellerId, principalAmount, loanDate, interestPercent?,
-                                   chargeMode, capAmount?, capWindow?, retentionPercent?, schedule?)
+gestao_comissao_save_seller_loan(sellerId, principalAmount, loanDate, interestPercent?,
+                                 chargeMode, capAmount?, capWindow?, retentionPercent?, schedule?)   ← sem loanId cria
 ```
 
 **Os juros são um percentual único congelado na criação.** R$ 3.000 com 10% vira dívida de R$ 3.300 — confirmado na Koter Day (`interestAmount: 300`, `totalAmount: 3300`). Não é juros ao mês; não prometa que é.
@@ -51,7 +52,7 @@ Três modos de cobrança, e a escolha muda a experiência do vendedor:
 
 **O desconto acontece sozinho nos lotes, e o vendedor nunca fica negativo:** a cascata limita ao disponível e o resíduo empurra para a rodada seguinte. Diga isso — é a pergunta que ele vai fazer.
 
-Ciclo de vida: `register_seller_loan_payment` (pagamento por fora), `revert_seller_loan_payment`, `set_seller_loan_suspension` (pausa o desconto sem perdoar), `forgive_seller_loan` (perdoa saldo) e `cancel_seller_loan`.
+Ciclo de vida: `register_seller_loan_payment` (pagamento por fora), `revert_seller_loan_payment`, `save_seller_loan` com `loanId` e `suspended: true` + `suspensionReason` (pausa o desconto sem perdoar; `false` retoma) e `end_seller_loan` com `mode: "forgive"` (perdoa saldo) ou `mode: "cancel"` (criado por engano, só antes de qualquer amortização) — `reason` obrigatório nos dois.
 
 **`forgive` e `cancel` são irreversíveis na prática.** Só com pedido explícito, na mesma conversa, e diga o saldo antes.
 

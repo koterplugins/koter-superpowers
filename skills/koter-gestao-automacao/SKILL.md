@@ -10,7 +10,7 @@ Décima primeira etapa. **Comece mostrando o que já roda**, porque quase sempre
 ## 1 · Os defaults vêm LIGADOS
 
 ```
-gestao_automacao_list_system_automation_catalog
+gestao_automacao_fetch_management_automation_context   → systemAutomations
 ```
 
 Na Koter Day, uma conta recém-criada, três automações de sistema já vinham `enabled: true`, `forked: false`:
@@ -27,21 +27,19 @@ Então a abertura é:
 
 > "Três coisas já rodam sozinhas aqui: aviso de conta a vencer, tarefa de conta vencida, e cobrança de repasse parado há 7 dias. Quer manter as três?"
 
-`set_system_automation_state` liga e desliga. `fork_system_automation` **cria uma cópia editável** — é o caminho para "quero esse aviso, mas com 5 dias em vez de 3": forka e ajusta, em vez de desligar e criar do zero.
+`set_system_automation_state` (com o `versionGroupId` do default) liga e desliga. `fork_system_automation` **cria uma cópia editável** — é o caminho para "quero esse aviso, mas com 5 dias em vez de 3": forka e ajusta, em vez de desligar e criar do zero. A cópia nasce **desativada** e já desliga o default; depois de ajustar, ative com `save_management_automation` (`automationId` da cópia + `active: true`).
 
 ## 2 · Criar automação própria
 
 ```
-gestao_automacao_list_management_automation_triggers   → o que pode disparar
-gestao_automacao_list_management_automation_actions    → o que pode acontecer
-gestao_automacao_create_management_automation
-gestao_automacao_validate_management_automation        → SEMPRE antes de ativar
-gestao_automacao_set_management_automation_active
+gestao_automacao_fetch_management_automation_context   → triggers, actions, dateFieldsBySource, statuses
+gestao_automacao_validate_management_automation        → SEMPRE antes de gravar
+gestao_automacao_save_management_automation            → sem automationId cria (nasce PUBLICADA e ATIVA)
 ```
 
 Uma automação é um **gatilho** mais uma lista de `steps`, cada um `CONDITION` ou `ACTION`. O gatilho `DATE_FIELD` tem `dateField` com `source` (`PROPOSAL`, `INSTALLMENT`, `FINANCE_ENTRY`), `field`, `offsetDays` (positivo = antes, negativo = depois), `recurrence` e `dayHandling` (`CLIP_TO_LAST_DAY` resolve o dia 31 em fevereiro).
 
-**Sempre `validate` antes de `set_active`.** Automação inválida ativada é erro que só aparece quando devia disparar — e ninguém percebe que não disparou.
+**Sempre `validate_management_automation` antes do `save`.** Não existe mais o passo separado de ativar: `save_management_automation` sem `automationId` já grava a automação ligada. Automação inválida ativada é erro que só aparece quando devia disparar — e ninguém percebe que não disparou. Pausar e reativar é `save_management_automation` com `automationId` + `active: false`/`true`, sem mexer na configuração.
 
 ## 2.1 · A proposta pode virar card ou contato no CRM
 
@@ -56,13 +54,13 @@ Duas ações fazem a ponte do Gestão para o CRM. As duas exigem **proposta no c
 
 Revalidado na Koter Day em 22/09/2026: o primeiro disparo terminou `SUCCESS` e **gravou o vínculo do lead na proposta**; o segundo disparo voltou `SUCCESS` sem criar um segundo card. O defeito antigo (`Unique constraint failed on the fields: (id)`, que deixava o vínculo sem gravar e duplicava o card no disparo seguinte) está corrigido — não é mais preciso ler os logs à caça de card órfão.
 
-**Os nomes dos campos de contexto mentem, e o próprio MCP avisa.** `list_management_automation_triggers` e `fetch_management_automation_context` trazem `contextFieldNotes`, que traduz as três chaves históricas do contexto de proposta:
+**Os nomes dos campos de contexto mentem, e o próprio MCP avisa.** `fetch_management_automation_context` traz, em `triggers`, o `contextFieldNotes`, que traduz as três chaves históricas do contexto de proposta:
 
 | Chave da condição | O que ela guarda de verdade |
 |---|---|
 | `insuranceId` | o **ramo** (`segments` de `fetch_gestao_context`) |
 | `segmentId` | a **modalidade** (`groupId` de `modalities`) |
-| `planId` | a **seguradora** do catálogo global (`list_segment_insurance_companies`) |
+| `planId` | a **seguradora** do catálogo global (`list_segment_catalog` com `include: insuranceCompanies`) |
 
 Monte condição lendo `contextFieldNotes`, nunca pelo nome do campo. E o campo de data da vigência é `coverageStart` no `dateField`, embora a lista de condições do gatilho chame o mesmo dado de `vigencia`.
 
@@ -82,7 +80,7 @@ Automação que **manda mensagem** só funciona com instância oficial Cloud API
 
 ## 5 · Acompanhar
 
-`get_management_automation_logs` e `get_system_automation_logs` mostram o que disparou. Quando o corretor disser "não recebi aviso", é aqui que se responde.
+`list_automation_logs` mostra o que disparou — com `automationId` para uma automação da corretora, ou com `versionGroupId` para um default da Koter. Quando o corretor disser "não recebi aviso", é aqui que se responde.
 
 ## 6 · Validação e próxima
 
@@ -103,7 +101,7 @@ Antes de sugerir, **leia o estado**: ofereça a trilha que ainda está `pendente
 |---|---|---|
 | Aviso duplicado | automação nova sobre um default ligado | veja o catálogo antes; forke |
 | "Desliguei tudo, era muito aviso" | notificação para quem não decide | reveja o destinatário, não o aviso |
-| Automação não dispara | ativada sem validar | `validate_management_automation` |
+| Automação não dispara | gravada sem validar | `validate_management_automation` antes do `save` |
 | Dia 31 em fevereiro | `dayHandling` | `CLIP_TO_LAST_DAY` |
 | Mudança de status em lote disparou coisa demais | status vinculado a automação | avise antes de mover em lote |
 | Mensagem automática não sai | sem instância oficial ou template aprovado | `list_meta_message_templates` diz se há template `APPROVED` |

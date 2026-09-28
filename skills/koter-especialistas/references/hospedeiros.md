@@ -69,7 +69,7 @@ Três coisas que fazem a diferença entre um agente que dispara e um que fica es
 2. **As skills vão pelo nome literal.** `koter-gestao-repasse`, não "a skill de repasse". O agente precisa conseguir carregá-la.
 3. **O campo 8 vai inteiro em cada arquivo.** Referência cruzada entre agentes não sobrevive: cada um é lido sozinho.
 
-**Depois de escrever, releia cada arquivo** e confira que os oito campos estão lá. Só então diga que existe, e diga o caminho completo:
+**Depois de escrever, releia cada arquivo** e confira que os nove campos estão lá. Só então diga que existe, e diga o caminho completo:
 
 > "Criei cinco, em `.claude/agents/`: `koter-cadastro.md`, `koter-vendas.md`, `koter-financeiro.md`, `koter-crm.md` e `koter-atendimento.md`. Abra o de vendas e escreva 'entrou um lead, Maria, 11 99000-0000, veio do Instagram'."
 

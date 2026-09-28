@@ -119,12 +119,12 @@ crm_mark_lead_loss
 O lead ganho e a proposta são dois registros. Quem liga os dois:
 
 ```
-gestao_set_proposal_leads
+gestao_set_proposal_links   → leads: [...]
 ```
 
-Comprovado na Koter Day: uma proposta do Gestão passou a apontar para o lead da Padaria Pão Quente numa chamada. `gestao_set_proposal_contacts` faz o mesmo com o contato.
+Comprovado na Koter Day: uma proposta do Gestão passou a apontar para o lead da Padaria Pão Quente numa chamada. A mesma tool com `contacts` faz o mesmo com o contato — uma lista por chamada, `leads` **ou** `contacts`.
 
-**As duas são substituição total**: a lista enviada troca a atual inteira. Para acrescentar, leia o que já está lá e mande a lista completa.
+**É substituição total**: a lista enviada troca a atual inteira daquele tipo (a do outro fica como está). Para acrescentar, leia o que já está lá (`gestao_list_proposals` com `ids`) e mande a lista completa.
 
 Faça esse vínculo **toda vez que uma venda virar proposta**. É ele que permite olhar uma proposta e saber de onde aquele cliente veio, e é o que faz a origem de lead significar alguma coisa lá na frente.
 
@@ -158,4 +158,4 @@ Com `usou_de_verdade` preenchido nas duas (aqui e em `koter-proposta`), o onboar
 | `get_lead_deal_options` vem vazio | não houve cotação | venda manual, `optionKey: null` |
 | `mark_lead_loss` recusa | o lead tem venda marcada | `revert_lead_sale` antes |
 | Lead com venda marcada parado no meio do funil | `mark_lead_sale` não move sozinho | passe `statusId` |
-| Vínculo com a proposta sumiu | `set_proposal_leads` é substituição total | leia a lista atual e mande completa |
+| Vínculo com a proposta sumiu | `set_proposal_links` é substituição total | leia a lista atual e mande completa |

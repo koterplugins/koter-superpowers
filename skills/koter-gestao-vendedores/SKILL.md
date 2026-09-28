@@ -32,7 +32,8 @@ Precisa da fundação (passo 1 da trilha). E comece pelo **porte da operação**
 gestao_config_list_sellers                    → quem já é vendedor
 admin_usuarios_list_company_people            → pessoas da corretora (cada uma traz sellerId: null quando ainda não é vendedor)
 admin_usuarios_list_users                     → quem tem conta, cargo, licença (isOwner marca o dono)
-gestao_config_list_seller_categories(scope)   → slugs válidos de categoria, PF e PJ
+gestao_config_fetch_gestao_config_context(include: ["sellerCategories"])
+                                              → slugs válidos de categoria, PF e PJ
 admin_usuarios_get_person_hierarchy           → quem lidera quem
 ```
 
@@ -52,7 +53,7 @@ O modelo do Koter não é "vendedor solto": todo vendedor aponta para uma pessoa
 `managerUserIds` é **obrigatório, mínimo 1**, e são **userIds** (de `list_users`), não personIds. Numa corretora de um dono só, é ele mesmo.
 
 ```
-gestao_config_create_seller
+gestao_config_save_seller                (sem sellerId = cria)
   type: "PF" | "PJ"
   personId | person: { name, document }
   categorySlug: "vendedor-interno" | "vendedor-externo" | "afiliado" | "parceiro-indicador" | "cliente-indicador"
@@ -62,6 +63,8 @@ gestao_config_create_seller
 O cadastro **puxa sozinho os contatos da pessoa** (e-mail e celular) quando ela é membro. Não peça o que já está lá.
 
 Para lote, `gestao_config_import_sellers`.
+
+**Editar regrava o cadastro.** `save_seller` com `sellerId` substitui `contacts`, `bankAccounts`, `members`, `managerUserIds`, `address`, `avatarId` e `categorySlug` pelo que você mandar — omitir um deles **apaga** o que está salvo. Leia antes com `gestao_config_list_sellers(ids: [sellerId])` e reenvie o que deve ficar. `payoutRules`, `fiscal`, `passTaxToSeller` e `hierarchy`, quando omitidos, ficam como estão.
 
 ## 3 · PJ é outra conversa
 
@@ -119,7 +122,8 @@ Releia `gestao_config_list_sellers` e diga o que mudou, em números e nomes. Dep
 
 | Sintoma | Causa | Conserto |
 |---|---|---|
-| `create_seller` recusa | `managerUserIds` faltando ou com personId no lugar de userId | são **userIds**, de `list_users`, mínimo 1 |
+| `save_seller` recusa na criação | `managerUserIds` faltando ou com personId no lugar de userId | são **userIds**, de `list_users`, mínimo 1 |
+| Vendedor perdeu conta bancária ou contato depois de editar | `save_seller` com `sellerId` regrava os conjuntos omitidos | leia com `list_sellers(ids)` e reenvie tudo que deve ficar |
 | Pessoa cadastrada duas vezes | documento igual não junta cadastros | procure em `list_company_people` antes; `merge_company_people` depois |
 | `personId` recusado | é UUID, não id curto | copie de `list_company_people` |
 | Comissão do dono não cai | o dono não é vendedor de si mesmo | cadastre-o como vendedor |

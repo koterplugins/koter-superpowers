@@ -25,13 +25,15 @@ Se já existem campanhas, a pergunta "tem meta?" não se faz — confirme e perg
 ## 3 · Criar
 
 ```
-gestao_comissao_create_commission_campaign
+gestao_comissao_save_commission_campaign          (sem campaignId = cria)
   name, payer, metric, tierMode, startDate, endDate, tiers
   insurerIds, modalityIds, sellerIds, proposalIds   ← vazio = todos
   minLivesPerProposal, creditRelease
 ```
 
-**`insurerIds` são ids do catálogo global**, de `gestao_list_segment_insurance_companies` — e **um id vale pela marca inteira**, em todas as modalidades e administradoras. Para restringir a campanha, use `modalityIds` (o `groupId` de `fetch_gestao_context.modalities`), nunca várias linhas da mesma seguradora. Comprovado na Koter Day em 21/09/2026: campanha criada com o id global da Amil e o `groupId` de PME voltou com `insurerNames: ["Amil"]` e `modalityNames: ["PME"]`.
+Com `campaignId` edita só o que for enviado (`tiers` e cada lista de elegibilidade enviada substituem a atual inteira); `active: false` arquiva.
+
+**`insurerIds` são ids do catálogo global**, de `insuranceCompanies` em `gestao_list_segment_catalog(segmentId, modalityGroupId)` — e **cada id é uma linha** (seguradora × modalidade × administradora), a mesma que a proposta grava. Para premiar a marca em várias modalidades, informe a linha de cada uma; para premiar uma modalidade inteira, sem escolher seguradora, use `modalityIds` (o `groupId` de `modalities`) e deixe `insurerIds` vazio. O contrato mudou desde a Koter Day de 21/09/2026, quando o id global da Amil parecia valer pela marca inteira: siga a descrição atual da tool.
 
 **`metric`** — `VIDAS` implantadas, `PROPOSTAS` implantadas ou `PREMIO` (R$ vendido). Pergunte assim: *"a meta é por vidas, por contratos fechados ou por valor vendido?"*
 
@@ -58,7 +60,7 @@ A apuração acompanha **propostas IMPLANTADAS dentro da vigência**, e o prêmi
 Duas consequências que o corretor precisa ouvir:
 
 - **Proposta que cai depois de premiada gera a crítica `CAMPANHA_PROPOSTA_CANCELADA`** — o sistema avisa, mas quem decide o que fazer é ele.
-- `recompute_commission_campaign` reprocessa quando a regra ou o histórico mudam. Rode depois de mexer em faixa.
+- A apuração é recalculada a cada gravação da campanha (`save_commission_campaign`). `recompute_commission_campaign` é para quando o **histórico** muda sem a campanha ser regravada — proposta implantada, cancelada ou movida de status depois.
 
 ## 5 · Validação e próxima
 
@@ -78,5 +80,5 @@ Depois: `koter-gestao-repasse` para ver o crédito no lote, ou `koter-gestao-aut
 | Vendedor achou que somava | `DEGRAU` explicado como progressivo | diga a consequência com número |
 | Prêmio pago e a venda caiu | proposta cancelada depois | crítica `CAMPANHA_PROPOSTA_CANCELADA` |
 | Corretora pagou prêmio que a seguradora não pagou | `creditRelease: NA_APURACAO` | `APOS_RECEBIMENTO` protege o caixa |
-| Faixa mudou e o valor não | apuração não reprocessa sozinha | `recompute_commission_campaign` |
+| Proposta mudou e o valor da campanha não | a apuração só se refaz sozinha quando a campanha é gravada | `recompute_commission_campaign` |
 | Campanha não conta a venda | proposta não está IMPLANTADA ou está fora da vigência | confira status e datas |

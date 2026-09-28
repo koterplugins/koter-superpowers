@@ -27,8 +27,8 @@ As 1, 2, 3 e 5 são "faça uma vez". A 4 é "faça todo dia", e é onde o onboar
 
 | Ponte | Tool | Por quê |
 |---|---|---|
-| Lead ganho → proposta | `gestao_set_proposal_leads` | é o que faz a origem do lead significar alguma coisa lá na frente, e o que põe o cliente na tarefa de renovação |
-| Vigência → tarefa no CRM | `gestao_automacao_create_management_automation`, `DATE_FIELD` | o único gatilho por data que existe nos dois módulos |
+| Lead ganho → proposta | `gestao_set_proposal_links` (`leads`) | é o que faz a origem do lead significar alguma coisa lá na frente, e o que põe o cliente na tarefa de renovação |
+| Vigência → tarefa no CRM | `gestao_automacao_save_management_automation`, `DATE_FIELD` | o único gatilho por data que existe nos dois módulos |
 | Produtos e operadoras | lidos da fundação do Gestão | tags de produto e funil de cross-sell saem daí, sem perguntar de novo |
 
 **Nenhuma ação do motor do Gestão cria lead no CRM.** A renovação chega como tarefa no cliente certo, não como card no funil. Ver `koter-crm-renovacao`.

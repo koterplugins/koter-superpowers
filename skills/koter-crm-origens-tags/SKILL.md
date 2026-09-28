@@ -105,6 +105,25 @@ A demonstração já vem com os quatro primeiros. **Acrescentar os dois últimos
 
 Motivo de perda é da corretora inteira, não tem equipe nem escopo.
 
+### Em conta com histórico, o problema é o oposto: sobra motivo
+
+**`create_loss_reason` não deduplica de jeito nenhum** — nem de caixa, como `create_origin` e `create_lead_tag` passaram a fazer. Então lista de motivo em corretora antiga cresce por acúmulo, e o estrago é de relatório: o gargalo nº 1 fica partido em dois e nenhum dos dois parece grande o bastante para alguém agir.
+
+Medido numa corretora real em 22/09/2026: **18 motivos, com quatro pares sobrepostos.**
+
+| O par | Por que passou despercebido |
+|---|---|
+| "Não tem interesse" × "Não tem interesse" | **texto idêntico, ids diferentes** — só se enxerga comparando a lista com ela mesma |
+| "Desistência" × "Desistência do cliente" | sinônimo, não duplicata de caixa |
+| "Valor alto" × "Preço muito alto" | idem |
+| "Cliente não atende telefone" × "Sem contato/Não atende" | idem |
+
+**Procure sinônimo, não só caixa.** É a checagem 7 do passo 2c da `/introducao`, e é a única das sete que a normalização do backend não pega.
+
+**E não conserte sozinho.** Motivo de perda apagado é histórico de lead perdido que muda de nome, então vale a regra 4 inteira: some os dois números, mostre ao corretor, e deixe ele mandar.
+
+> "Você tem 18 motivos de perda e quatro deles dizem a mesma coisa duas vezes — 'Valor alto' com 12 e 'Preço muito alto' com 9. Separados, nenhum dos dois entra no seu top 3; juntos, são o seu maior motivo de perda. Junto?" 
+
 ## 6 · Validação
 
 Releia `crm_config_fetch_crm_config_context` e mostre o antes e depois em números:

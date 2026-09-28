@@ -27,11 +27,13 @@ Depois da importação, `list_bank_statements` e `list_bank_transactions` mostra
 ```
 gestao_financeiro_list_bank_transactions(bankAccountId, ...)   → o que o banco diz
 gestao_financeiro_get_reconcile_suggestions(transactionId)     → o que o Koter acha que casa
-gestao_financeiro_reconcile_bank_transaction(...)              → casa
+gestao_financeiro_reconcile_bank_transactions(items[])        → casa, até 100 por chamada
 gestao_financeiro_unreconcile_bank_transaction(...)            → desfaz
 ```
 
-Trabalhe pelas sugestões, não pela lista crua: o corretor não quer ler 200 linhas de extrato. Mostre as que casam com confiança alta, peça um "pode casar" para o bloco, e traga só as duvidosas uma a uma.
+Cada item é `{ transactionId, target }`, e `target.kind` diz com o que casa: `entry` (lançamento existente), `installment` (parcela de comissão, recebimento ou repasse), `installments` (um crédito da seguradora contra várias parcelas de recebimento, tudo ou nada), `payoutBatch` (débito contra lote de repasse já pago), `createEntry` (cria o lançamento já liquidado a partir da transação) ou `ignore`. O `target` das conciliações exatas de `get_reconcile_suggestions` serve direto — sem os campos de nome (`entryName`, `proposalName`) que a sugestão acrescenta.
+
+Trabalhe pelas sugestões, não pela lista crua: o corretor não quer ler 200 linhas de extrato. Mostre as que casam com confiança alta, peça um "pode casar" para o bloco, e mande o bloco numa chamada só. **O lote não é atômico**: cada item passa ou falha sozinho, e a resposta separa `succeeded` de `failed` — releia o `failed` e diga o que não entrou. Traga só as duvidosas uma a uma.
 
 Transação que não casa com nada costuma ser: comissão que caiu junta de várias propostas, tarifa bancária, ou lançamento que ele nunca registrou. As três têm tratamento diferente — pergunte antes de forçar.
 
@@ -55,13 +57,12 @@ Transação que não casa com nada costuma ser: comissão que caiu junta de vár
 ## 3 · Resolver
 
 ```
-gestao_financeiro_list_finance_issues          → a fila, com openCount e openAmount
-gestao_financeiro_get_finance_issue(issueId)   → esperado, real, diferença, origem e ações disponíveis
-gestao_financeiro_resolve_finance_issue        → resolve
-gestao_financeiro_ignore_finance_issue         → ignora
+gestao_financeiro_list_finance_issues             → a fila, com o resumo de abertas e valor em risco
+gestao_financeiro_list_finance_issues(ids)        → esperado, real, diferença, origem e availableActions
+gestao_financeiro_resolve_finance_issue(issueId, action, note)   → resolve; action IGNORE ignora
 ```
 
-`get_finance_issue` já traz **as ações de resolução válidas para aquele tipo** — use o que ele oferece em vez de improvisar. E mostre sempre esperado, real e diferença juntos: é a diferença que explica, não o valor.
+Cada crítica já traz **as ações de resolução válidas para aquele tipo** em `availableActions` — use o que ela oferece em vez de improvisar. `note` é obrigatória e fica auditada, inclusive para ignorar. E mostre sempre esperado, real e diferença juntos: é a diferença que explica, não o valor.
 
 **Ignorar não é resolver.** Ignorada some da fila e o dinheiro continua errado. Só ofereça ignorar quando a diferença for irrelevante e recorrente — e aí a resposta melhor é ajustar a tolerância, não ignorar uma a uma.
 
