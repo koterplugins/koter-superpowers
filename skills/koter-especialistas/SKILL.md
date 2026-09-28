@@ -122,29 +122,29 @@ Se a sua IA só aceita uma conexão do Koter, use a completa e me diga — eu de
 o resto da lista com disable_toolset assim que a conversa começa.
 ```
 
-**A cada ficha, a sua.** A conexão completa tem **356 tools**, medidas em 22/09/2026:
+**A cada ficha, a sua.** A conexão completa tem **265 tools**, medidas em 28/09/2026:
 
 | Especialista | `?toolsets=` | Tools |
 |---|---|---:|
 | Secretário Geral | `crm` | 25 |
 | Atendimento | `koterzap-configuracao,koterzap-atendimento` | 51 |
-| Cadastro | `gestao,gestao-config` | 55 |
-| CRM | `crm-config,crm-automation,gestao-automacao` | 66 |
-| Vendas | `crm,crm-config,gestao-automacao,gestao` | 100 |
-| Financeiro | `gestao-comissao,gestao-financeiro,gestao-config` | 150 |
-| Implantação | *(a conexão completa, sem filtro)* | 356 |
+| Cadastro | `gestao,gestao-config` | 26 |
+| CRM | `crm-config,crm-automation,gestao-automacao` | 59 |
+| Vendas | `crm,crm-config,gestao-automacao,gestao` | 82 |
+| Financeiro | `gestao-comissao,gestao-financeiro,gestao-config` | 77 |
+| Implantação | *(a conexão completa, sem filtro)* | 265 |
 
 Três coisas que essa tabela ensina e que não são óbvias:
 
 - **A implantação não se recorta.** A `/introducao` precisa do handshake (`admin-cargos`) e diagnostica os três módulos na mesma rodada. É a única que fica com tudo.
-- **Três especialistas atravessam módulo**, e é por isso que o recorte por especialista rende mais que "um link por módulo": Vendas e CRM levam `gestao-automacao`, porque o motor com relógio — o gatilho por data que arma a renovação — é do Gestão, e Vendas leva `gestao` porque ligar o lead ganho à proposta é `gestao_set_proposal_leads`.
-- **O financeiro é o que menos ganha**, e diga isso em vez de fingir: `gestao-comissao` sozinho é 72 tools. Se incomodar, parta em dois — `gestao-comissao,gestao-config` para comissão e repasse, `gestao-financeiro` para caixa.
+- **Três especialistas atravessam módulo**, e é por isso que o recorte por especialista rende mais que "um link por módulo": Vendas e CRM levam `gestao-automacao`, porque o motor com relógio — o gatilho por data que arma a renovação — é do Gestão, e Vendas leva `gestao` porque ligar o lead ganho à proposta é `gestao_set_proposal_links` (com `leads`).
+- **Quem menos ganha agora é Vendas** (82), porque atravessa dois módulos. O financeiro caiu de 150 para 77 com o Gestão enxuto; se ainda incomodar, parta em dois — `gestao-comissao,gestao-config` (50) para comissão e repasse, `gestao-financeiro` (27) para caixa.
 
 **O que fica de fora de todos:** `admin-usuarios` (31 tools — convidar, remover, trocar cargo, mesclar pessoa). Só `koter-gestao-vendedores` precisa dele, para cadastrar e convidar vendedor, e isso é ato de implantação, não de rotina. Fica na conexão completa; o Financeiro trabalha sobre os vendedores que já existem e encaminha o resto.
 
 A íntegra do raciocínio em `../introducao/references/conexao-por-modulo.md`.
 
-Se você **não montou a ficha pela `/introducao`**, não invente a URL: chame `list_toolsets` na conexão que estiver ligada e monte a partir do que ela devolver. Os números mudam — em 21/09/2026 saíram 15 tools e `gestao-config` caiu de 47 para 32.
+Se você **não montou a ficha pela `/introducao`**, não invente a URL: chame `list_toolsets` na conexão que estiver ligada e monte a partir do que ela devolver. Os números mudam — em 28/09/2026 o Gestão caiu à metade (`gestao-comissao` de 72 para 36, `gestao-config` de 32 para 14) e o total foi de 356 para 265.
 
 ## 5 · O encaminhamento — a tabela que todo especialista carrega
 

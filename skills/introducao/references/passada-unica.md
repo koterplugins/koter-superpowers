@@ -63,7 +63,7 @@ Ela está documentada na skill onde dói. Aqui ela aparece **cedo**, que é o qu
 
 **Aprovar o template na Meta** saiu da `/introducao` por decisão de escopo, não porque virou tool. Ele continua sendo tarefa do corretor e continua sem tool — mas só passa a importar quando alguém for armar régua de mensagem, no ato 3, e o assunto inteiro pertence à `koter-zap-fundacao`. Na passada única ele é **uma frase de orientação junto da tarefa 1**, dita uma vez: nunca um item rastreado, nunca uma checagem, nunca uma volta para perguntar se saiu. Rastrear não rende nada — o plugin não cria o template, não acelera a Meta, e `list_meta_message_templates` só responde se já houver instância Cloud API, que é exatamente o que falta na conta em que a tarefa 1 apareceu.
 
-**Os dois passos menores também caíram:** marcar `defaultType` de status agora é `edit_management_status` (`koter-gestao-fundacao`) e subir extrato é `import_bank_statement` (`koter-gestao-conciliacao`). Nenhum dos dois é passo de tela.
+**Os dois passos menores também caíram:** marcar `defaultType` de status agora é `save_management_status` com `statusId` (`koter-gestao-fundacao`) e subir extrato é `import_bank_statement` (`koter-gestao-conciliacao`). Nenhum dos dois é passo de tela.
 
 **A regra de tom:** diga o passo de tela **antes** de ele virar frustração, e diga o que ele destrava. "Isso é na tela" no fim de uma configuração soa a desculpa; no começo, soa a plano.
 
@@ -87,7 +87,7 @@ O ato fecha com a proposta relida e as parcelas geradas na mesma frase:
 
 `-automacao` e `-renovacao` ficam para o ato 3: a primeira depende da resposta da tarefa 1 da lista de tela, e a segunda depende de existir proposta com vigência — que só passou a existir no fim do ato 1.
 
-**A ponte que fecha os dois atos**, e é ela que faz o corretor entender que é um produto só: o lead do ato 2, quando ganho, vira a proposta do ato 1 por `gestao_set_proposal_leads`. Mostre isso acontecendo uma vez. É o momento em que o Koter deixa de ser dois sistemas.
+**A ponte que fecha os dois atos**, e é ela que faz o corretor entender que é um produto só: o lead do ato 2, quando ganho, vira a proposta do ato 1 por `gestao_set_proposal_links` (`leads`). Mostre isso acontecendo uma vez. É o momento em que o Koter deixa de ser dois sistemas.
 
 ---
 
@@ -117,7 +117,7 @@ Toda dependência entre módulos passa por aqui. Se uma skill filha precisar de 
 | Da trilha | Para | O que atravessa | Onde nasce |
 |---|---|---|---|
 | KoterZap | CRM e Gestão | existe Cloud API? | `koter-zap-fundacao`; o diagnóstico do ato 0 já responde. O template da Meta **não** atravessa aqui: ele só é conferido no ato 3, quando a régua de mensagem for montada |
-| CRM | Gestão | lead ganho → proposta (`gestao_set_proposal_leads`) | `koter-crm-lead` |
+| CRM | Gestão | lead ganho → proposta (`gestao_set_proposal_links`) | `koter-crm-lead` |
 | Gestão | CRM | vigência → tarefa de renovação (gatilho `DATE_FIELD` sobre `coverageStart`) | `koter-crm-renovacao`, e só existe se houver proposta do ato 1 |
 | Gestão | CRM e KoterZap | ramos e operadoras com que ele trabalha | `koter-gestao-fundacao`, passo 6 — vira estado, não cadastro |
 | CRM | KoterZap | equipes e funil, que o `HANDOFF` e o `CREATE_LEAD` do bot usam | `koter-crm-fundacao` |

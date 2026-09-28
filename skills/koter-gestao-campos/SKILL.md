@@ -11,19 +11,22 @@ Segunda etapa da trilha. É a skill que tira a planilha paralela da mesa do corr
 
 ## 0 · Pré-requisitos
 
-Fundação feita. E atenção ao espaço do id: **`segmentId` aqui é o ramo global** (Saúde, Dental, Auto), o mesmo da proposta. O ramo da corretora saiu do MCP em 21/09/2026: não há mais `management_segment` para confundir com este.
+Fundação feita. E atenção ao espaço do id: **`segmentId` aqui é o ramo global** (Saúde, Dental, Auto), o mesmo da proposta. O ramo da corretora saiu do MCP em 21/09/2026: não há mais ramo da corretora para confundir com este.
 
 ## 1 · Detecção
 
 ```
-gestao_config_get_proposal_fields(segmentId?, includeBeneficiario)  → o formulário como ele é hoje
-gestao_config_list_custom_field_definitions                          → o que já foi criado
-gestao_config_list_custom_field_categories                           → onde o campo vai morar
+gestao_config_fetch_gestao_config_context(
+  include: ["proposalFields", "customFieldDefinitions", "customFieldCategories"],
+  segmentId?, includeBeneficiario)
+    proposalFields          → o formulário como ele é hoje
+    customFieldDefinitions  → o que já foi criado
+    customFieldCategories   → onde o campo vai morar
 ```
 
-`get_proposal_fields` devolve sistema e personalizados juntos, ordenados, com `required`, `visible`, `position` e — o que mais importa — **`locked`**: `{ delete, type, required }`. Campo travado não se mexe, e tentar é como a skill perde a confiança dele.
+`proposalFields` devolve sistema e personalizados juntos, ordenados, com `required`, `visible`, `position` e — o que mais importa — **`locked`**: `{ delete, type, required }`. Campo travado não se mexe, e tentar é como a skill perde a confiança dele.
 
-**As categorias já existem.** Mesmo numa conta zerada o Koter traz "Todas as categorias" (sistema) e uma por categoria de contrato — Pessoa Física, Adesão, PME, Empresarial — estas quatro `readOnly`. Não crie categoria sem necessidade; `create_custom_field_category` é para quando ele quiser um agrupamento próprio.
+**As categorias já existem.** Mesmo numa conta zerada o Koter traz "Todas as categorias" (sistema) e uma por categoria de contrato — Pessoa Física, Adesão, PME, Empresarial — estas quatro `readOnly`. Não crie categoria sem necessidade; `save_custom_field_category` é para quando ele quiser um agrupamento próprio.
 
 ## 2 · A pergunta
 
@@ -38,8 +41,8 @@ Só volte a perguntar quando a resposta mudar o campo de verdade — por exemplo
 ## 3 · Criar
 
 ```
-gestao_config_create_custom_field_definition
-  categoryId      ← de list_custom_field_categories ("Todas as categorias" serve para quase tudo)
+gestao_config_save_custom_field_definition   (sem definitionId = cria)
+  categoryId      ← de customFieldCategories ("Todas as categorias" serve para quase tudo)
   entityType      ← PROPOSAL | BENEFICIARIO
   key             ← minúsculas, começa por letra: numero_apolice
   label, type     ← TEXT | SELECT | DATE   (REFERENCE é recusado na gestão)
@@ -62,13 +65,13 @@ gestao_config_create_custom_field_definition
 ## 4 · Ajustar o formulário
 
 ```
-gestao_config_set_proposal_field_setting(systemFieldKey, required?, visible?, position?, segmentId?)
-gestao_config_reorder_proposal_fields(order: [{source, key|id, position}], segmentId?)
+gestao_config_update_proposal_fields(setting: {systemFieldKey, required?, visible?, position?}, segmentId?)
+gestao_config_update_proposal_fields(order: [{source, key|id, position}], segmentId?)
 ```
 
-`set_proposal_field_setting` mexe **só em campo de sistema** — não cria nem apaga nada. Campo com `locked.required` não pode virar opcional.
+Um modo por chamada, nunca os dois juntos. `setting` mexe **só em campo de sistema** — não cria nem apaga nada. Campo com `locked.required` não pode virar opcional.
 
-O reorder aceita sistema e personalizado na mesma lista: `source: "SYSTEM"` usa `key`, `source: "CUSTOM"` usa `id`. Mande a lista inteira; posições começam em 0.
+O `order` aceita sistema e personalizado na mesma lista: `source: "SYSTEM"` usa `key`, `source: "CUSTOM"` usa `id`. Mande a lista inteira; posições começam em 0.
 
 **Esconder campo que ele não usa vale tanto quanto criar campo que falta.** Formulário com 17 campos onde 6 importam é o que faz o corretor voltar para a planilha.
 
@@ -86,7 +89,7 @@ Campo obrigatório também atinge a criação por MCP: toda proposta nova precis
 
 ## 6 · Validação e próxima
 
-Releia `get_proposal_fields` do ramo e mostre o formulário final na ordem em que ele vai ver na tela, marcando o que é obrigatório. Depois:
+Releia `proposalFields` do ramo e mostre o formulário final na ordem em que ele vai ver na tela, marcando o que é obrigatório. Depois:
 
 - **`koter-proposta`** — cadastrar uma proposta e ver o formulário de pé *(recomendada)*
 - `koter-gestao-vendedores` — quem vende

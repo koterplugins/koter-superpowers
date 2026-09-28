@@ -78,11 +78,11 @@ Leia o estado real antes de propor qualquer coisa. Tudo abaixo é leitura pura, 
 |---|---|---|
 | Gestão | `gestao_config_fetch_gestao_config_context` | **funil de status, entidades**, vendedores, campos personalizados |
 | Gestão (catálogo) | ~~`gestao_fetch_gestao_context`~~ **não chame aqui** | emagreceu de 173 mil para **42.525 caracteres** em 21/09/2026 (saiu o catálogo de seguradoras), mas ainda é caro para um retrato: quase metade é `modalities`. O catálogo se resolve no momento da proposta, na `koter-proposta` |
-| Comissão | `gestao_comissao_list_commission_grades` + `get_commission_financial_settings` | tem grade? tem rotina de repasse? |
-| Financeiro | `gestao_financeiro_list_bank_accounts` + `list_finance_categories` | tem conta bancária? (o plano de contas **já vem pronto**, 23 categorias) |
+| Comissão | `gestao_comissao_list_commission_grades` + `get_commission_settings` | tem grade? tem rotina de repasse? |
+| Financeiro | `gestao_financeiro_fetch_finance_context(include: [bankAccounts, categories])` | tem conta bancária? (o plano de contas **já vem pronto**, 23 categorias) |
 | CRM | `crm_config_fetch_crm_config_context` | tem time, funil, origem, tag? **Não traz `defaultType` das etapas nem a fila das equipes** — para isso, `crm_config_list_lead_statuses` por equipe e `crm_config_list_teams` |
 | Automação de CRM | `crm_automation_list_automations` | o que já roda sozinho (a conta nasce com automações **ligadas**) |
-| Automação de Gestão | `gestao_automacao_list_system_automation_catalog` | idem, e os defaults também vêm **ligados** |
+| Automação de Gestão | `gestao_automacao_fetch_management_automation_context` | `systemAutomations`: idem, e os defaults também vêm **ligados** (`enabled`) |
 | **KoterZap** | `koterzap_configuracao_list_whatsapp_instances` + `list_chatbots` | tem número? **é Cloud API?** É esta linha que decide o que se pode prometer de mensagem automática, nos três módulos |
 | **Volume do CRM** | `crm_list_leads(pageSize: 1)` | o `total`. **Duas linhas de resposta e é o dado que mais muda a conversa** |
 | **Volume do Gestão** | `gestao_list_proposals(pageSize: 1)` | o `total`, e o `company: { id, name }` de brinde — o nome da corretora para a frase do passo 1 |
@@ -91,7 +91,7 @@ Leia o estado real antes de propor qualquer coisa. Tudo abaixo é leitura pura, 
 >
 > **Essa mesma corretora é o caso que o plugin mais vai encontrar e o que menos parece com a Koter Day:** CRM cheio e maduro, Gestão praticamente vazio. Não existe "a conta está no começo" — existe um módulo no começo e outro em produção, e o plano tem que dizer isso.
 
-> ⚠️ **`segments`, `insurers` e `categories` não existem mais.** `fetch_gestao_config_context` deixou de devolvê-los e as 15 tools de ramo, seguradora e categoria **da corretora** foram removidas do MCP em 21/09/2026. Diagnóstico do tipo "você já tem 5 operadoras" saiu de cena junto — o que vale é o catálogo global, resolvido na hora da proposta. Já `management_status`, `management_entity` e `management_automation` continuam valendo: não corte pelo prefixo.
+> ⚠️ **`segments`, `insurers` e `categories` não existem mais.** `fetch_gestao_config_context` deixou de devolvê-los e as 15 tools de ramo, seguradora e categoria **da corretora** foram removidas do MCP em 21/09/2026. Diagnóstico do tipo "você já tem 5 operadoras" saiu de cena junto — o que vale é o catálogo global, resolvido na hora da proposta. Já `management_status`, `management_entity` e `management_automation` continuam valendo (hoje como `save_management_status`, `save_management_entity` e `save_management_automation`): não corte pelo prefixo.
 
 Disso sai o **mapa de maturidade**: por área, `vazio` / `começado` / `pronto`. É ele que decide se a skill filha vai **criar** ou apenas **revisar** — a diferença entre respeitar quem já começou e mandar todo mundo para o começo.
 
@@ -205,7 +205,7 @@ O destino do fluxo **não é a configuração pronta** — é `koter-proposta` e
 
 ## Passo 5 · A conexão por módulo — a última entrega do onboarding
 
-A conexão completa do Koter tem **356 ferramentas**. Isso é certo para a `/introducao`, que atravessa os três módulos de propósito, e é errado para todo o resto: um assistente de comissão com 356 tools escolhe pior e ainda pode apagar origem do CRM sem querer.
+A conexão completa do Koter tem **265 ferramentas**. Isso é certo para a `/introducao`, que atravessa os três módulos de propósito, e é errado para todo o resto: um assistente de comissão com 265 tools escolhe pior e ainda pode apagar origem do CRM sem querer.
 
 O MCP aceita **filtro por toolset na URL**, e é o que transforma o plugin num time com tesoura:
 
@@ -215,12 +215,12 @@ https://api.koter.app/mcp-user/koter?toolsets=crm,crm-config,crm-automation
 
 | Especialista | Tools | Cai |
 |---|---:|---|
-| Secretário `crm` | 25 | −93% |
-| Atendimento `koterzap-configuracao,koterzap-atendimento` | 51 | −86% |
-| Cadastro `gestao,gestao-config` | 55 | −85% |
-| CRM `crm-config,crm-automation,gestao-automacao` | 66 | −81% |
-| Vendas `crm,crm-config,gestao-automacao,gestao` | 100 | −72% |
-| Financeiro `gestao-comissao,gestao-financeiro,gestao-config` | 150 | −58% |
+| Secretário `crm` | 25 | −91% |
+| Atendimento `koterzap-configuracao,koterzap-atendimento` | 51 | −81% |
+| Cadastro `gestao,gestao-config` | 26 | −90% |
+| CRM `crm-config,crm-automation,gestao-automacao` | 59 | −78% |
+| Vendas `crm,crm-config,gestao-automacao,gestao` | 82 | −69% |
+| Financeiro `gestao-comissao,gestao-financeiro,gestao-config` | 77 | −71% |
 
 A tabela inteira, os 12 toolsets medidos, os porquês de cada recorte e a alavanca de sessão (`disable_toolset`) estão em **`references/conexao-por-modulo.md`**.
 
@@ -228,7 +228,7 @@ A tabela inteira, os 12 toolsets medidos, os porquês de cada recorte e a alavan
 
 1. **A `/introducao` não se recorta.** O passo 0 mora em `admin-cargos` e o ato 0 diagnostica os três módulos na mesma rodada. A separação não é como ela roda — **é o que ela entrega**.
 2. **Ofereça depois do ato 2**, junto com `koter-especialistas`, que é quem monta ficha e URL na mesma frase. Antes disso não significa nada: não se recorta uma ferramenta que ele ainda não usou.
-3. **Diga pela trava, não pela contagem.** "O de atendimento passa de 356 para 51, e de quebra deixa de conseguir mexer no seu funil sem querer." O campo "o que eu NÃO posso" da ficha deixa de ser promessa e passa a ser o que a conexão permite.
+3. **Diga pela trava, não pela contagem.** "O de atendimento passa de 265 para 51, e de quebra deixa de conseguir mexer no seu funil sem querer." O campo "o que eu NÃO posso" da ficha deixa de ser promessa e passa a ser o que a conexão permite.
 
 ## Retomada
 

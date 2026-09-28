@@ -31,7 +31,8 @@ O dado que dispara a renovação é a **data de vigência da proposta**, e ela v
 ## 2 · O gatilho, exatamente como ele é
 
 ```
-gestao_automacao_create_management_automation
+gestao_automacao_validate_management_automation   ← SEMPRE antes: o save já nasce ativo
+gestao_automacao_save_management_automation       ← sem automationId: cria PUBLICADA e ATIVA
 trigger: DATE_FIELD
 dateField: {
   source: "PROPOSAL",
@@ -56,7 +57,7 @@ A documentação da tool dá **`vigencia`** como exemplo de `field`. `vigencia` 
 **Se `validate` reclamar de antecedência com um `offsetDays` que você sabe estar certo, o problema é a chave do campo.** Leia o catálogo antes de gravar:
 
 ```
-gestao_automacao_list_management_automation_triggers → dateFieldsBySource
+gestao_automacao_fetch_management_automation_context → dateFieldsBySource
 ```
 
 Campos de data de `PROPOSAL`: `coverageStart` (Vigência), `billDueDate`, `implantationDate`, `proposalDate`, `clientBirthDate`.
@@ -71,7 +72,7 @@ Campos de data de `PROPOSAL`: `coverageStart` (Vigência), `billDueDate`, `impla
 
 O responsável **não é parametrizável**: vem da proposta. Se a corretora tem uma pessoa dedicada à renovação que não é quem vendeu, a tarefa vai cair no vendedor — diga isso antes, e resolva com a equipe de renovação do passo 6, não tentando forçar o responsável.
 
-**Por isso a ponte da `koter-crm-lead` importa:** proposta sem lead vinculado (`gestao_set_proposal_leads`) gera tarefa sem cliente do lado. Antes de armar a renovação, confira se as propostas da carteira estão ligadas aos seus leads.
+**Por isso a ponte da `koter-crm-lead` importa:** proposta sem lead vinculado (`gestao_set_proposal_links` com `leads`) gera tarefa sem cliente do lado. Antes de armar a renovação, confira se as propostas da carteira estão ligadas aos seus leads.
 
 ## 4 · O calendário que funciona
 
@@ -105,7 +106,7 @@ ACTION CREATE_LEAD
 
 Ela reaproveita o contato da proposta (cria um se faltar), vincula o lead de volta à proposta e **não duplica**: se a proposta já tem lead aberto naquele time, o passo é sucesso sem criar outro. Comprovado na Koter Day em 21/09/2026: o card nasceu no time Renovação, na etapa "A renovar", com o dono da proposta, e o terceiro disparo não criou um quarto card.
 
-> ⚠️ **Confira os logs depois de armar.** No primeiro disparo medido, a execução terminou `FAILED` com `Unique constraint failed on the fields: (id)` — o lead e o contato foram criados, mas o vínculo com a proposta não gravou, e **o disparo seguinte criou um segundo card do mesmo cliente**, porque é esse vínculo que faz a dedupe. Depois que o vínculo existe, a dedupe segura. Enquanto o defeito não for corrigido: leia `gestao_automacao_get_management_automation_logs` depois de armar a renovação e apague o card órfão se houver.
+> ⚠️ **Confira os logs depois de armar.** No primeiro disparo medido, a execução terminou `FAILED` com `Unique constraint failed on the fields: (id)` — o lead e o contato foram criados, mas o vínculo com a proposta não gravou, e **o disparo seguinte criou um segundo card do mesmo cliente**, porque é esse vínculo que faz a dedupe. Depois que o vínculo existe, a dedupe segura. Enquanto o defeito não for corrigido: leia `gestao_automacao_list_automation_logs` (com o `automationId`) depois de armar a renovação e apague o card órfão se houver.
 
 **Tarefa e card não são a mesma decisão.** `CREATE_TASK` avisa quem cuida; `CREATE_LEAD` abre o trabalho no funil. Uma automação pode ter os dois passos — e para quem tem pessoa dedicada à renovação, deve ter.
 
@@ -154,13 +155,13 @@ O **pedido de indicação depois da implantação** é o de melhor retorno de to
 
 Releia com `gestao_automacao_list_management_automations` e confira `dateField` e `active`.
 
-**Mas a criação não prova o disparo.** A varredura de `DATE_FIELD` roda **uma vez por dia**, então a automação armada hoje só aparece no log quando a varredura passar por uma proposta cuja data caia na janela. Comprovado na Koter Day: a automação D-90 foi criada, validada e nasceu ativa, e `get_management_automation_logs` voltou vazio no mesmo minuto — porque a única proposta da conta tem vigência em 01/10/2026, e o D-90 dela já passou.
+**Mas a criação não prova o disparo.** A varredura de `DATE_FIELD` roda **uma vez por dia**, então a automação armada hoje só aparece no log quando a varredura passar por uma proposta cuja data caia na janela. Comprovado na Koter Day: a automação D-90 foi criada, validada e nasceu ativa, e `list_automation_logs` voltou vazio no mesmo minuto — porque a única proposta da conta tem vigência em 01/10/2026, e o D-90 dela já passou.
 
 Diga isso ao corretor exatamente assim, sem prometer o que você não viu:
 
 > "Armei a régua de D-90 sobre a data de vigência. Ela varre uma vez por dia, então a primeira tarefa aparece quando a primeira proposta entrar na janela — vale conferir amanhã em Automações."
 
-E **combine a conferência**: `gestao_automacao_get_management_automation_logs` no dia seguinte é o que transforma "armei" em "está rodando".
+E **combine a conferência**: `gestao_automacao_list_automation_logs` no dia seguinte é o que transforma "armei" em "está rodando".
 
 ## 9 · Estado
 
@@ -184,9 +185,9 @@ Se a tarefa de tela 1 (Cloud API) ainda estiver `pendente`, diga aqui em uma lin
 | A régua disparou uma vez e nunca mais | `recurrence: ONCE` | `YEARLY` |
 | Renovação de contrato de 31 some em abril | `dayHandling: SKIP` | `CLIP_TO_LAST_DAY` |
 | A tarefa vence antes de o corretor ter tempo | `dueInDays` confundido com `offsetDays` | `offsetDays` é a antecedência; `dueInDays` é o prazo da tarefa |
-| Tarefa de renovação sem cliente do lado | proposta sem lead vinculado | `gestao_set_proposal_leads` |
+| Tarefa de renovação sem cliente do lado | proposta sem lead vinculado | `gestao_set_proposal_links` com `leads` |
 | A tarefa caiu no vendedor, não na renovação | o responsável vem da proposta e não é parametrizável | equipe de renovação (passo 6) |
-| O lead não aparece no funil de renovação | nenhuma ação do Gestão cria lead no CRM | fila de tarefas, ou alguém move o card |
+| O lead não aparece no funil de renovação | a automação não tem o passo `CREATE_LEAD`, ou o `teamId` dele aponta para outra equipe | acrescente o `CREATE_LEAD` com o `teamId` da equipe de renovação e confira em `list_automation_logs` |
 | Webhook não consegue criar o lead | payload fixo, sem telefone nem e-mail | não conte com esse caminho hoje |
 | Nada no log depois de criar | a varredura é diária | confira no dia seguinte |
 | Cliente reclamou do aviso de reajuste | régua automática falou de reajuste | a automação avisa o corretor, nunca o cliente |

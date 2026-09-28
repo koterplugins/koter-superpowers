@@ -22,10 +22,10 @@ E folha inteira já marcada com `isPayroll`: Salários, Encargos, Benefícios, P
 ## 1 · Detecção
 
 ```
-gestao_financeiro_list_bank_accounts       → normalmente vazio; é o que realmente falta
-gestao_financeiro_list_finance_categories  → o plano pronto
-gestao_financeiro_list_finance_cost_centers
-gestao_financeiro_list_finance_payees
+gestao_financeiro_fetch_finance_context(include?)   → numa chamada só:
+    bankAccounts   → normalmente vazio; é o que realmente falta
+    categories     → o plano pronto
+    costCenters, payees
 gestao_financeiro_list_finance_recurrences
 ```
 
@@ -34,8 +34,8 @@ Na Koter Day: 23 categorias, **nenhuma conta bancária**. Esse é o retrato típ
 ## 2 · Conta bancária — o passo que destrava o resto
 
 ```
-gestao_financeiro_create_bank_account(name, kind, bankName, bankCode, agency, accountNumber,
-                                      initialBalance, initialBalanceDate)
+gestao_financeiro_save_bank_account(name, kind, bankName, bankCode, agency, accountNumber,
+                                    initialBalance, initialBalanceDate)   ← sem bankAccountId cria
 ```
 
 `kind`: `CORRENTE`, `POUPANCA` ou `CAIXA` — **`CAIXA` é para o dinheiro que não passa em banco**, e quase toda corretora pequena tem um.
@@ -45,16 +45,16 @@ gestao_financeiro_create_bank_account(name, kind, bankName, bankCode, agency, ac
 ## 3 · Favorecidos — puxe do que já existe
 
 ```
-gestao_financeiro_create_finance_payee_from_seller(sellerId)   ← idempotente: reaproveita se já existir
-gestao_financeiro_create_finance_payee(...)                    ← os demais
+gestao_financeiro_save_finance_payee(fromSellerId)   ← só fromSellerId; idempotente: reaproveita se já existir
+gestao_financeiro_save_finance_payee(name, kind, ...)   ← os demais
 ```
 
-Vendedor não se cadastra duas vezes: a tool herda nome e documento e devolve o favorecido existente se já houver. Use-a para todo mundo que já é vendedor antes de criar qualquer favorecido à mão.
+Vendedor não se cadastra duas vezes: com `fromSellerId` a tool herda nome e documento e devolve o favorecido existente se já houver (todo vendedor já aparece como favorecido `VENDEDOR` em `payees`). Use esse caminho para todo mundo que já é vendedor antes de criar qualquer favorecido à mão.
 
 ## 4 · Lançamentos
 
 ```
-gestao_financeiro_create_finance_entry
+gestao_financeiro_save_finance_entry     ← sem entryId cria
   direction: PAGAR | RECEBER
   description, categoryId, amount
   dueDate                ← obrigatório no avulso
@@ -65,7 +65,7 @@ gestao_financeiro_create_finance_entry
 - **Parcelado é `installments`**, não vários lançamentos: 2 a 120 parcelas regidas por `firstDueDate`.
 - **`competenceDate` é diferente de `dueDate`** — competência é o mês a que a despesa pertence, vencimento é quando ela é paga. Quem quer DRE honesto usa os dois.
 - **`costCenterIds` só vale em despesa** (`PAGAR`), e o rateio é igualitário entre os centros informados.
-- Conta que se repete todo mês é `create_finance_recurrence`, não lançamento copiado.
+- Conta que se repete todo mês é `save_finance_recurrence`, não lançamento copiado.
 
 ## 5 · A regra que evita contar dinheiro duas vezes
 
@@ -75,13 +75,15 @@ Comprovado na Koter Day: um lançamento a receber criado na categoria "Comissõe
 
 ## 6 · Os relatórios — e os parâmetros que enganam
 
-| Relatório | Parâmetros | Detalhe |
-|---|---|---|
-| `get_dre_summary` | **`year`** (número) | não aceita `from`/`to` |
-| `get_cash_flow` | **`from` / `to`** (ISO) | não aceita `year` |
-| `get_cost_center_report` | período | rateio por centro |
+Os três saem de uma tool só, `gestao_financeiro_get_finance_report(report, ...)` — e parâmetro de outro relatório é recusado:
 
-**O DRE é regime de caixa** (`regime: "caixa"`): só entra o que foi liquidado. Comprovado — a despesa dada baixa apareceu no mês; o a receber pendente, não. Diga isso ao corretor, porque ele vai estranhar não ver o que está a receber.
+| `report` | Parâmetros | Detalhe |
+|---|---|---|
+| `dre` | **`year`** (número), `regime?` | não aceita `from`/`to` |
+| `cash_flow` | **`from` / `to`** (ISO), `granularity?`, `bankAccountId?` | não aceita `year` |
+| `cost_center` | `from` / `to`, `regime?` | rateio por centro |
+
+**O DRE é regime de caixa por padrão** (`regime: "caixa"`): só entra o que foi liquidado. Comprovado — a despesa dada baixa apareceu no mês; o a receber pendente, não. Diga isso ao corretor, porque ele vai estranhar não ver o que está a receber. Se ele quiser a visão por competência, `regime: "competencia"` traz os lançamentos não cancelados, pagos ou não.
 
 O fluxo de caixa, ao contrário, separa **realizado** de **projetado** e parte da `base` (a soma dos saldos iniciais). É nele que o pendente aparece.
 
@@ -103,8 +105,8 @@ Depois:
 | Sintoma | Causa | Conserto |
 |---|---|---|
 | Fluxo de caixa começa do zero | conta sem `initialBalance` | informe saldo e data |
-| DRE não mostra o a receber | DRE é regime de caixa | use o fluxo de caixa |
-| `get_dre_summary` recusa o período | ele quer `year`, não `from`/`to` | e o fluxo é o contrário |
+| DRE não mostra o a receber | DRE é regime de caixa por padrão | use o fluxo de caixa, ou `regime: "competencia"` |
+| `get_finance_report` (`dre`) recusa o período | ele quer `year`, não `from`/`to` | e o `cash_flow` é o contrário |
 | Comissão aparece dobrada | lançada à mão além do módulo | financeiro só para o que não é comissão |
-| Vendedor duplicado como favorecido | criado à mão | `create_finance_payee_from_seller` |
+| Vendedor duplicado como favorecido | criado à mão | `save_finance_payee` com `fromSellerId` |
 | Centro de custo recusado | só vale em `PAGAR` | rateio é de despesa |

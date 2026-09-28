@@ -21,9 +21,9 @@ gestao_comissao_list_proposal_installments(proposalId)
     → total 0 = as parcelas ainda não existem
 gestao_comissao_generate_proposal_installments(proposalId)
     → único caminho que cria parcela do zero
-gestao_comissao_set_installment_receivable_status(installmentId, "RECEBIDA" | "ANTECIPADA", date?)
-gestao_comissao_mark_installments_received(installmentIds, date?)   → a mesma baixa, em lote
-gestao_comissao_create_payout_batch(sellerId, roundDate?)
+gestao_comissao_update_installments(items[{ installmentId, receivableStatus: "RECEBIDA" | "ANTECIPADA", statusDate? }])
+gestao_comissao_update_installments(items[{ installmentId, markReceived: true, receivedAt? }])   → a mesma baixa, várias parcelas
+gestao_comissao_save_payout_batch(sellerId, roundDate?)
 ```
 
 `generate` exige na proposta início de vigência, valor e uma tabela que resolva para a seguradora e a modalidade; a mensagem de falha diz o que falta. Não precisa de `pricing.value`: comprovado na Koter Day com `pricing: null` e `proposalValue: 1500`, gerou as 25 parcelas.
@@ -35,9 +35,9 @@ Proposta Amil PME, R$ 1.500/mês, vigência 01/10/2026, vendedor Walter Gama:
 | Passo | Resultado |
 |---|---|
 | `generate_proposal_installments` | 25 parcelas; a 1ª `AGENCIAMENTO` 180% (recebível 2.700, repasse 1.350), as 24 seguintes `COMISSAO` 8% (120 / 60) |
-| `set_installment_receivable_status` na parcela 1 | `receivableStatus: RECEBIDA` |
-| `mark_installments_received` nas parcelas 2 e 3 | as duas `RECEBIDA` de uma vez |
-| `create_payout_batch(roundDate: 2026-10-10)` | lote `ABERTO` com 3 itens, `grossAmount: 1470` |
+| `update_installments` com `receivableStatus` na parcela 1 | `receivableStatus: RECEBIDA` |
+| `update_installments` com `markReceived` nas parcelas 2 e 3 | as duas `RECEBIDA` de uma vez |
+| `save_payout_batch(sellerId, roundDate: 2026-10-10)` | lote `ABERTO` com 3 itens, `grossAmount: 1470` |
 | `pay_payout_batch` | `outcome: "PAGO"`, as três parcelas com `payoutStatus: PAGA` |
 
 **A baixa re-ancora a data do repasse.** As três parcelas tinham `payoutExpectedAt` em 10/11, 10/12 e 10/01; depois da baixa, as três foram para **10/10/2026**, a próxima data da cadência depois do recebimento. É por isso que uma rodada só colhe o que já foi baixado — e por que não adianta escolher `roundDate` pelo vencimento da parcela: escolha pela cadência seguinte à baixa.
@@ -47,19 +47,19 @@ Proposta Amil PME, R$ 1.500/mês, vigência 01/10/2026, vendedor Walter Gama:
 ## 0.1 · Quando o prêmio muda, e quando se erra a baixa
 
 ```
-gestao_comissao_settle_installment(installmentId, actualGross, date?)
-gestao_comissao_edit_installment_due_date(installmentId, dueDate)
+gestao_comissao_update_installments(items[{ installmentId, settle: { actualGross, date? } }])
+gestao_comissao_update_installments(items[{ installmentId, dueDate }])
 gestao_comissao_reset_installment_status(installmentId, track: "receivable" | "payout")
 ```
 
-- **`actualGross` é o prêmio real do mês, não a comissão.** Medido: uma parcela de 8% sobre 1.500 baixada com `actualGross: 1800` virou `BAIXADA` com `amountReceivable: 144`, `hasDiscrepancy: true` — e **as parcelas seguintes em aberto foram regeneradas** valendo 1.800. Use só quando o prêmio mudou de verdade; prêmio igual ao previsto é `set_installment_receivable_status`.
-- **`edit_installment_due_date` aproveita só o dia.** O dia informado vira o dia de vencimento da proposta e re-ancora todas as parcelas ainda em aberto; o mês de cada uma não muda. Medido: dia 20 moveu 5 a 25 de `2027-02-10` para `2027-02-20` e seguintes, e as parcelas já baixadas ou pagas ficaram congeladas.
+- **`actualGross` é o prêmio real do mês, não a comissão.** Medido: uma parcela de 8% sobre 1.500 baixada com `actualGross: 1800` virou `BAIXADA` com `amountReceivable: 144`, `hasDiscrepancy: true` — e **as parcelas seguintes em aberto foram regeneradas** valendo 1.800. Use só quando o prêmio mudou de verdade; prêmio igual ao previsto é `receivableStatus`. **Cada baixa recria com ids novos as parcelas ainda em aberto da mesma proposta**: no máximo uma baixa por proposta em cada chamada, e releia com `list_proposal_installments` antes da próxima.
+- **`dueDate` aproveita só o dia** — informe em uma parcela por proposta. O dia informado vira o dia de vencimento da proposta e re-ancora todas as parcelas ainda em aberto; o mês de cada uma não muda. Medido: dia 20 moveu 5 a 25 de `2027-02-10` para `2027-02-20` e seguintes, e as parcelas já baixadas ou pagas ficaram congeladas.
 - **`reset_installment_status` regenera, não "desfaz".** Medido: resetar o recebível da parcela 4 **recriou as parcelas 4 a 25 com ids novos**. Qualquer id de parcela igual ou posterior à resetada que a skill tenha em mãos deixa de existir depois do reset — **releia com `list_proposal_installments` antes do próximo passo**. E confirme com o corretor antes: parcela cujo repasse já foi pago em lote é recusada, com a mensagem apontando o lote a estornar.
 
 ## 1 · A rodada
 
 ```
-gestao_comissao_create_payout_batch(sellerId, roundDate?)
+gestao_comissao_save_payout_batch(sellerId, roundDate?)   ← sem batchId, cria
 ```
 
 Um lote agrupa as parcelas elegíveis de **um** vendedor em **uma** rodada. Omitindo `roundDate`, a data sai da cadência da corretora — na Koter Day, com `MONTHLY` e dia 10, o lote nasceu com `roundDate` no dia 10 do mês seguinte.
@@ -71,13 +71,13 @@ Origem do lote: `AUTO` (varredura da cadência), `MANUAL` (este caminho) ou `AD_
 ## 2 · O ciclo
 
 ```
-create_payout_batch          → coleta parcelas, retenções por crítica e ajustes tipados
-refresh_payout_batch         → recoleta; obrigatório depois de mudar qualquer regra
-update_payout_batch_items    → mexe nos itens coletados
-add_payout_batch_adjustment  → crédito ou débito manual
-register_payout_batch_invoice→ a nota fiscal do corretor PJ
-pay_payout_batch             → o ato manual que paga
-revert_payout_batch          → desfaz um lote pago
+save_payout_batch(sellerId)              → cria: coleta parcelas, retenções por crítica e ajustes tipados
+save_payout_batch(batchId, refresh)      → recoleta; obrigatório depois de mudar qualquer regra
+save_payout_batch(batchId, add|remove)   → inclui ou retira parcelas pela chave natural
+save_payout_batch_adjustments            → crédito ou débito manual
+set_payout_batch_invoice                 → a nota fiscal do corretor PJ
+pay_payout_batch                         → o ato manual que paga
+undo_payout_batch(mode)                  → revert estorna lote pago ou diferido; delete descarta lote aberto
 ```
 
 **Ajuste tipado ≠ ajuste manual.** Campanha, crítica, empréstimo e arrasto de diferimento nascem dos coletores automáticos e **não podem ser criados à mão**. Só o ajuste genérico é manual — e é o que você usa para "combinei um extra com ele esse mês".
@@ -96,8 +96,8 @@ O vendedor fala "me adianta aí" para as duas, e o tratamento é outro:
 
 | | O que é | Tools |
 |---|---|---|
-| **Antecipação de repasse** | pagar hoje uma parcela que cairia depois; a parcela continua pendente, só é re-datada, e o deságio é abatido no item do lote | `schedule_installment_payout_advance`, `cancel_installment_payout_advance` |
-| **Empréstimo ao vendedor** | dinheiro que não é comissão, amortizado nos lotes seguintes | `create_seller_loan`, `register_seller_loan_payment`, `forgive_seller_loan`, `set_seller_loan_suspension`, `cancel_seller_loan` |
+| **Antecipação de repasse** | pagar hoje uma parcela que cairia depois; a parcela continua pendente, só é re-datada, e o deságio é abatido no item do lote | `set_installment_payout_advance` (`cancel: true` desfaz) |
+| **Empréstimo ao vendedor** | dinheiro que não é comissão, amortizado nos lotes seguintes | `save_seller_loan` (cria, edita, suspende), `register_seller_loan_payment`, `end_seller_loan` (`forgive` \| `cancel`) |
 
 Antecipação nunca é paga por fora: ela **entra no lote**. O deságio é congelado na parcela no momento do agendamento; re-marcar atualiza data e deságio.
 
@@ -111,13 +111,13 @@ gestao_comissao_get_seller_payout_statement(sellerId, from, to)
 
 Cada linha é rastreável à origem: parcela por chave natural, crédito de campanha, débito de crítica, amortização de empréstimo, arrasto de diferimento, ajuste manual. É o documento que resolve "por que esse mês veio menor" sem ninguém abrir planilha.
 
-`export_payout_preview` dá a prévia antes de fechar.
+`list_payout_batches` com `ids` e `export: true` dá a prévia de pagamento (e o CSV) antes de fechar.
 
 ## 6 · Regras de segurança desta skill
 
 - **Pagar é irreversível na prática.** `pay_payout_batch` só depois de mostrar o líquido, os débitos e a quem se refere, e receber o "pode pagar" na mesma conversa.
-- **`revert_payout_batch` existe**, mas desfazer pagamento gera ruído com o vendedor. Não trate como Ctrl+Z.
-- **Mudou regra? `refresh_payout_batch` antes de pagar.** Lote aberto não se atualiza sozinho.
+- **`undo_payout_batch` com `mode: "revert"` existe**, mas desfazer pagamento gera ruído com o vendedor. Não trate como Ctrl+Z.
+- **Mudou regra? `save_payout_batch` com `batchId` e `refresh: true` antes de pagar.** Lote aberto não se atualiza sozinho.
 - **Nunca pague em lote vários vendedores sem listar antes** quem entra, quanto cada um leva e quanto some por piso.
 
 ## 7 · Validação e próxima
@@ -133,10 +133,10 @@ Releia o lote e o extrato do vendedor e diga, em números, o que foi pago, o que
 
 | Sintoma | Causa | Conserto |
 |---|---|---|
-| Lote nasce zerado | parcelas não geradas, ou geradas e recebível não baixado | `list_proposal_installments` diz qual dos dois; resolva na hora com `generate` e `mark_installments_received` |
+| Lote nasce zerado | parcelas não geradas, ou geradas e recebível não baixado | `list_proposal_installments` diz qual dos dois; resolva na hora com `generate` e `update_installments` (`markReceived`) |
 | Parcela de angariação não aparece | `ANGARIACAO` nasce com valor zero e é excluída do lote | só `ANGARIACAO`; `AGENCIAMENTO` entra normal |
 | "já existe lote aberto" | um lote por vendedor por rodada | use o que existe |
-| Valor não bate depois de mudar a tabela | lote aberto não recoleta sozinho | `refresh_payout_batch` |
+| Valor não bate depois de mudar a tabela | lote aberto não recoleta sozinho | `save_payout_batch` com `refresh: true` |
 | Lote fechado e nada pago | líquido abaixo de `payoutMinimumAmount` | é `DIFERIDO`; acumula para a próxima |
 | Pagamento recusado | `payoutBlocked` ou `requiresInvoice` | diga qual dos dois |
 | Ajuste de campanha não deixa criar | ajustes tipados vêm dos coletores | só o ajuste manual é criável |

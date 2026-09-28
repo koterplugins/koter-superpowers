@@ -26,7 +26,7 @@ Fazer junto é o ponto da skill. Um corretor que deu uma baixa não precisa que 
 ## 2 · Dar baixa
 
 ```
-gestao_financeiro_settle_finance_entry(entryId, bankAccountId?, date?, settledAmount?)
+gestao_financeiro_settle_finance_entries(items[{ entryId, bankAccountId?, date?, settledAmount? }])
 ```
 
 - `settledAmount` **omitido usa o valor do lançamento**. Informe-o só quando o valor pago foi outro — e aí diga em voz alta que ficou diferente, porque é isso que gera crítica de valor divergente depois.
@@ -35,26 +35,30 @@ gestao_financeiro_settle_finance_entry(entryId, bankAccountId?, date?, settledAm
 
 O status vai de `PENDENTE` para `LIQUIDADO`, com `settledAmount` e `settledAt` preenchidos.
 
-**Em lote:** `gestao_financeiro_settle_finance_entries_bulk`. Antes de rodar, **liste o que vai ser baixado e o total**, e peça o "pode dar baixa". Baixa em lote errada é chata de desfazer uma a uma.
+**Em lote:** a mesma tool, com vários `items` (até 500). Antes de rodar, **liste o que vai ser baixado e o total**, e peça o "pode dar baixa". Baixa em lote errada é chata de desfazer uma a uma. **O lote não é atômico**: cada item passa ou falha sozinho (`succeeded` / `failed`) — lançamento cancelado ou já liquidado falha, e o resto segue. Diga o que ficou de fora.
 
 ## 3 · Estornar ≠ cancelar
 
 Os dois desfazem coisas diferentes, e confundir bagunça o DRE:
 
-| Tool | O que faz | Quando |
+Os três são `gestao_financeiro_undo_finance_entry(entryId, mode)`:
+
+| `mode` | O que faz | Quando |
 |---|---|---|
-| `reverse_finance_entry` | desfaz a **baixa**: volta para `PENDENTE`, limpa `settledAmount`/`settledAt`, **o lançamento continua existindo e devido** | baixou errado, baixou na conta errada, baixou o valor errado |
-| `cancel_finance_entry` | cancela o **lançamento**: a dívida deixa de existir | a conta não vai mais ser paga (contrato cancelado, cobrança indevida) |
-| `delete_finance_entry` | apaga o registro | erro de digitação, lançamento que nunca deveria existir |
+| `reverse` | desfaz a **baixa**: volta para `PENDENTE`, limpa `settledAmount`/`settledAt`, **o lançamento continua existindo e devido** | baixou errado, baixou na conta errada, baixou o valor errado |
+| `cancel` | cancela o **lançamento** em aberto: a dívida deixa de existir (fica como `CANCELADO`) | a conta não vai mais ser paga (contrato cancelado, cobrança indevida) |
+| `delete` | apaga o registro em aberto | erro de digitação, lançamento que nunca deveria existir |
+
+Lançamento liquidado não se cancela nem se exclui: estorne primeiro. E se ele estiver conciliado, `unreconcile_bank_transaction` vem antes do estorno.
 
 Comprovado na Koter Day: o estorno devolveu o lançamento a `PENDENTE` com os campos de liquidação zerados e o valor intacto.
 
-**Nunca escolha por ele.** Pergunte em uma linha: *"A conta continua devida, ou ela não existe mais?"* — a resposta escolhe a tool.
+**Nunca escolha por ele.** Pergunte em uma linha: *"A conta continua devida, ou ela não existe mais?"* — a resposta escolhe o `mode`.
 
 ## 4 · O histórico é a defesa
 
 ```
-gestao_financeiro_get_finance_entry_history(entryId)
+gestao_financeiro_list_finance_entries(ids: [entryId], include: ["history"])
 ```
 
 Toda baixa, estorno e alteração fica registrada. Quando o corretor disser "eu não mexi nisso", é aqui que se resolve — não na memória.
@@ -76,8 +80,8 @@ Esta skill baixa **lançamento**, não parcela. Baixar comissão à mão como la
 ```
 gestao_comissao_list_proposal_installments(proposalId)   → lista vazia = parcelas nem geradas
 gestao_comissao_generate_proposal_installments(proposalId)
-gestao_comissao_set_installment_receivable_status(installmentId, "RECEBIDA")
-gestao_comissao_mark_installments_received(installmentIds)   → em lote
+gestao_comissao_update_installments(items[{ installmentId, receivableStatus: "RECEBIDA" }])
+gestao_comissao_update_installments(items[{ installmentId, markReceived: true }, ...])   → várias de uma vez
 ```
 
 Só depois disso a parcela entra no lote de repasse. Mande para `koter-gestao-repasse` em vez de improvisar um lançamento financeiro.

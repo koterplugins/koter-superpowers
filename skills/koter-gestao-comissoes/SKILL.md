@@ -37,7 +37,7 @@ No Koter isso é nativo: cada linha de parcela carrega `commissionType` com `AGE
 ```
 gestao_config_fetch_gestao_config_context          → operadoras e vendedores
 gestao_comissao_list_commission_grades             → grades existentes (e o overrideSplitMode de cada uma)
-gestao_comissao_get_commission_financial_settings  → cadência, prazo, deságio, profundidade de override
+gestao_comissao_get_commission_settings            → cadência, prazo, deságio, profundidade de override, prazos por operadora
 gestao_comissao_list_commission_campaigns          → campanhas já criadas
 gestao_config_list_sellers                         → se repassa ou não
 ```
@@ -60,12 +60,12 @@ Cada uma como card de decisão de 2 a 4 opções, consequência em uma linha, re
 
 Vira `isLifetime` ou parcelas fixas numeradas.
 
-**P5 · Quanto a operadora demora para pagar?** → vira `receivableDelayDaysDefault` (ou `save_insurer_payment_term` por operadora). *Parcialmente dedutível* da média real das parcelas já recebidas.
+**P5 · Quanto a operadora demora para pagar?** → vira `receivableDelayDaysDefault` (ou `insurerPaymentTerms` de `save_commission_settings`, por operadora). *Parcialmente dedutível* da média real das parcelas já recebidas.
 
 **P6 · O vendedor ganha quando você fatura ou quando você recebe?**
 > Quando eu recebo *(recomendado)* / Quando a venda é implantada, eu banco o intervalo
 
-**O Koter é "sobre o recebido" por construção** — o lote só coleta parcela com recebível resolvido. Quem paga antes usa **antecipação** (`schedule_installment_payout_advance`), que re-data a parcela e abate um deságio. Isso é resposta, não limitação: *"Você paga antes de receber? Então sua ferramenta é a antecipação, e dá para configurar um deságio padrão."*
+**O Koter é "sobre o recebido" por construção** — o lote só coleta parcela com recebível resolvido. Quem paga antes usa **antecipação** (`set_installment_payout_advance`), que re-data a parcela e abate um deságio. Isso é resposta, não limitação: *"Você paga antes de receber? Então sua ferramenta é a antecipação, e dá para configurar um deságio padrão."*
 
 **P7 · Todos ganham igual?** → Sim: só Padrão. Categorias: variantes. Caso a caso: **resista** e proponha Padrão + desvios. *Dedutível* se já existem variantes.
 
@@ -88,13 +88,14 @@ Vira `isLifetime` ou parcelas fixas numeradas.
 **Ordem que economiza trabalho:** rotina financeira → recebimento da maior operadora → repasse Padrão → variantes como exceção. **A variante nasce vazia e herda o Padrão**, então configurar vendedor por vendedor desde o começo é trabalho jogado fora.
 
 ```
-gestao_comissao_save_commission_financial_settings
-  receivableDelayDaysDefault, payoutFrequency, payoutWeekdays, payoutDayOfMonth  (os quatro obrigatórios)
-  overrideMaxDepth, payoutMinimumAmount, advanceDiscountPercent, invoiceEmail
+gestao_comissao_save_commission_settings
+  settings: { receivableDelayDaysDefault, payoutFrequency, payoutWeekdays, payoutDayOfMonth  (os quatro obrigatórios)
+              overrideMaxDepth, payoutMinimumAmount, advanceDiscountPercent, invoiceEmail }
+  insurerPaymentTerms: [ { insuranceCompanyId, receivableDelayDays } ]   ← prazo por operadora, opcional
 ```
 
 ```
-gestao_comissao_publish_commission_table_version
+gestao_comissao_publish_commission_table
   target: { kind: "RECEIVABLE",      insuranceCompanyId }      ← a margem da casa, visível só a gestor
         | { kind: "PAYOUT_DEFAULT",  insuranceCompanyId }      ← tabela Padrão de repasse
         | { kind: "PAYOUT_VARIANT",  gradeId, insuranceCompanyId }
@@ -107,7 +108,7 @@ gestao_comissao_publish_commission_table_version
 
 Publicar encerra a versão vigente e põe a nova em vigor numa transação só. **A primeira publicação de `PAYOUT_DEFAULT` cria a grade "Padrão" sozinha** — não crie grade antes.
 
-Variantes: `create_payout_variant(modalityGroupId, name, sellerIds)`, depois `add_seller_to_commission_grade` / `remove_seller_from_commission_grade`, e `apply_seller_deviation` com `preview_seller_deviation` antes.
+Variantes: `create_payout_variant(modalityGroupId, name, sellerIds)`, depois `update_commission_grade(gradeId, addSellerIds | removeSellerIds)`, e `apply_seller_deviation` simulado antes com `dryRun: true` (depois aplicado com `confirm` igual ao desfecho, `MATCH` ou `NEW`).
 
 ### Exemplo real, publicado na Koter Day
 
@@ -124,7 +125,7 @@ PAYOUT_DEFAULT: [ {seq 1, parcela 1,  90%, AGENCIAMENTO, isLifetime false, manag
 
 A grade Padrão nasce com **`overrideSplitMode: "INTEGRAL"`** — confirmado na Koter Day. Integral significa que, se o vendedor tem dois gerentes, **cada um recebe o percentual inteiro e a casa paga duas vezes**. É a configuração que faz a corretora pagar mais do que recebeu e só descobrir no fechamento.
 
-Quando houver alguém com mais de um líder do mesmo tipo, mostre as três opções e recomende `PRINCIPAL`: `gestao_comissao_set_commission_grade_override_split_mode`. Quando não houver, não gaste a pergunta — mas **registre que ficou em INTEGRAL**, para reoferecer quando a equipe crescer.
+Quando houver alguém com mais de um líder do mesmo tipo, mostre as três opções e recomende `PRINCIPAL`: `gestao_comissao_update_commission_grade(gradeId, overrideSplitMode)`. Quando não houver, não gaste a pergunta — mas **registre que ficou em INTEGRAL**, para reoferecer quando a equipe crescer.
 
 `overrideMaxDepth` (1 a 10) decide quantos níveis o override sobe; vazio vale o teto de 10.
 
@@ -169,7 +170,7 @@ Grave o que foi publicado, por operadora, e o que ficou pendente (operadoras sem
 | Preview devolve tudo `null` | falta `pricing.value`, comissionado ou grade | preencha a mensalidade em `pricing.value` |
 | Receita projetada alta demais | recorrente assumida vitalícia | P4, sempre |
 | Falta o dinheiro da entrada | só a recorrente foi configurada | P3, sempre |
-| Casa paga duas vezes o override | `overrideSplitMode: INTEGRAL`, que é o default | `set_commission_grade_override_split_mode` para `PRINCIPAL` |
+| Casa paga duas vezes o override | `overrideSplitMode: INTEGRAL`, que é o default | `update_commission_grade` com `overrideSplitMode: PRINCIPAL` |
 | Meta embutida na grade | meta é campanha | separe explicitamente; `koter-gestao-campanhas` |
 | Tabela publicada não aparece na proposta | `insuranceCompanyId` do cadastro legado da corretora em vez do catálogo | use o id do catálogo global |
 | Vendedor reclama de valor que mudou | imposto ou prazo alterado não regenera parcela antiga | mudanças valem para geração futura |

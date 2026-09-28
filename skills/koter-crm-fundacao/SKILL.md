@@ -56,7 +56,7 @@ Daí a regra desta skill:
 
 Criar "Renovado" do lado de "Venda Faturada" deixa a corretora com duas etapas de fechamento, e só uma delas o motor entende como venda.
 
-*(No Gestão o `defaultType` existe mas nasce nulo e precisa ser marcado com `edit_management_status` — ver `koter-gestao-fundacao`. No CRM os tipos vêm de graça; o trabalho é só dar o nome certo.)*
+*(No Gestão o `defaultType` existe mas nasce nulo e precisa ser marcado com `save_management_status` (com `statusId`) — ver `koter-gestao-fundacao`. No CRM os tipos vêm de graça; o trabalho é só dar o nome certo.)*
 
 ## 4 · Quantas equipes — a decisão estruturante
 

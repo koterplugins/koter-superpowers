@@ -1,6 +1,6 @@
 # A conexão por módulo — uma URL por especialista
 
-A conexão completa do Koter entrega **356 ferramentas**. Nenhuma IA escolhe bem entre 356, e o corretor que liga tudo num assistente só paga isso em toda conversa: lista maior, escolha pior, e um agente de comissão com poder de apagar origem do CRM.
+A conexão completa do Koter entrega **265 ferramentas**. Nenhuma IA escolhe bem entre 265, e o corretor que liga tudo num assistente só paga isso em toda conversa: lista maior, escolha pior, e um agente de comissão com poder de apagar origem do CRM.
 
 O MCP do Koter aceita **filtro por toolset na própria URL**, e é isso que transforma um assistente genérico num time de especialistas com tesoura.
 
@@ -12,7 +12,7 @@ https://api.koter.app/mcp-user/koter?toolsets=<lista separada por vírgula>
 
 ## Os 12 toolsets, medidos
 
-Medido em 22/09/2026 com `list_toolsets`, que é a fonte — **não decore estes números, releia**, porque eles mudam (em 21/09/2026 saíram 15 tools de ramo, seguradora e categoria, e `gestao-config` encolheu de 47 para 32).
+Medido em 28/09/2026 com `list_toolsets`, que é a fonte — **não decore estes números, releia**, porque eles mudam. Na última rodada o Gestão encolheu pela metade: criar e editar viraram um `save_*` só (sem id cria, com id edita), os `get_*` viraram `list_*` com `ids`, as listas de apoio viraram um `fetch_*_context` com `include`, e ações irmãs viraram uma tool com `mode` ou `kind`. CRM, KoterZap e Administração ficaram como estavam.
 
 | Módulo | Toolset | Tools | O que tem dentro |
 |---|---|---:|---|
@@ -21,22 +21,22 @@ Medido em 22/09/2026 com `list_toolsets`, que é a fonte — **não decore estes
 | | `crm-automation` | 14 | automação do CRM |
 | KoterZap | `koterzap-configuracao` | 42 | chatbot, fluxo, base de conhecimento, inbox, leitura de instância |
 | | `koterzap-atendimento` | 9 | conversa, mensagem, anexo, transcrição — **não envia** |
-| Gestão | `gestao` | 23 | proposta, beneficiário, catálogo de seguradora e modalidade |
-| | `gestao-config` | 32 | status, entidade, vendedor, campo personalizado de proposta |
-| | `gestao-comissao` | 72 | grade, tabela, parcela, recebível, lote de repasse, empréstimo, campanha |
-| | `gestao-automacao` | 15 | automação do Gestão — **é ela que tem relógio** |
-| | `gestao-financeiro` | 46 | conta, lançamento, plano de contas, extrato, conciliação, DRE |
+| Gestão | `gestao` | 12 | proposta, beneficiário, nota, vínculo com lead e contato, catálogo do ramo |
+| | `gestao-config` | 14 | status, entidade, vendedor, campo personalizado e formulário de proposta |
+| | `gestao-comissao` | 36 | grade, tabela, parcela, recebível, lote de repasse, empréstimo, campanha |
+| | `gestao-automacao` | 8 | automação do Gestão — **é ela que tem relógio** |
+| | `gestao-financeiro` | 27 | conta, lançamento, plano de contas, extrato, conciliação, crítica, relatórios (caixa, DRE, setor) |
 | Administração | `admin-usuarios` | 31 | usuário, convite, hierarquia, acesso |
 | | `admin-cargos` | 10 | cargo, permissão, e o **handshake** |
-| | **total** | **356** | |
+| | **total** | **265** | |
 
-`gestao-comissao`, com 72, é o maior toolset sozinho — é ele que faz o especialista financeiro continuar grande por mais que se recorte.
+`gestao-comissao`, com 36, continua o maior do Gestão, mas caiu à metade — e com ele o especialista financeiro deixou de ser o caso difícil.
 
 ---
 
 ## Os dois achados que decidem o desenho
 
-**1 · A regra 6 sobrevive sem o toolset de administração.** Reconferir o `companyId` antes de cada rodada de escrita é a regra que não pode cair, e a leitura natural para isso é o handshake — que mora em `admin-cargos`. Medido em 22/09/2026: **não é a única**.
+**1 · A regra 6 sobrevive sem o toolset de administração.** Reconferir o `companyId` antes de cada rodada de escrita é a regra que não pode cair, e a leitura natural para isso é o handshake — que mora em `admin-cargos`. Medido em 28/09/2026: **não é a única**.
 
 | Leitura | Onde vem o `companyId` |
 |---|---|
@@ -60,13 +60,13 @@ Ou seja: **a separação por módulo não é como a `/introducao` roda, é o que
 
 | Especialista | `?toolsets=` | Tools | Quanto cai |
 |---|---|---:|---|
-| **Secretário Geral** | `crm` | 25 | −93% |
-| **Atendimento** | `koterzap-configuracao,koterzap-atendimento` | 51 | −86% |
-| **Cadastro** | `gestao,gestao-config` | 55 | −85% |
-| **CRM** | `crm-config,crm-automation,gestao-automacao` | 66 | −81% |
-| **Vendas** | `crm,crm-config,gestao-automacao,gestao` | 100 | −72% |
-| **Financeiro** | `gestao-comissao,gestao-financeiro,gestao-config` | 150 | −58% |
-| **Implantação** (`/introducao`) | *(sem filtro — a conexão completa)* | 356 | — |
+| **Secretário Geral** | `crm` | 25 | −91% |
+| **Atendimento** | `koterzap-configuracao,koterzap-atendimento` | 51 | −81% |
+| **Cadastro** | `gestao,gestao-config` | 26 | −90% |
+| **CRM** | `crm-config,crm-automation,gestao-automacao` | 59 | −78% |
+| **Vendas** | `crm,crm-config,gestao-automacao,gestao` | 82 | −69% |
+| **Financeiro** | `gestao-comissao,gestao-financeiro,gestao-config` | 77 | −71% |
+| **Implantação** (`/introducao`) | *(sem filtro — a conexão completa)* | 265 | — |
 
 E as três URLs prontas, para o corretor que prefere uma por módulo em vez de uma por especialista:
 
@@ -80,11 +80,11 @@ GESTÃO    https://api.koter.app/mcp-user/koter?toolsets=gestao,gestao-config,ge
 
 **Três especialistas atravessam módulo**, e é por isso que o recorte por especialista rende mais que o recorte por módulo:
 
-- **Vendas** leva `gestao-automacao` porque a régua de renovação é automação **do Gestão** (gatilho `DATE_FIELD` sobre `coverageStart`), e leva `gestao` porque ligar o lead ganho à proposta é `gestao_set_proposal_leads`.
+- **Vendas** leva `gestao-automacao` porque a régua de renovação é automação **do Gestão** (gatilho `DATE_FIELD` sobre `coverageStart`), e leva `gestao` porque ligar o lead ganho à proposta é `gestao_set_proposal_links` com `leads`.
 - **CRM** leva `gestao-automacao` pelo mesmo motivo: os dois motores de automação são dele.
 - **Atendimento** pode levar `crm-config` se o bot for desviar pelo funil (`HANDOFF` e `CREATE_LEAD` usam equipe e etapa) — 88 em vez de 51. Só acrescente quando o fluxo realmente ler o CRM.
 
-**O financeiro é o que menos ganha**, e dizer isso é mais honesto que fingir o contrário: `gestao-comissao` sozinho é 72 tools e o assunto dele é comissão. Se ficar grande demais na prática, a segunda alavanca é a de sessão (abaixo), ou parta em dois — `gestao-comissao,gestao-config` para comissão e repasse, `gestao-financeiro` para caixa e conciliação.
+**O financeiro deixou de ser o que menos ganha.** Com o Gestão enxuto, ele caiu de 150 para 77 tools, e quem menos ganha agora é Vendas, porque atravessa dois módulos. Se ainda ficar grande na prática, a segunda alavanca é a de sessão (abaixo), ou parta em dois — `gestao-comissao,gestao-config` (50) para comissão e repasse, `gestao-financeiro` (27) para caixa e conciliação.
 
 ---
 
@@ -108,7 +108,7 @@ O caso em que a alavanca de sessão é a certa: hospedeiro de conexão única, e
 
 Nunca como configuração de MCP — ele não quer saber o que é toolset. Como consequência:
 
-> "Dá para dar a cada especialista só as ferramentas do assunto dele. O de atendimento passa de 356 para 51, e de quebra ele deixa de conseguir mexer no seu funil sem querer. São seis links, um por especialista — te passo prontos."
+> "Dá para dar a cada especialista só as ferramentas do assunto dele. O de atendimento passa de 265 para 51, e de quebra ele deixa de conseguir mexer no seu funil sem querer. São seis links, um por especialista — te passo prontos."
 
 E a trava é metade do valor, não um detalhe: **o especialista financeiro com a URL do financeiro não apaga origem do CRM nem quando erra.** O campo 4 da ficha ("o que eu NÃO posso") deixa de ser promessa e passa a ser o que a conexão permite.
 
