@@ -19,7 +19,7 @@ As 1, 2, 3 e 5 são "faça uma vez". A 4 é "faça todo dia", e é onde o onboar
 
 ## As três regras que atravessam a trilha inteira
 
-1. **Funil é por equipe.** `crm_config_list_lead_statuses` exige `teamId`. "Funil separado" e "equipe separada" são a mesma coisa — e por isso não se cria estrutura para corretora solo.
+1. **Funil é por equipe.** `crm_config_fetch_crm_config_context` devolve o funil em `funnelStagesByTeam`, um por equipe, e criar etapa exige `teamId`. "Funil separado" e "equipe separada" são a mesma coisa — e por isso não se cria estrutura para corretora solo.
 2. **O CRM já vem com coisa ligada.** Quatro automações ativas de fábrica na conta de demonstração, e toda equipe nova nasce com três etapas de sistema. Mostre o que já roda antes de propor criar.
 3. **Nada de data no CRM.** Não há tipo data nem gatilho por data de campo. O relógio mora no Gestão (`DATE_FIELD`), e é de lá que a renovação sai.
 
@@ -31,7 +31,7 @@ As 1, 2, 3 e 5 são "faça uma vez". A 4 é "faça todo dia", e é onde o onboar
 | Vigência → tarefa no CRM | `gestao_automacao_save_management_automation`, `DATE_FIELD` | o único gatilho por data que existe nos dois módulos |
 | Produtos e operadoras | lidos da fundação do Gestão | tags de produto e funil de cross-sell saem daí, sem perguntar de novo |
 
-**Nenhuma ação do motor do Gestão cria lead no CRM.** A renovação chega como tarefa no cliente certo, não como card no funil. Ver `koter-crm-renovacao`.
+**A renovação chega como tarefa no cliente certo**, e desde 21/09/2026 o motor do Gestão também tem `CREATE_LEAD` e `CREATE_CONTACT`, para quem quer o card no funil. Qual dos dois usar é decisão da `koter-crm-renovacao`.
 
 ## Atalhos legítimos
 

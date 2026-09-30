@@ -39,7 +39,7 @@ Numa conta em uso, o ato 3 **pode ser oferecido antes**, porque o pré-requisito
 
 Uma sessão curta, e ela termina com **duas entregas**: o mapa de maturidade e **a lista de tarefas de tela dele**.
 
-É aqui que entra a única mudança de ordem que esta revisão trouxe: **o diagnóstico do KoterZap (`koterzap_configuracao_list_whatsapp_instances`) roda no ato 0**, junto com o do Gestão e o do CRM — não lá na frente, quando a trilha do KoterZap chegar.
+É aqui que entra a única mudança de ordem que esta revisão trouxe: **o diagnóstico do KoterZap (`whatsappInstances` em `koterzap_configuracao_fetch_koterzap_config_context`) roda no ato 0**, junto com o do Gestão e o do CRM — não lá na frente, quando a trilha do KoterZap chegar.
 
 O motivo é concreto: conectar o número em Cloud API **não tem tool de MCP** e depende da Meta, não do plugin. Se o corretor descobre isso no ato 3, ele espera dias com tudo o mais pronto. Se descobre no ato 0, ele resolve em paralelo enquanto o Gestão é configurado. Uma leitura, zero escrita, e muda o cronograma dele.
 
@@ -55,7 +55,7 @@ Ela está documentada na skill onde dói. Aqui ela aparece **cedo**, que é o qu
 
 | # | O que | Por que o plugin não faz | Quando dizer | Trava o quê |
 |---|---|---|---|---|
-| 1 | **Conectar o número em Cloud API** | não existe tool de MCP para criar instância de **nenhum** tipo | ato 0, se `list_whatsapp_instances` vier vazio ou só com Evolution | `SEND_WHATSAPP_TEMPLATE` nos dois motores de automação |
+| 1 | **Conectar o número em Cloud API** | não existe tool de MCP para criar instância de **nenhum** tipo | ato 0, se `whatsappInstances` vier vazio ou só com Evolution | `SEND_WHATSAPP_TEMPLATE` nos dois motores de automação |
 
 **Eram três até 21/09/2026**, e as outras duas saíram por motivos diferentes.
 
@@ -63,7 +63,7 @@ Ela está documentada na skill onde dói. Aqui ela aparece **cedo**, que é o qu
 
 **Aprovar o template na Meta** saiu da `/introducao` por decisão de escopo, não porque virou tool. Ele continua sendo tarefa do corretor e continua sem tool — mas só passa a importar quando alguém for armar régua de mensagem, no ato 3, e o assunto inteiro pertence à `koter-zap-fundacao`. Na passada única ele é **uma frase de orientação junto da tarefa 1**, dita uma vez: nunca um item rastreado, nunca uma checagem, nunca uma volta para perguntar se saiu. Rastrear não rende nada — o plugin não cria o template, não acelera a Meta, e `list_meta_message_templates` só responde se já houver instância Cloud API, que é exatamente o que falta na conta em que a tarefa 1 apareceu.
 
-**Os dois passos menores também caíram:** marcar `defaultType` de status agora é `save_management_status` com `statusId` (`koter-gestao-fundacao`) e subir extrato é `import_bank_statement` (`koter-gestao-conciliacao`). Nenhum dos dois é passo de tela.
+**Os dois passos menores também caíram:** marcar `defaultType` de status agora é `save_management_status` com `statusId` (`koter-gestao-fundacao`) — e, desde 30/09/2026, ele deixou de ser detalhe: só o status `IMPLANTED` conta como venda em relatório, campanha e renovação e subir extrato é `import_bank_statement` (`koter-gestao-conciliacao`). Nenhum dos dois é passo de tela.
 
 **A regra de tom:** diga o passo de tela **antes** de ele virar frustração, e diga o que ele destrava. "Isso é na tela" no fim de uma configuração soa a desculpa; no começo, soa a plano.
 
@@ -131,7 +131,7 @@ O porte é o que mais se repetia: três skills perguntavam a mesma coisa com pal
 
 O corretor volta dias depois, em outra IA, sem o arquivo de estado. A passada única tem que sobreviver a isso, e sobrevive porque **o diagnóstico do ato 0 é idempotente**: ele relê o Koter e reconstrói o mapa inteiro.
 
-O que o arquivo guarda é só o que nenhuma leitura recupera — porte, prioridade, lacunas adiadas, a ferramenta que ele usa no lugar do módulo que não tem, e **se a tarefa de tela já foi oferecida**, com a data, para não oferecer duas vezes. O estado dela em si não se guarda: `list_whatsapp_instances` responde.
+O que o arquivo guarda é só o que nenhuma leitura recupera — porte, prioridade, lacunas adiadas, a ferramenta que ele usa no lugar do módulo que não tem, e **se a tarefa de tela já foi oferecida**, com a data, para não oferecer duas vezes. O estado dela em si não se guarda: `whatsappInstances` responde.
 
 Ao reabrir, abra pelo que falta, não pelo que passou:
 

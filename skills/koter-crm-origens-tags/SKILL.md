@@ -54,11 +54,11 @@ Só duas perguntas, em opções:
 - **Você paga por lead hoje?** — tráfego pago / só indicação e carteira / os dois.
 - **Tem parceiro ou subcorretor que te manda cliente?** — cria `Parceiro`, e na assessoria amarra uma equipe a ela.
 
-`crm_config_create_origin` recebe `teamIds`; **lista vazia = todas as equipes**. Restringir origem a uma equipe é o jeito de separar lead de parceiro do lead do comercial.
+`crm_config_save_origin` (sem `originId`) **exige** `teamIds` na criação; **lista vazia = todas as equipes**. Na edição, `name` e `teamIds` vão juntos e a lista substitui a atual inteira. Restringir origem a uma equipe é o jeito de separar lead de parceiro do lead do comercial.
 
 ### Origem duplicada agora é recusada
 
-> **`crm_config_create_origin` deduplica.** Comprovado na Koter Day em 21/09/2026: com "Tráfego pago" já existindo, criar `"tráfego  Pago"` (caixa diferente, acento diferente, espaço a mais) foi **recusado**, com a mensagem *"Já existe uma origem equivalente a «tráfego  Pago»: «Tráfego pago» (<id>). Use a existente: maiúsculas, acentos e espaços não diferenciam origens."*
+> **`crm_config_save_origin` deduplica.** Comprovado na Koter Day em 21/09/2026: com "Tráfego pago" já existindo, criar `"tráfego  Pago"` (caixa diferente, acento diferente, espaço a mais) foi **recusado**, com a mensagem *"Já existe uma origem equivalente a «tráfego  Pago»: «Tráfego pago» (<id>). Use a existente: maiúsculas, acentos e espaços não diferenciam origens."*
 
 A mensagem entrega o nome **e o id** da origem que já existe. Então, ao receber essa recusa, **não crie nada e não invente nome novo: use o id que veio no erro.**
 
@@ -79,7 +79,7 @@ Por família, e só as aplicáveis:
 
 ### Duas coisas sobre nome de tag
 
-1. **`crm_config_create_lead_tag` devolve a tag existente** quando o nome bate. Comprovado: criar "Saúde" de novo devolveu o mesmo id, sem duplicar. É seguro re-executar.
+1. **`crm_config_save_lead_tag` (sem `tagId`) devolve a tag existente** quando o nome bate no mesmo escopo. Comprovado: criar "Saúde" de novo devolveu o mesmo id, sem duplicar. É seguro re-executar.
 2. **A comparação é literal.** Comprovado: "saude" criou uma tag nova ao lado de "Saúde". Acento e caixa contam. Normalize antes de criar, como nas origens.
 
 E o aviso que salva automação:
@@ -101,13 +101,13 @@ Lista mínima útil, com o problema que cada um denuncia:
 | **Desistiu de contratar** | não é perda para concorrência — não confunda com as de cima |
 | **Documentação não entregue** | **perda evitável, e a mais importante de medir** |
 
-A demonstração já vem com os quatro primeiros. **Acrescentar os dois últimos custa duas chamadas e é o que torna o gargalo nº 1 visível**: sem "Documentação não entregue", essas perdas viram "sem retorno do cliente" e o problema fica invisível para sempre. Comprovado na Koter Day: criados com `crm_config_create_loss_reason`, e usados logo depois em `crm_mark_lead_loss`, que gravou `SALE_NOT_COMPLETED` com o motivo no histórico do lead.
+A demonstração já vem com os quatro primeiros. **Acrescentar os dois últimos custa duas chamadas e é o que torna o gargalo nº 1 visível**: sem "Documentação não entregue", essas perdas viram "sem retorno do cliente" e o problema fica invisível para sempre. Comprovado na Koter Day: criados com `crm_config_save_loss_reason`, e usados logo depois no `outcome` `LOSS` de `crm_save_lead`, que gravou `SALE_NOT_COMPLETED` com o motivo no histórico do lead.
 
 Motivo de perda é da corretora inteira, não tem equipe nem escopo.
 
 ### Em conta com histórico, o problema é o oposto: sobra motivo
 
-**`create_loss_reason` não deduplica de jeito nenhum** — nem de caixa, como `create_origin` e `create_lead_tag` passaram a fazer. Então lista de motivo em corretora antiga cresce por acúmulo, e o estrago é de relatório: o gargalo nº 1 fica partido em dois e nenhum dos dois parece grande o bastante para alguém agir.
+**`save_loss_reason` não deduplica de jeito nenhum** — nem de caixa, como `save_origin` e `save_lead_tag` passaram a fazer. Então lista de motivo em corretora antiga cresce por acúmulo, e o estrago é de relatório: o gargalo nº 1 fica partido em dois e nenhum dos dois parece grande o bastante para alguém agir.
 
 Medido numa corretora real em 22/09/2026: **18 motivos, com quatro pares sobrepostos.**
 
@@ -147,8 +147,8 @@ Próxima, em até 4 opções:
 
 | Sintoma | Causa | Conserto |
 |---|---|---|
-| Duas origens quase iguais no relatório | criadas antes da normalização | `delete_origin` com `moveLeadsToOriginId` junta as duas e devolve `movedLeads` |
-| `create_origin` recusado | já existe origem equivalente | use o id que a própria mensagem entrega |
+| Duas origens quase iguais no relatório | criadas antes da normalização | `delete_crm_config_records` (`kind: "origin"`) com `moveLeadsToOriginId` junta as duas e devolve `movedLeads` |
+| `save_origin` recusado na criação | já existe origem equivalente | use o id que a própria mensagem entrega |
 | Tag duplicada só por acento | a deduplicação de tag é literal | mesma normalização |
 | Automação parou de disparar depois de arrumar nomes | `ADD_TAG`/`REMOVE_TAG` guardam o nome | releia as automações e reescreva o nome nelas |
 | Origem com `leadsCount: 0` | pode ser canal novo, não canal morto | mostre o número, não conclua |
@@ -160,7 +160,7 @@ Próxima, em até 4 opções:
 Conta antiga ainda pode ter duas origens quase iguais, criadas antes da normalização. Agora dá para juntá-las de verdade:
 
 ```
-crm_config_delete_origin(originId, confirm: true, moveLeadsToOriginId: <a que fica>)
+crm_config_delete_crm_config_records(kind: "origin", id: <a que sai>, confirm: true, moveLeadsToOriginId: <a que fica>)
     → { movedLeads: n }
 ```
 
@@ -171,7 +171,7 @@ crm_config_delete_origin(originId, confirm: true, moveLeadsToOriginId: <a que fi
 E agora dá para olhar os leads de uma origem antes de mexer:
 
 ```
-crm_list_leads(origins: ["Tráfego pago"])   → filtro pelo nome exato como está em list_origins
+crm_list_leads(origins: ["Tráfego pago"])   → filtro pelo nome exato como está em origins do contexto
 ```
 
 Todo lead devolvido traz `origin`, então a conferência depois da unificação é uma chamada só.
@@ -180,4 +180,4 @@ Diga ao corretor o que aconteceu, com o número:
 
 > "Juntei as duas 'Tráfego pago' numa só: os 2 leads da duplicada foram para a que a sua régua já usa. Agora todo mundo que entra por tráfego dispara o follow-up de 15 minutos."
 
-Tag duplicada é outra conversa: `delete_lead_tag` não remaneja nada, e apagar a tag que uma automação escreve com `ADD_TAG` quebra a automação — confira antes.
+Tag duplicada é outra conversa: `delete_crm_config_records` com `kind: "lead_tag"` não remaneja nada, e apagar a tag que uma automação escreve com `ADD_TAG` quebra a automação — confira antes.

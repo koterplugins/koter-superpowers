@@ -56,6 +56,8 @@ gestao_config_save_custom_field_definition   (sem definitionId = cria)
 
 **`template` é melhor que `type` quando serve.** `template: "CPF"` já valida formato; `type: "TEXT"` aceita qualquer coisa. Use template para CPF, CNPJ, data e dinheiro.
 
+**Acerte na criação: depois não muda.** Com `definitionId`, a tool edita só `label`, `options`, `required`, `active`, `placeholder`, `helpText` e `position`; categoria, entidade, ramo, `key` e tipo ficam como nasceram. E cuidado ao recriar: uma `key` de campo excluído na mesma categoria, entidade e ramo **reativa aquele campo com o tipo original** — para trocar o tipo, use outra `key`.
+
 **Escopo por ramo é o que faz o formulário parecer feito à mão:** "carência" só em saúde, "placa" só em auto. Omitir `segmentId` deixa o campo em todos os ramos e polui o formulário de quem vende mais de um.
 
 > **Pegadinha de leitura:** o parâmetro de entrada chama-se `segmentId`, mas na resposta o valor aparece em **`segmentRamoId`**, com `segmentId: null` e `scope: "SEGMENT"`. Comprovado na Koter Day. Se você reler procurando `segmentId`, vai concluir que o escopo não pegou.
@@ -104,6 +106,6 @@ Releia `proposalFields` do ramo e mostre o formulário final na ordem em que ele
 | Lista de campos volta vazia | `segmentId` do espaço errado | use o ramo global |
 | Proposta antiga não salva mais | campo virou obrigatório | `required: false`, ou complete o histórico |
 | Campo não vira opcional | `locked.required` | é campo travado do sistema |
-| CPF aceita qualquer coisa | criado como `TEXT` | recrie com `template: "CPF"` |
+| CPF aceita qualquer coisa | criado como `TEXT` | crie outro com `template: "CPF"` e **outra `key`** (a mesma reativa o campo `TEXT`) |
 | Campo some do formulário de outro ramo | criado com `segmentId` | omita para valer em todos |
 | Formulário confuso | campos demais visíveis | `visible: false` no que ele não usa |

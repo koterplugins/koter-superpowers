@@ -37,9 +37,15 @@ gestao_automacao_validate_management_automation        → SEMPRE antes de grava
 gestao_automacao_save_management_automation            → sem automationId cria (nasce PUBLICADA e ATIVA)
 ```
 
-Uma automação é um **gatilho** mais uma lista de `steps`, cada um `CONDITION` ou `ACTION`. O gatilho `DATE_FIELD` tem `dateField` com `source` (`PROPOSAL`, `INSTALLMENT`, `FINANCE_ENTRY`), `field`, `offsetDays` (positivo = antes, negativo = depois), `recurrence` e `dayHandling` (`CLIP_TO_LAST_DAY` resolve o dia 31 em fevereiro).
+Uma automação é um **gatilho** mais uma lista de `steps`, na ordem, cada um `CONDITION` (`field`, `operator`, `value`), `WAIT` (`amount`, `unit` em `MINUTES`/`HOURS`/`DAYS`) ou `ACTION` (`type`, `params`); todo passo leva um `id` único. A sequência precisa de ao menos uma ação e termina em ação; espera não pode ser o último passo nem vir colada em outra espera, e a soma das esperas vai até 90 dias.
 
-**Sempre `validate_management_automation` antes do `save`.** Não existe mais o passo separado de ativar: `save_management_automation` sem `automationId` já grava a automação ligada. Automação inválida ativada é erro que só aparece quando devia disparar — e ninguém percebe que não disparou. Pausar e reativar é `save_management_automation` com `automationId` + `active: false`/`true`, sem mexer na configuração.
+| Gatilhos | Ações |
+|---|---|
+| `PROPOSAL_STATUS_CHANGED`, `PARCELA_OVERDUE`, `FINANCE_ENTRY_SETTLED`, `DATE_FIELD`, `ATTACHMENT_ADDED` | `CHANGE_PROPOSAL_STATUS` e `MARK_OVERDUE` (`statusId`), `CREATE_TASK` (`title`, `assigneeType` `PROPOSAL_OWNER`/`SPECIFIC_USER`, `dueInDays` ou `delayMinutes`, `priority`), `CREATE_LEAD`, `CREATE_CONTACT`, `SEND_NOTIFICATION` (`title`, `message`) |
+
+Ação que vem em `actions` do contexto com `configurableHere: false` só se configura na tela do Koter. O gatilho `DATE_FIELD` tem `dateField` com `source` (`PROPOSAL`, `INSTALLMENT`, `FINANCE_ENTRY`), `field`, `offsetDays` (positivo = antes, negativo = depois), `recurrence` e `dayHandling` (`CLIP_TO_LAST_DAY` resolve o dia 31 em fevereiro).
+
+**Sempre `validate_management_automation` antes do `save`.** Não existe mais o passo separado de ativar: `save_management_automation` sem `automationId` já grava a automação ligada. Automação inválida ativada é erro que só aparece quando devia disparar — e ninguém percebe que não disparou. Pausar e reativar é `save_management_automation` com `automationId` + `active: false`/`true`, sem mexer na configuração. Na edição, `steps` substitui a sequência inteira; e pausar, ou mandar `trigger` ou `steps` novos, **cancela as execuções que estavam paradas numa espera**. A configuração atual de cada automação vem de `list_management_automations(ids)`.
 
 ## 2.1 · A proposta pode virar card ou contato no CRM
 
@@ -47,7 +53,7 @@ Duas ações fazem a ponte do Gestão para o CRM. As duas exigem **proposta no c
 
 | Ação | Para que serve | Parâmetros |
 |---|---|---|
-| `CREATE_LEAD` | abre um card no funil — é a ponte vigência → renovação, com `DATE_FIELD` sobre `coverageStart` | `teamId` (obrigatório), `statusId`, `title`, `origin`, `tags`, `assigneeType` (`PROPOSAL_OWNER`/`SPECIFIC_USER`), `assigneeUserId` |
+| `CREATE_LEAD` | abre um card no funil — é a ponte vigência → renovação, com `DATE_FIELD` sobre a vigência da proposta | `teamId` (obrigatório), `statusId`, `title`, `origin`, `tags`, `assigneeType` (`PROPOSAL_OWNER`/`SPECIFIC_USER`), `assigneeUserId` |
 | `CREATE_CONTACT` | garante um contato vinculado à proposta, reaproveitando o de mesmo e-mail — é o caminho da produção antiga/importada, que deve virar **contato** e não card | `teamId`, `assigneeType`, `assigneeUserId` (todos opcionais) |
 
 `CREATE_LEAD` reaproveita o contato da proposta (cria um se faltar), vincula o lead de volta à proposta e **não duplica**: se a proposta já tem lead aberto naquele time, o passo é sucesso sem criar outro.
@@ -59,10 +65,10 @@ Duas ações fazem a ponte do Gestão para o CRM. As duas exigem **proposta no c
 | Chave da condição | O que ela guarda de verdade |
 |---|---|
 | `insuranceId` | o **ramo** (`segments` de `fetch_gestao_context`) |
-| `segmentId` | a **modalidade** (`groupId` de `modalities`) |
+| `segmentId` | a **categoria** do ramo (a antiga modalidade: PF, PME, Adesão; confira em `contextFieldNotes` o id que ela guarda hoje) |
 | `planId` | a **seguradora** do catálogo global (`list_segment_catalog` com `include: insuranceCompanies`) |
 
-Monte condição lendo `contextFieldNotes`, nunca pelo nome do campo. E o campo de data da vigência é `coverageStart` no `dateField`, embora a lista de condições do gatilho chame o mesmo dado de `vigencia`.
+Monte condição lendo `contextFieldNotes`, nunca pelo nome do campo. E o campo de data da vigência no `dateField` **é a chave que `dateFieldsBySource.PROPOSAL` trouxer**: na Koter Day ela veio como `coverageStart`, mas o exemplo do schema de hoje fala em `vigencia` — não escreva nenhuma das duas de memória.
 
 ## 3 · Antes de propor qualquer coisa nova
 
@@ -76,7 +82,7 @@ Mudança de status de proposta **dispara as automações vinculadas àquele stat
 
 ## 4 · Mensagem automática depende de instância oficial
 
-Automação que **manda mensagem** só funciona com instância oficial Cloud API e template aprovado pela Meta. Antes de propor régua de mensagem, confira que existe (`koterzap_configuracao_list_whatsapp_instances`) — prometer lembrete por WhatsApp para quem não tem número oficial é promessa que não se cumpre.
+**Por MCP, a automação de Gestão não manda mensagem**: as ações que `save_management_automation` aceita são as da tabela acima, e o aviso por aqui é `SEND_NOTIFICATION`, dentro do Koter. Se o contexto listar uma ação de mensagem com `configurableHere: false`, ela é de tela — e ainda assim só funciona com instância oficial Cloud API e template aprovado pela Meta. Antes de propor régua de mensagem, confira que existe (`koterzap_configuracao_fetch_koterzap_config_context` com `include: ["whatsappInstances"]`, olhando `isCloudApi`) — prometer lembrete por WhatsApp para quem não tem número oficial é promessa que não se cumpre.
 
 ## 5 · Acompanhar
 
@@ -106,4 +112,4 @@ Antes de sugerir, **leia o estado**: ofereça a trilha que ainda está `pendente
 | Mudança de status em lote disparou coisa demais | status vinculado a automação | avise antes de mover em lote |
 | Mensagem automática não sai | sem instância oficial ou template aprovado | `list_meta_message_templates` diz se há template `APPROVED` |
 | Dois cards de renovação da mesma proposta | execução `FAILED` deixou o primeiro lead sem vínculo | leia os logs depois de criar; apague o card órfão |
-| Condição por seguradora não casa nunca | `segmentId` na condição é a modalidade, não o ramo | leia `contextFieldNotes`: a seguradora é `planId` |
+| Condição por seguradora não casa nunca | `segmentId` na condição é a categoria, não o ramo | leia `contextFieldNotes`: a seguradora é `planId` |

@@ -5,13 +5,13 @@ description: Configura a fundação do módulo Gestão do Koter — o funil de s
 
 # koter-gestao-fundacao
 
-A primeira etapa da trilha, e ela é **curta de propósito**. Numa corretora nova, quase tudo que a proposta precisa já existe no catálogo global do Koter: ramos, modalidades, operadoras e planos. O que a corretora cria é pouco — e é isso que esta skill faz.
+A primeira etapa da trilha, e ela é **curta de propósito**. Numa corretora nova, quase tudo que a proposta precisa já existe no catálogo global do Koter: ramos, categorias (PF, PME, Adesão), operadoras e planos. O que a corretora cria é pouco — e é isso que esta skill faz.
 
 **Ela termina com a configuração aplicada e conferida no Koter, nunca com uma explicação de tela.**
 
 ## 0 · Pré-requisitos
 
-Handshake (`admin_cargos_get_my_effective_permissions`): `companyId` para o estado, `modules` para saber se `GESTAO` está contratado.
+Handshake (`admin_cargos_fetch_admin_roles_context` com `include: ["myPermissions"]`), lendo em `myPermissions`: `companyId` para o estado, `modules` para saber se `GESTAO` está contratado.
 
 **`GESTAO` fora de `modules`:** não configure nada. Vá para as três saídas do passo 1b da `introducao` e registre a lacuna.
 
@@ -19,18 +19,18 @@ Handshake (`admin_cargos_get_my_effective_permissions`): `companyId` para o esta
 
 ## 1 · Tudo que a proposta usa vem do catálogo global
 
-Uma proposta grava ramo, modalidade e operadora do **catálogo global do Koter** — comprovado com uma proposta real na Koter Day, que gravou `segmentName: "Saúde"`, `modalityGroupName: "PME"` e `insuranceCompanyName: "Amil"`, todos do catálogo. As `notes` do `fetch_gestao_context` confirmam: *"insuranceCompanyId grava o `id` de insuranceCompanies (seguradora do catálogo global)"*.
+Uma proposta grava ramo, categoria e operadora do **catálogo global do Koter** — comprovado com uma proposta real na Koter Day, que gravou ramo "Saúde", categoria "PME" e seguradora "Amil", todos do catálogo. O schema de `list_segment_catalog` confirma: as `insuranceCompanies` do ramo são *"o único conjunto válido para o insuranceCompanyId de save_proposal (a proposta tira segmento e categoria da seguradora)"*. O que antes se chamava modalidade (PF, PME, Adesão) hoje é a **categoria** do ramo, `segmentCategoryId`.
 
 ```
-gestao_fetch_gestao_context                       → segments (27 globais), modalities, proposalFields
+gestao_fetch_gestao_context                       → segments (27 globais), categories (lista plana, com segmentId), proposalFields
 gestao_fetch_gestao_context(segmentId: <global>)  → proposalFields e campos personalizados daquele ramo
-gestao_list_segment_catalog(segmentId)            → modalities e insuranceCompanies do ramo
+gestao_list_segment_catalog(segmentId)            → categories e insuranceCompanies do ramo
                                                      (include escolhe só uma das partes)
 ```
 
-> **O catálogo de seguradoras saiu do contexto.** Medido na Koter Day em 21/09/2026, depois da mudança: `gestao_fetch_gestao_context` devolve **42.525 caracteres**, contra 173.211 antes — as chaves `insuranceCompanies`, `insurers` e `categories` não existem mais na resposta. O que pesa hoje é `modalities` (19.417 caracteres, 123 itens, 46% do total), seguido de `segments`, `proposalFields` e `states`. Ainda não é uma tool de diagnóstico: chame quando for montar proposta ou resolver ids de ramo, não no retrato da conta.
+> **O catálogo de seguradoras saiu do contexto.** Medido na Koter Day em 21/09/2026, depois da mudança: `gestao_fetch_gestao_context` devolve **42.525 caracteres**, contra 173.211 antes — as chaves `insuranceCompanies` e `insurers` não existem mais na resposta. Naquela medição o que pesava era a lista de modalidades (19.417 caracteres, 123 itens, 46% do total); em 30/09/2026 ela deu lugar a `categories`, a lista plana das categorias de todos os ramos, e o tamanho precisa ser medido de novo. Ainda não é uma tool de diagnóstico: chame quando for montar proposta ou resolver ids de ramo, não no retrato da conta.
 >
-> **A operadora se resolve pelo ramo**, sempre: `gestao_list_segment_catalog(segmentId, include: ["insuranceCompanies"], insuranceCompanySearch)`. A resposta é compacta — `{ id, name, modalityGroupId }`, ~128 caracteres por item, com a paginação em `insuranceCompaniesPaging`. Em Saúde são **571 operadoras**: a 1ª página de 100 são 12.845 caracteres e a lista inteira daria ~71 KB. **Use `insuranceCompanySearch` em vez de paginar**, e `includeInsuranceCompanyImages: true` só se precisar do logo (com imagens são ~1.440 caracteres por item, ~800 KB a lista de Saúde — é a resposta de 854 KB de antes).
+> **A operadora se resolve pelo ramo**, sempre: `gestao_list_segment_catalog(segmentId, include: ["insuranceCompanies"], insuranceCompanySearch)`. A resposta é compacta — `{ id, name, segmentCategoryId }`, ~128 caracteres por item, com a paginação em `insuranceCompaniesPaging`. Em Saúde são **571 operadoras**: a 1ª página de 100 são 12.845 caracteres e a lista inteira daria ~71 KB. **Use `insuranceCompanySearch` em vez de paginar** (e `segmentCategoryId` para ficar só numa categoria), e `includeInsuranceCompanyImages: true` só se precisar do logo (com imagens são ~1.440 caracteres por item, ~800 KB a lista de Saúde — é a resposta de 854 KB de antes).
 >
 > ⚠️ **A busca ordena por relevância, mas ainda pode cair no meio da palavra.** Vem primeiro o nome exato, depois os nomes com alguma palavra começando pelo termo; só quando nada disso existe entram os que apenas contêm o termo ("São C**amil**o" contém "amil"). Não diferencia caixa nem acento — o que ajuda —, mas **mostre as opções ao corretor em vez de escolher a primeira**.
 
@@ -55,9 +55,9 @@ Leia dela **duas coisas**:
 | `statuses` | `name`, `position`, `default`, `defaultType` (`REVIEW` / `PENDING` / `IMPLANTED`) |
 | `entities` | a contagem — pode ter centenas |
 
-Ignore `segments`, `insurers` e `categories`: são o legado.
+`segments`, `insurers` e `categories` não vêm mais neste contexto: eram o legado.
 
-**Não confunda `categories` com `customFieldCategories`.** A segunda é o agrupador dos campos no formulário e já vem preenchida pelo sistema mesmo numa conta zerada — ver uma lista cheia não quer dizer que a outra exista. Nenhuma das duas é assunto desta skill.
+**Não confunda `categories` com `customFieldCategories`.** `categories` (em `fetch_gestao_context` e `list_segment_catalog`) são as categorias do ramo no catálogo global — PF, PME, Adesão. `customFieldCategories` é o agrupador dos campos no formulário e já vem preenchida pelo sistema mesmo numa conta zerada. Nenhuma das duas é assunto desta skill.
 
 ## 3 · Diagnóstico — em duas linhas
 
@@ -104,7 +104,7 @@ Meça antes de propor qualquer coisa: `gestao_list_proposals(pageSize: 1)` devol
 | O que ele quer | O que de fato acontece | O que fazer |
 |---|---|---|
 | **renomear etapa** | renomeia para todo mundo, inclusive no histórico das propostas antigas. "Em análise" vira "Na operadora" também nas de janeiro | tudo bem na maioria dos casos, mas **diga** que vale para trás |
-| **apagar etapa** | é onde mora a proposta de alguém. Existe `gestao_config_transfer_proposals_status`, e é essa tool existir que diz o caminho: **transfira antes, apague depois** | conte quantas estão lá, pergunte para onde vão, transfira, então apague |
+| **apagar etapa** | é onde mora a proposta de alguém. Existe `gestao_config_transfer_proposals_status`, e é essa tool existir que diz o caminho: **transfira antes, apague depois** (`gestao_config_delete_gestao_config_records` com `kind: "status"` recusa status com proposta, o status padrão e status que uma automação usa) | conte quantas estão lá, pergunte para onde vão, transfira, então apague |
 | **reordenar** | seguro: posição é visual | pode |
 | **acrescentar etapa** | seguro, e é quase sempre a resposta certa | prefira isto a renomear |
 
@@ -128,7 +128,7 @@ Entidade é o convênio ou associação da venda por adesão, e **é da corretor
 Dois cuidados ao casar os nomes dele com o catálogo, mais tarde:
 
 - **O catálogo é grande, a resposta não precisa ser.** São 571 operadoras em Saúde. Com `insuranceCompanySearch` você lê 1 KB; sem ele, 12,8 KB por página; com `includeInsuranceCompanyImages: true`, 800 KB. Peça imagem só quando for mostrar logo.
-- **Busca por pedaço do nome mente.** "Amil" casa com "São Camilo" e "Sagrada Familia". Compare nome inteiro, normalizando acento e caixa.
+- **Busca por pedaço do nome ainda pode mentir.** A busca põe o nome exato primeiro, mas quando nada começa pelo termo ela cai em quem só o contém ("São C**amil**o"). Compare nome inteiro, normalizando acento e caixa.
 
 ## 7 · Regras que não se quebram
 
@@ -160,9 +160,9 @@ Depois ofereça a próxima em até 4 opções:
 | Sintoma | Causa | Conserto |
 |---|---|---|
 | Leitura volta vazia sem dar erro | `segmentId` do espaço errado | use o ramo global do `fetch_gestao_context` |
-| Skill manda cadastrar operadora | seguiu as tools `management_*`, que são legado | a operadora vem do catálogo; não cadastre |
+| Skill manda cadastrar operadora | procurou as tools de seguradora da corretora, que sumiram | a operadora vem do catálogo; não cadastre |
 | Status novo aparece no lugar errado | criar sempre põe no fim | `reorder_management_statuses` com a lista inteira |
 | Funil montado por MCP sem REVIEW/PENDING/IMPLANTED | `save_management_status` sem `statusId` só cria com nome | `save_management_status` com `statusId` e `defaultType`, repetindo o `name` atual |
 | "Não consigo marcar IMPLANTED" | o papel já é de outro status | o erro diz o nome e o id; tire de lá primeiro |
 | Relatório sem a etapa de recusa | falta status de recusa | crie e reordene |
-| `categories` vazio mas o formulário mostra categorias | `customFieldCategories` é outra coisa | nenhuma das duas é desta skill |
+| Confundiu categoria do ramo com categoria de campo | `categories` é PF/PME/Adesão do catálogo; `customFieldCategories` agrupa campos | nenhuma das duas é desta skill |

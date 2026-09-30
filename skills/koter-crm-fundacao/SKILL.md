@@ -9,7 +9,7 @@ A primeira etapa da trilha do CRM, e a única que muda a estrutura. **Ela termin
 
 ## 0 · Pré-requisitos
 
-Handshake (`admin_cargos_get_my_effective_permissions`): `companyId` para o estado, `modules` para saber se `CRM` está contratado, `crmAccess` para saber se o próprio usuário entra no CRM.
+Handshake (`admin_cargos_fetch_admin_roles_context` com `include: ["myPermissions"]`), lendo em `myPermissions`: `companyId` para o estado, `modules` para saber se `CRM` está contratado, `crmAccess` para saber se o próprio usuário entra no CRM.
 
 **`CRM` fora de `modules`, ou `crmAccess: false`:** não configure nada. Vá para as três saídas do passo 1b da `introducao` e registre a lacuna.
 
@@ -17,7 +17,7 @@ Handshake (`admin_cargos_get_my_effective_permissions`): `companyId` para o esta
 
 ## 1 · A regra que decide tudo: funil é por equipe
 
-`crm_config_list_lead_statuses` **exige** `teamId`, e cada equipe tem o seu conjunto de etapas. Na Koter Day, Comercial e Cross Selling têm funis completamente diferentes.
+Não existe funil da corretora: `funnelStagesByTeam`, em `crm_config_fetch_crm_config_context`, vem agrupado por equipe, e cada equipe tem o seu conjunto de etapas. Na Koter Day, Comercial e Cross Selling têm funis completamente diferentes.
 
 > **"Funil separado" e "equipe separada" são a mesma coisa.** Quem quer funil de renovação cria equipe de renovação. Quem quer funil de benefícios cria equipe de benefícios.
 
@@ -26,27 +26,27 @@ Duas consequências práticas:
 1. **Criar funil custa criar equipe**, e equipe implica pessoas. Numa corretora solo isso é peso morto — decida com o corretor, não por padrão (passo 3).
 2. Mover lead de um funil para outro é `TRANSFER_LEAD` entre equipes, e a automação precisa dizer em que etapa ele entra; sem `statusId` ele cai no `PENDING` da equipe de destino.
 
-## 2 · Detecção — três leituras, não uma
+## 2 · Detecção — uma leitura, com os detalhes ligados
 
-`crm_config_fetch_crm_config_context` resolve quase tudo numa chamada, **mas esconde duas coisas que esta skill precisa**:
+`crm_config_fetch_crm_config_context` resolve tudo numa chamada, **desde que você peça os detalhes que esta skill precisa**:
 
-| O que você precisa | Onde está | Por que o contexto não serve |
-|---|---|---|
-| Equipes, funis por equipe, tags, origens, motivos de perda, campos, interesses, usuários atribuíveis | `crm_config_fetch_crm_config_context` | — |
-| `defaultType` e `isDefault` de cada etapa | `crm_config_list_lead_statuses` por equipe | `funnelStagesByTeam` devolve só `id`, `name` e `position` |
-| Membros da equipe e fila de distribuição | `crm_config_list_teams` | o contexto devolve só `id`, `name`, `category`, `active` |
+| O que você precisa | Onde está no contexto |
+|---|---|
+| Equipes, tags, origens, motivos de perda, campos, interesses, usuários atribuíveis | as partes `teams`, `tags`, `origins`, `lossReasons`, `customFieldDefinitions`, `interests`, `assignableUsers` |
+| `defaultType` e `isDefault` de cada etapa | `funnelStages` (em `funnelStagesByTeam`), junto com ícone, cor e exigências de faturamento |
+| Membros da equipe e fila de distribuição | `teams` com `teamDetails: true` (`managerId`, `members`, `queues`); sem ele, só `id`, `name`, `category`, `active` |
 
-**Leia as três antes de escrever qualquer coisa.** Propor "criar Venda Faturada" numa equipe que já tem a etapa `INVOICED_SALES` com outro nome é o erro mais fácil de cometer aqui.
+**Leia tudo isso antes de escrever qualquer coisa.** Propor "criar Venda Faturada" numa equipe que já tem a etapa `INVOICED_SALES` com outro nome é o erro mais fácil de cometer aqui.
 
 ## 3 · As três etapas que o sistema cria sozinho — e que você renomeia, nunca recria
 
-**Toda equipe nova nasce com um funil de três etapas**, sem ninguém pedir. Comprovado na Koter Day: `crm_config_create_team` com a equipe "Renovação" devolveu, na leitura seguinte, exatamente isto:
+**Toda equipe nova nasce com um funil de três etapas**, sem ninguém pedir. Comprovado na Koter Day: `crm_config_save_team` (sem `teamId`) com a equipe "Renovação" devolveu, na leitura seguinte, exatamente isto:
 
 | Etapa | `defaultType` | `isDefault` | O que o sistema faz com ela |
 |---|---|---|---|
 | Pendente | `PENDING` | `true` | onde cai lead novo sem etapa definida, e destino de `TRANSFER_LEAD` sem `statusId` |
 | Venda Faturada | `INVOICED_SALES` | `true` | etapa de venda |
-| Venda Não Realizada | `SALE_NOT_COMPLETED` | `true` | para onde `crm_mark_lead_loss` **move o lead sozinho** |
+| Venda Não Realizada | `SALE_NOT_COMPLETED` | `true` | para onde `crm_save_lead` com `outcome` `LOSS` **move o lead sozinho** |
 
 **Renomear preserva o `defaultType`.** Comprovado: "Pendente" virou "A renovar" e continuou `PENDING`; "Venda Faturada" virou "Renovado" e continuou `INVOICED_SALES`; "Venda Não Realizada" virou "Cancelado" e continuou `SALE_NOT_COMPLETED`.
 
@@ -64,7 +64,7 @@ Criar "Renovado" do lado de "Venda Faturada" deixa a corretora com duas etapas d
 
 > "Você me disse que tem três vendedores, então monto `Comercial` e `Cross Selling` e deixo a renovação fora disso por enquanto. Confere?"
 
-Só pergunte se `perfil.porte` não existir — e então grave a resposta lá, para as outras skills não perguntarem de novo. `gestao_config_list_sellers` e `crm_config_list_assignable_users` já dão um palpite bom o bastante para você confirmar em vez de perguntar.
+Só pergunte se `perfil.porte` não existir — e então grave a resposta lá, para as outras skills não perguntarem de novo. `gestao_config_list_sellers` e `assignableUsers` de `crm_config_fetch_crm_config_context` já dão um palpite bom o bastante para você confirmar em vez de perguntar.
 
 A **única** pergunta desta skill é a que nenhuma outra faz e nenhuma leitura responde:
 
@@ -83,9 +83,9 @@ O que cada porte cria:
 
 ### Armadilha de `sharedLeads`
 
-`crm_config_create_team` aceita `sharedLeads`, **e a categoria sobrescreve**. Comprovado: equipe `OPERATIONAL` criada com `sharedLeads: false` nasceu com `sharedLeads: true`. `OPERATIONAL` sempre compartilha, `SELLER` nunca. Não prometa ao corretor um comportamento que a categoria vai desfazer — escolha a categoria pelo comportamento que ele quer.
+`crm_config_save_team` aceita `sharedLeads`, **e a categoria sobrescreve** (o próprio schema avisa: "A categoria força o valor"). Comprovado: equipe `OPERATIONAL` criada com `sharedLeads: false` nasceu com `sharedLeads: true`. `OPERATIONAL` sempre compartilha, `SELLER` nunca. Não prometa ao corretor um comportamento que a categoria vai desfazer — escolha a categoria pelo comportamento que ele quer.
 
-`members` exige pelo menos um id, vindo de `crm_config_list_assignable_users`. Numa conta nova costuma haver só o dono.
+`members` exige pelo menos um id, vindo de `assignableUsers` no contexto. Numa conta nova costuma haver só o dono.
 
 ## 5 · O funil de venda nova
 
@@ -110,18 +110,18 @@ Numa conta com funil já cheio de leads, **revise, não recrie**. Aponte só o q
 
 ## 6 · Criar e ordenar — a armadilha que não dá erro
 
-`crm_config_create_lead_status` **sempre põe a etapa no fim do funil**, depois das etapas de fechamento. Comprovado: "Reajuste recebido" criada numa equipe de 3 etapas nasceu na posição 4, atrás de "Venda Não Realizada".
+`crm_config_save_lead_status` sem `leadStatusId` **sempre põe a etapa no fim do funil**, depois das etapas de fechamento. Comprovado: "Reajuste recebido" criada numa equipe de 3 etapas nasceu na posição 4, atrás de "Venda Não Realizada".
 
 E aqui está a parte silenciosa:
 
-> **`crm_config_update_lead_status` com `position` não empurra as outras.** Comprovado na Koter Day: "Aguardando documentos" movida para a posição 6 ficou empatada com "Follow-up", que continuou na 6. Duas etapas na mesma posição, ordem indefinida, e **nenhum erro**.
+> **`crm_config_save_lead_status` com `leadStatusId` e `position` não empurra as outras.** Comprovado na Koter Day: "Aguardando documentos" movida para a posição 6 ficou empatada com "Follow-up", que continuou na 6. Duas etapas na mesma posição, ordem indefinida, e **nenhum erro**.
 
 Portanto, sempre, sem exceção:
 
 1. crie todas as etapas novas (elas se empilham no fim);
 2. renomeie as três de sistema, se for o caso;
 3. chame `crm_config_reorder_lead_statuses` **com a lista inteira** da equipe, posições **começando em 1** (ao contrário do Gestão, que começa em 0);
-4. releia com `crm_config_list_lead_statuses`.
+4. releia `funnelStages` com `crm_config_fetch_crm_config_context` (`funnelStageTeamIds` com a equipe).
 
 `icon` e `theme` são obrigatórios na criação. `icon` é **um emoji**, não nome de ícone — "inbox" ou "file-text" aparecem como texto cru no funil. `theme` sai de: `default`, `navy`, `azure`, `violet`, `brightOrange`, `darkGreen`, `burgundy`, `darkSlate`.
 
@@ -135,14 +135,14 @@ Pares que funcionam: 🔍 azure (prospecção), 🎯 violet (qualificação), �
 
 ## 8 · Regras que não se quebram
 
-- **Nunca apague etapa com lead dentro.** `crm_config_delete_lead_status` só sob pedido explícito, e diga antes quantos leads estão nela.
-- **Nunca apague uma etapa `isDefault`.** O motor depende dela: sem `SALE_NOT_COMPLETED`, `crm_mark_lead_loss` não tem para onde mover o lead.
+- **Nunca apague etapa com lead dentro.** `crm_config_delete_crm_config_records` (`kind: "lead_status"`) só sob pedido explícito; o próprio sistema recusa estágio em uso por leads, então mova os leads antes e diga quantos eram.
+- **Nunca tente apagar uma etapa `isDefault`.** O sistema recusa, e o motor depende dela: sem `SALE_NOT_COMPLETED`, o `outcome` `LOSS` de `crm_save_lead` não tem para onde mover o lead.
 - **Renomear etapa é seguro para o motor** (o `defaultType` fica), **mas quebra automação que condiciona por nome.** As condições do motor guardam `statusId`, então renomear é seguro ali; o risco é texto de template e relatório que citam o nome antigo.
 - **Falhou uma, continue as outras.** Junte os erros e conte no fim.
 
 ## 9 · Validação — a skill não termina sem isso
 
-Chame `crm_config_list_lead_statuses` **de novo, por equipe** e compare com o retrato do passo 2. Diga o que mudou, em números:
+Chame `crm_config_fetch_crm_config_context` **de novo**, com `funnelStages`, e compare equipe por equipe com o retrato do passo 2. Diga o que mudou, em números:
 
 > "Pronto: funil comercial de 10 etapas, com 'Aguardando documentos' e 'Em análise na operadora' separando os dois lugares onde o lead trava, e uma equipe de Renovação com funil próprio de 7 etapas."
 
@@ -163,11 +163,10 @@ Depois ofereça a próxima em até 4 opções:
 
 | Sintoma | Causa | Conserto |
 |---|---|---|
-| `crm_config_list_lead_statuses` recusa a chamada | `teamId` é obrigatório: não existe funil da corretora | liste as equipes primeiro |
 | Etapa nova aparece depois de "Venda Não Realizada" | `create` sempre põe no fim | `reorder_lead_statuses` com a lista inteira |
-| Duas etapas na mesma posição, sem erro | `update_lead_status` com `position` não empurra as outras | `reorder_lead_statuses` com a lista inteira |
+| Duas etapas na mesma posição, sem erro | `save_lead_status` com `position` não empurra as outras | `reorder_lead_statuses` com a lista inteira |
 | Corretora com duas etapas de fechamento | etapa nova criada ao lado de uma `isDefault` | renomeie a de sistema; apague a paralela só com pedido dele |
-| `crm_mark_lead_loss` falha ou move para lugar estranho | a etapa `SALE_NOT_COMPLETED` foi apagada ou duplicada | releia `list_lead_statuses` e restaure a etapa de sistema |
+| Perda (`outcome` `LOSS`) cai numa etapa que o corretor não esperava | há uma etapa paralela à `SALE_NOT_COMPLETED`, e o lead vai para a de sistema | releia `funnelStages`, renomeie a de sistema e apague a paralela só com pedido dele |
 | Equipe criada com `sharedLeads` diferente do pedido | a categoria sobrescreve: `OPERATIONAL` sempre compartilha | escolha a categoria pelo comportamento desejado |
 | Ícone aparece como texto cru no funil | `icon` recebeu nome de ícone em vez de emoji | um único caractere emoji |
 | `reorder` "funciona" mas a ordem sai errada | posições do CRM começam em **1**, não em 0 | primeira etapa = 1 |

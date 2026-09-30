@@ -46,8 +46,8 @@ Os três são `gestao_financeiro_undo_finance_entry(entryId, mode)`:
 | `mode` | O que faz | Quando |
 |---|---|---|
 | `reverse` | desfaz a **baixa**: volta para `PENDENTE`, limpa `settledAmount`/`settledAt`, **o lançamento continua existindo e devido** | baixou errado, baixou na conta errada, baixou o valor errado |
-| `cancel` | cancela o **lançamento** em aberto: a dívida deixa de existir (fica como `CANCELADO`) | a conta não vai mais ser paga (contrato cancelado, cobrança indevida) |
-| `delete` | apaga o registro em aberto | erro de digitação, lançamento que nunca deveria existir |
+| `cancel` | cancela o **lançamento** em aberto: a dívida deixa de existir (fica como `CANCELADO`); com `deactivateRecurrence: true`, também para a recorrência de onde ele veio | a conta não vai mais ser paga (contrato cancelado, cobrança indevida) |
+| `delete` | apaga o registro em aberto, desde que nenhuma transação bancária o referencie | erro de digitação, lançamento que nunca deveria existir |
 
 Lançamento liquidado não se cancela nem se exclui: estorne primeiro. E se ele estiver conciliado, `unreconcile_bank_transaction` vem antes do estorno.
 
@@ -105,5 +105,5 @@ Depois:
 | Baixa saiu da conta errada | `bankAccountId` assumido | estorne e baixe de novo na conta certa |
 | Valor liquidado diferente do lançado | `settledAmount` informado | é legítimo, mas gera crítica de divergência |
 | "Cancelei e a dívida sumiu" | `cancel` ≠ `reverse` | estorno mantém a dívida |
-| DRE não mudou depois da baixa | DRE é regime de caixa e usa a data da liquidação | confira `date` |
+| DRE não mudou depois da baixa | no regime de caixa (o padrão) o DRE usa a data da liquidação | confira `date` |
 | Comissão contada duas vezes | baixa manual de comissão | conciliação e lote de repasse |

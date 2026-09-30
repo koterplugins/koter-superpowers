@@ -18,11 +18,11 @@ Faça **antes** de `koter-chatbot-ia`: a base entra na etapa de IA por id, e age
 ## 1 · Detecção
 
 ```
-koterzap_configuracao_list_knowledge_bases
-koterzap_configuracao_list_knowledge_sources   (por base, se houver)
+koterzap_configuracao_fetch_koterzap_config_context   include: ["knowledgeBases"]
+koterzap_configuracao_list_knowledge_sources          (por base, se houver)
 ```
 
-Na corretora nova vem `{ bases: [], total: 0 }` (comprovado na Koter Day). Não há base de fábrica.
+Na corretora nova as bases vêm vazias (comprovado na Koter Day, quando ainda era `{ bases: [], total: 0 }`; hoje é `knowledgeBases: []`). Não há base de fábrica.
 
 ## 2 · Quantas bases, e por que não uma só
 
@@ -44,15 +44,15 @@ O corte que funciona é **por pergunta que o cliente faz**, não por assunto int
 
 | Tool | Para quê | Limite |
 |---|---|---|
-| `upsert_knowledge_faq` | pergunta e resposta curtas, do jeito que o cliente pergunta | 500 caracteres na pergunta, 20 mil na resposta |
-| `add_knowledge_text` | documento: tabela de carências, política, roteiro | 2 milhões de caracteres |
+| `save_knowledge_source` com `kind: "FAQ"` | pergunta e resposta curtas, do jeito que o cliente pergunta | 500 caracteres na pergunta, 20 mil na resposta |
+| `save_knowledge_source` com `kind: "TEXT"` | documento: tabela de carências, política, roteiro | 2 milhões de caracteres por chamada |
 | `import_knowledge_url` | página pública da operadora | — |
 
-Arquivo PDF e afins **só pela tela**; o MCP não sobe arquivo.
+A base em si nasce com `save_knowledge_base` (`name` e `description`). Arquivo PDF e afins **só pela tela**; o MCP não sobe arquivo.
 
 ### FAQ primeiro, sempre
 
-A FAQ é chaveada **pela pergunta**: repetir a mesma pergunta atualiza a resposta em vez de criar outra entrada (`created: false`). Isso faz dela a forma mais segura de alimentar, porque rodar a skill duas vezes não duplica nada.
+A FAQ é chaveada **pela pergunta**: repetir a mesma pergunta (sem diferenciar maiúsculas) atualiza a resposta em vez de criar outra entrada (`outcome: "UPDATED"`). Isso faz dela a forma mais segura de alimentar, porque rodar a skill duas vezes não duplica nada.
 
 Escreva a pergunta **como o cliente escreveria no WhatsApp**, não como o corretor a classificaria:
 
@@ -63,19 +63,19 @@ A busca é híbrida, vetorial e por texto. Pergunta escrita em linguagem de clie
 
 ### No texto, separe os assuntos
 
-`add_knowledge_text` aceita `<!-- quebra -->` para cortar o conteúdo em trechos. **Use em toda mudança de assunto.** Sem isso, um texto longo vira trechos cortados no meio de uma tabela, e o agente cita meia regra.
+O `markdown` de `save_knowledge_source` aceita `<!-- quebra -->` para cortar o conteúdo em trechos. **Use em toda mudança de assunto.** Sem isso, um texto longo vira trechos cortados no meio de uma tabela, e o agente cita meia regra.
 
 Tabela Markdown sobrevive bem à indexação e é o melhor formato para prazo, valor e faixa.
 
 ## 4 · A armadilha do relógio
 
-> **Fonte gravada não está pesquisável na mesma hora.** Comprovado na Koter Day: `add_knowledge_text` e `upsert_knowledge_faq` devolvem a fonte com `status: "QUEUED"` e `indexPending: true`. `test_knowledge_search` **só enxerga versão já indexada**.
+> **Fonte gravada não está pesquisável na mesma hora.** Comprovado na Koter Day (com as tools que hoje são `save_knowledge_source`, `kind` TEXT e FAQ): a fonte volta com `status: "QUEUED"` e `indexPending: true`. `test_knowledge_search` **só enxerga versão já indexada**.
 
 Quem grava e testa na sequência vê zero resultado e conclui que escreveu errado o conteúdo. Não escreveu: ainda está na fila.
 
 **O jeito certo:** grave tudo, releia `list_knowledge_sources` até `indexPending: false`, e só então teste. Se ainda estiver na fila quando o corretor estiver esperando, diga que a indexação é assíncrona e ofereça conferir depois — não fique repetindo a busca.
 
-`status` também pode vir com `errorCode`: fonte que falhou na extração não é fonte vazia, é fonte quebrada, e precisa de `reextract_knowledge_source`.
+`status: "FAILED"` vem com `errorCode`: fonte que falhou não é fonte vazia, é fonte quebrada. A própria `list_knowledge_sources` explica cada código; em fonte de arquivo ou página (`FILE`, `URL`) o conserto costuma ser `reextract_knowledge_source`, que não vale para `TEXT` nem `FAQ`.
 
 ## 5 · Validação — a parte que ninguém faz
 
@@ -112,10 +112,10 @@ A base é lida por um robô que fala com cliente. Vale a mesma régua do canal:
 
 A base envelhece, e envelhece calada. Duas rotinas que valem:
 
-- **Versionamento existe.** `list_knowledge_source_versions` e `restore_knowledge_source_version` — dá para voltar atrás sem reescrever.
-- **`write_knowledge_source_markdown` corrige uma fonte existente**; `add_knowledge_text` sempre cria outra. Confundir os dois enche a base de versões paralelas do mesmo texto, e a busca passa a devolver as duas.
+- **Versionamento existe.** `list_knowledge_sources` com `ids` e `include: ["versions"]`, e `restore_knowledge_source_version` — dá para voltar atrás sem reescrever.
+- **`save_knowledge_source` com `sourceId` corrige uma fonte existente**; sem `sourceId`, cria outra. Confundir os dois enche a base de versões paralelas do mesmo texto, e a busca passa a devolver as duas.
 
-Quando o reajuste anual mudar as regras, é `write_knowledge_source_markdown` na fonte que já existe — não uma fonte nova chamada "Carências 2027".
+Quando o reajuste anual mudar as regras, é `save_knowledge_source` com o `sourceId` e o `markdown` novo na fonte que já existe — não uma fonte nova chamada "Carências 2027".
 
 ## 8 · Estado e próxima
 
@@ -135,9 +135,9 @@ Próxima, em até 4 opções:
 | Busca não acha o que acabou de ser gravado | indexação é assíncrona (`indexPending: true`) | esperar `false` em `list_knowledge_sources` |
 | O agente nunca consulta a base | descrição genérica demais | descrição diz **quando** consultar, com as palavras do cliente |
 | Trecho cortado no meio da tabela | texto longo sem `<!-- quebra -->` | separar por assunto |
-| A mesma fonte aparece duplicada | `add_knowledge_text` usado para corrigir | `write_knowledge_source_markdown` |
-| Fonte vazia na busca | falhou na extração, tem `errorCode` | `reextract_knowledge_source` |
-| Resposta do bot está desatualizada | fonte nova criada ao lado da velha | apagar a velha, ou versionar a certa |
+| A mesma fonte aparece duplicada | `save_knowledge_source` sem `sourceId` usado para corrigir | `save_knowledge_source` com o `sourceId` da fonte |
+| Fonte vazia na busca | falhou (`FAILED`), tem `errorCode` | ler o `errorCode`; em `FILE`/`URL`, `reextract_knowledge_source` |
+| Resposta do bot está desatualizada | fonte nova criada ao lado da velha | apagar a velha (`delete_koterzap_config_records`, `kind: "knowledge_source"`), ou versionar a certa |
 | Trecho certo descartado por "score baixo" | o `score` não é confiança de 0 a 1 — o melhor acerto veio 0,032 | ler pela **ordem**, nunca por corte de nota |
 
 ## Provado na Koter Day

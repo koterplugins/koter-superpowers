@@ -34,7 +34,8 @@ admin_usuarios_list_company_people            → pessoas da corretora (cada uma
 admin_usuarios_list_users                     → quem tem conta, cargo, licença (isOwner marca o dono)
 gestao_config_fetch_gestao_config_context(include: ["sellerCategories"])
                                               → slugs válidos de categoria, PF e PJ
-admin_usuarios_get_person_hierarchy           → quem lidera quem
+admin_usuarios_list_company_people(ids, include: ["hierarchy"])
+                                              → quem lidera quem
 ```
 
 Na Koter Day isso devolveu uma pessoa só, o dono, com `sellerId: null` — ou seja, **o dono da corretora não era vendedor de si mesmo**. É o caso mais comum numa conta nova e a primeira coisa a resolver: ele vende, então tem que existir como vendedor, senão a comissão dele não tem onde cair.
@@ -48,7 +49,7 @@ O modelo do Koter não é "vendedor solto": todo vendedor aponta para uma pessoa
 | `personId` | a pessoa já existe (é membro, ou já foi cadastrada) | pegue o `id` de `list_company_people` — **é um UUID**, diferente dos ids curtos do resto do Koter |
 | `person: { name, document }` | ninguém com conta, e não existe cadastro | cria a pessoa junto, **sem conta no Koter** |
 
-**`document` igual ao de outra pessoa não junta os cadastros** — o schema avisa. Procure em `list_company_people` antes de criar, e quando achar duplicata use `admin_usuarios_merge_company_people`.
+**`document` igual ao de outra pessoa não junta os cadastros** — o schema avisa. Procure em `list_company_people` antes de criar, e quando achar duplicata use `admin_usuarios_merge_company_people` (recusado quando as duas pessoas têm conta ou as duas têm vendedor).
 
 `managerUserIds` é **obrigatório, mínimo 1**, e são **userIds** (de `list_users`), não personIds. Numa corretora de um dono só, é ele mesmo.
 
@@ -64,7 +65,7 @@ O cadastro **puxa sozinho os contatos da pessoa** (e-mail e celular) quando ela 
 
 Para lote, `gestao_config_import_sellers`.
 
-**Editar regrava o cadastro.** `save_seller` com `sellerId` substitui `contacts`, `bankAccounts`, `members`, `managerUserIds`, `address`, `avatarId` e `categorySlug` pelo que você mandar — omitir um deles **apaga** o que está salvo. Leia antes com `gestao_config_list_sellers(ids: [sellerId])` e reenvie o que deve ficar. `payoutRules`, `fiscal`, `passTaxToSeller` e `hierarchy`, quando omitidos, ficam como estão.
+**Editar regrava o cadastro.** `save_seller` com `sellerId` substitui `contacts`, `bankAccounts`, `members`, `managerUserIds`, `address`, `avatarId` e `categorySlug` pelo que você mandar — omitir um deles **apaga** o que está salvo. Leia antes com `gestao_config_list_sellers(ids: [sellerId])` e reenvie o que deve ficar. `payoutRules`, `fiscal`, `passTaxToSeller`, `payoutMinimumOverride`, `hierarchy` e a pessoa, quando omitidos, ficam como estão. E `type: "PF"` num vendedor PJ apaga `members` e o bloco `fiscal`.
 
 ## 3 · PJ é outra conversa
 
@@ -97,7 +98,7 @@ Uma pergunta que só faz sentido quando a leitura pede: se alguém tiver **mais 
 
 ## 6 · Convite e cargo — normalmente bloqueados
 
-`admin_usuarios_send_invitations`, `set_user_role` e os `admin_cargos_*` exigem permissão de administração (`manage:users`, `create:invitation`, `admin:access`). Corretor comum não tem.
+`admin_usuarios_send_invitations`, `admin_usuarios_update_user_membership` (troca de cargo) e os `admin_cargos_*` exigem permissão de administração (`manage:users`, `create:invitation`, `admin:access`). Corretor comum não tem.
 
 Faltando: **não tente e falhe.** Diga de quem depende e ofereça o texto pronto para ele mandar a quem administra. Registre a lacuna no estado e siga.
 
@@ -105,7 +106,7 @@ Faltando: **não tente e falhe.** Diga de quem depende e ofereça o texto pronto
 
 Procure ativamente e traga junto com o diagnóstico:
 
-- **Pessoas duplicadas** (dois cadastros com o mesmo nome ou documento) → `admin_usuarios_merge_company_people`, **só com o "pode juntar" dele**.
+- **Pessoas duplicadas** (dois cadastros com o mesmo nome ou documento) → `admin_usuarios_merge_company_people`, **só com o "pode juntar" dele** — o schema é explícito: nunca junte só porque o CPF coincide, e a junção apaga a outra pessoa sem volta.
 - **Membro da corretora que vende e não é vendedor** (`sellerId: null` em quem tem conta e cargo comercial) → é o caso do dono na Koter Day.
 - **Vendedor sem gestor** ou sem dado bancário, que trava o repasse depois.
 

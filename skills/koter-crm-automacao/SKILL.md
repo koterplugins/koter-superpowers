@@ -39,7 +39,7 @@ O contexto também devolve `automationLimit`: **50 por corretora**, com o consum
 
 A automação que a plataforma mais usa — criar tarefa para o dono do lead — **falha quando o lead não tem dono**, e lead criado por MCP nunca tem.
 
-> Comprovado na Koter Day. Dois leads criados por MCP, e o log de `crm_automation_get_automation_logs`:
+> Comprovado na Koter Day. Dois leads criados por MCP, e o log de `crm_automation_list_automation_logs`:
 >
 > ```
 > status: FAILED
@@ -49,11 +49,11 @@ A automação que a plataforma mais usa — criar tarefa para o dono do lead —
 >
 > **Inclusive na automação que vem de fábrica** ("Cobrar o primeiro contato"), que falhou com o mesmo erro nos mesmos dois leads.
 
-**O conserto mudou de lugar: agora é no lead, não na automação.** `crm_create_lead` e `crm_update_lead` têm `ownerUserId` (ver `koter-crm-lead`), então o lead entra com dono e `LEAD_OWNER` resolve.
+**O conserto mudou de lugar: agora é no lead, não na automação.** `crm_save_lead` tem `ownerUserId`, na criação e na edição (ver `koter-crm-lead`), então o lead entra com dono e `LEAD_OWNER` resolve.
 
 Três consertos, em ordem de preferência:
 
-1. **Crie o lead com dono** — `ownerUserId` na criação, ou `update_lead` para consertar os que já estão sem. Resolve na origem e conserta de uma vez as automações de fábrica.
+1. **Crie o lead com dono** — `ownerUserId` na criação, ou `save_lead` com `leadId` para consertar os que já estão sem. Resolve na origem e conserta de uma vez as automações de fábrica.
 2. **`assigneeType: "SPECIFIC_USER"`** com `assigneeUserId`. Serve para corretora solo, onde o dono é sempre o mesmo.
 3. **`ASSIGN_AGENT` antes de `CREATE_TASK`**, o contorno antigo. Continua funcionando, mas **não monte mais uma automação só para dar dono ao lead** — é passo a mais para fazer o que a criação já faz.
 
@@ -110,7 +110,7 @@ hasLead · origin · statusId · teamId · userId · tags · perception · phone
 
 A ação `CREATE_LEAD` só existe a partir de contexto de chat, e **exige que a instância de WhatsApp esteja vinculada a exatamente uma equipe** — instância compartilhada, ou liberada só para usuários em vez de equipe, é **recusada**. A equipe do lead criado sai dessa instância, e é por isso que ela precisa ser uma só.
 
-Confira `allowedTeams` da instância (`koterzap_configuracao_list_whatsapp_instances`) **antes** de propor qualquer régua que crie lead. Se houver mais de uma equipe ou nenhuma, o conserto é `koterzap_configuracao_set_inbox_allowed_teams` — e é decisão do corretor, porque muda quem enxerga aquele número.
+Confira `allowedTeams` da instância (`whatsappInstances` em `koterzap_configuracao_fetch_koterzap_config_context`) **antes** de propor qualquer régua que crie lead. Se houver mais de uma equipe ou nenhuma, o conserto é **passo de tela**, na tela da instância: `koterzap_configuracao_update_inbox` recusa a caixa vinculada a uma instância, porque o acesso a ela segue as equipes da instância. E é decisão do corretor, porque muda quem enxerga aquele número.
 
 ## 5 · As duas automações que se pagam
 
@@ -146,7 +146,7 @@ Comprovado na Koter Day: uma automação com o título `"Ligar agora para {{lead
 ## 6 · WhatsApp: cheque antes de prometer
 
 ```
-koterzap_configuracao_list_whatsapp_instances
+koterzap_configuracao_fetch_koterzap_config_context   → include: ["whatsappInstances"]
 ```
 
 > **`SEND_WHATSAPP_TEMPLATE` exige instância Cloud API oficial com template aprovado pela Meta. Instância Evolution é recusada** — e a documentação da ação usa essa palavra.
@@ -165,11 +165,11 @@ A conta de demonstração tem o contraexemplo pronto: a automação "Cross Selli
 
 ### O template não se cria por aqui
 
-> **`koterzap_configuracao_create_message_template` não cria template da Meta.** Ele cria uma **resposta rápida interna** da corretora — texto pronto para o atendente usar no chat. O template aprovado pela Meta é outra coisa, e o MCP não o cria.
+> **`koterzap_configuracao_save_message_template` não cria template da Meta.** Ele cria uma **resposta rápida interna** da corretora — texto pronto para o atendente usar no chat. O template aprovado pela Meta é outra coisa, e o MCP não o cria.
 
 Isso importa porque o erro é silencioso na direção errada: a skill "cria o template", liga a automação, e o envio falha depois, longe dali, sem nada que explique. **Aprovar template da Meta é passo de tela**, e a skill trata assim: manda o corretor aprovar e **confere** com `koterzap_configuracao_list_meta_message_templates(instanceId)`, que diz se já existe template `APPROVED`, antes de ligar a ação.
 
-Quando houver Cloud API e template aprovado: o `instanceToken` da ação é o **id da instância**; `templateName` e `languageCode` (`pt_BR`) são do template da Meta, e é `crm_automation_validate_automation` que confere os componentes contra ela — `fetch_automation_context` lista só os nomes locais.
+Quando houver Cloud API e template aprovado: o `instanceToken` da ação é o **id da instância**; `templateName` e `languageCode` (`pt_BR`) são do template da Meta. **Nenhuma ferramenta de automação confere isso na Meta**: `crm_automation_validate_automation` exige a instância Cloud API, mas o nome e o `languageCode` passam sem checagem, e `fetch_automation_context` lista só os nomes locais. Copie `name` e `language` de um template `APPROVED` em `koterzap_configuracao_list_meta_message_templates`, letra por letra.
 
 ## 7 · O que nunca automatizar
 
@@ -187,7 +187,7 @@ E a regra que cobre o erro mais visível de todos: **automação que fala em cim
 
 Quem pega o lead que chega — pergunta em opções: quem estiver livre / rodízio / por especialidade.
 
-- **Rodízio** é a fila da equipe: `crm_config_update_team_queue`, mandando **o estado completo da fila** (`id` e `memberId` de cada entrada, `order`, `maxLeads`, `active`). O `memberId` é o **id da participação na equipe**, não o `userId` — e ele só aparece em `crm_config_list_teams`, não no contexto do CRM. Confundir os dois é o erro clássico aqui.
+- **Rodízio** é a fila da equipe: `crm_config_save_team` com `teamId` e `queues`, mandando **o estado completo da fila** (`id` e `memberId` de cada entrada, `order`, `maxLeads`, `active`). O `memberId` é o **id da participação na equipe**, não o `userId` — e ele só aparece em `queues` de `crm_config_fetch_crm_config_context` com `teamDetails: true`. Confundir os dois é o erro clássico aqui. Não mande `members` na mesma chamada: mudar membros refaz a fila e dá id novo às entradas.
 - **Por especialidade** é automação: `LEAD_CREATED` → `CONDITION` (origem, tag ou interesse) → `ASSIGN_TEAM` / `ASSIGN_AGENT`.
 
 **Rodízio cego manda PME de 40 vidas para quem só vende adesão.** Onde há especialização, a distribuição é por tipo de lead antes de ser por rodízio. Diga isso quando ele escolher rodízio numa corretora com vendedores especializados.
@@ -196,12 +196,12 @@ E lembre do passo 2: **a fila não atribui lead criado por MCP nem lead cadastra
 
 ## 9 · Criar, e o cuidado que isso exige
 
-> **Automação criada por MCP nasce `PUBLISHED` e `active: true`.** Comprovado na Koter Day: `crm_automation_create_automation` devolveu a automação já no ar, e ela disparou no lead seguinte, segundos depois. Não existe parâmetro de rascunho na criação.
+> **Automação criada por MCP nasce `PUBLISHED` e `active: true`.** Comprovado na Koter Day: `crm_automation_save_automation` (sem `automationId`) devolveu a automação já no ar, e ela disparou no lead seguinte, segundos depois. Não existe parâmetro de rascunho na criação.
 
 Ou seja: **criar é ligar.** Duas obrigações daí:
 
 1. **Diga o que vai passar a acontecer antes de criar**, em uma frase, e crie só depois do sim.
-2. Se ele quiser revisar antes, crie e chame `crm_automation_set_automation_active` com `false` na sequência — depois `true` quando ele aprovar.
+2. Se ele quiser revisar antes, crie e chame `crm_automation_save_automation` com o `automationId` e `active: false` na sequência — depois `active: true` quando ele aprovar.
 
 Sempre `crm_automation_validate_automation` antes: é dry-run, aponta id inexistente, ação desativada, agendamento inválido e estouro de limite **numa passada só**. Cada passo precisa de um `id` único (uuid gerado por você).
 
@@ -210,7 +210,7 @@ Sempre `crm_automation_validate_automation` antes: é dry-run, aponta id inexist
 A criação ter dado certo não prova que a automação funciona. **Faça-a disparar** e leia:
 
 ```
-crm_automation_get_automation_logs
+crm_automation_list_automation_logs
 ```
 
 Os status: `SUCCESS`, `FAILED` (com `errorMessage` e `failedStepId`), `CONDITION_NOT_MET`, `WAITING`, `CANCELLED`. `executedStepIds` mostra até onde foi.
@@ -237,14 +237,14 @@ Próxima, em até 4 opções:
 | Sintoma | Causa | Conserto |
 |---|---|---|
 | Tarefa da automação nunca aparece | lead sem dono + `assigneeType: LEAD_OWNER` | crie o lead com `ownerUserId`; só então pense em `ASSIGN_AGENT` |
-| Automação nova já disparou sem aprovação | criação nasce publicada e ativa | avise antes; ou crie e `set_automation_active(false)` |
+| Automação nova já disparou sem aprovação | criação nasce publicada e ativa | avise antes; ou crie e `save_automation` com `active: false` |
 | Régua cutuca quem já respondeu | falta `CONDITION` depois da espera | regra 5 |
 | Quem estava na régua sumiu | editar cancela execuções em espera | regra 4; confira `list_automation_runs` antes |
 | Régua de 12 meses não salva | teto de 90 dias de espera | tarefa anual no Gestão; ver `koter-crm-renovacao` |
 | Condição por campo personalizado não casa | comparou com o rótulo da opção | use o `value`, que vem em `customFields[].options` |
 | `SEND_WHATSAPP_TEMPLATE` recusado | instância Evolution, não Cloud API | automação sem a ação de mensagem |
-| Template "criado" e o envio falha mesmo assim | `create_message_template` cria resposta rápida interna, não template da Meta | aprovação na Meta é passo de tela; confira em `whatsappTemplates` |
+| Template "criado" e o envio falha mesmo assim | `save_message_template` cria resposta rápida interna, não template da Meta | aprovação na Meta é passo de tela; confira em `list_meta_message_templates` |
 | Automação publicada e parada | escrita para um canal que não existe | remova a ação ou deixe pausada, e diga por quê |
-| Fila de rodízio recusa a chamada | `memberId` recebeu o `userId` | `memberId` vem de `list_teams` |
+| Fila de rodízio recusa a chamada | `memberId` recebeu o `userId` | `memberId` vem de `queues` no contexto, com `teamDetails` |
 | Mensagem em cima do atendente | falta condição de atendimento aberto | `chatStatus` / `attendantId` |
-| `CREATE_LEAD` recusado | a instância não está vinculada a exatamente uma equipe | ajuste `allowedTeams` da instância, com o corretor |
+| `CREATE_LEAD` recusado | a instância não está vinculada a exatamente uma equipe | ajuste `allowedTeams` na tela da instância, com o corretor |

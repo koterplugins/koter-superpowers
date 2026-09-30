@@ -23,10 +23,10 @@ A ordem entre as três trilhas — e onde cada passo de tela é dito — está e
 Uma chamada:
 
 ```
-admin_cargos_get_my_effective_permissions
+admin_cargos_fetch_admin_roles_context(include: ["myPermissions"])
 ```
 
-Devolve `companyId`, `modules`, `permissions`, `licensed`, `crmAccess`. Guarde tudo — é a base das decisões seguintes. `permissions` vem como lista granular de centenas de itens, **não** como `"all"`: teste sempre pela permissão do passo, nunca por `"all"`. Detalhes e casos de erro em `references/handshake.md`.
+Devolve, em `myPermissions`, `companyId`, `modules`, `permissions`, `licensed`, `crmAccess`. (Até 28/09/2026 isso era uma tool própria, `get_my_effective_permissions`; em 30/09 ela virou uma parte do contexto de cargos. Peça só `myPermissions`: o catálogo de permissões é grande e não serve aqui.) Guarde tudo — é a base das decisões seguintes. `permissions` vem como lista granular de centenas de itens, **não** como `"all"`: teste sempre pela permissão do passo, nunca por `"all"`. Detalhes e casos de erro em `references/handshake.md`.
 
 **Se falhar**, a conexão MCP não está vinculada. Pare aqui, mande o corretor conectar e ofereça retomar. Não tente adivinhar nada sem handshake.
 
@@ -77,13 +77,13 @@ Leia o estado real antes de propor qualquer coisa. Tudo abaixo é leitura pura, 
 | Área | Chamada | O que decide |
 |---|---|---|
 | Gestão | `gestao_config_fetch_gestao_config_context` | **funil de status, entidades**, vendedores, campos personalizados |
-| Gestão (catálogo) | ~~`gestao_fetch_gestao_context`~~ **não chame aqui** | emagreceu de 173 mil para **42.525 caracteres** em 21/09/2026 (saiu o catálogo de seguradoras), mas ainda é caro para um retrato: quase metade é `modalities`. O catálogo se resolve no momento da proposta, na `koter-proposta` |
+| Gestão (catálogo) | ~~`gestao_fetch_gestao_context`~~ **não chame aqui** | é o contexto do formulário da proposta, e o retrato não precisa dele. Ramo, categoria e seguradora se resolvem no momento da proposta, na `koter-proposta`, com `gestao_list_segment_catalog` |
 | Comissão | `gestao_comissao_list_commission_grades` + `get_commission_settings` | tem grade? tem rotina de repasse? |
 | Financeiro | `gestao_financeiro_fetch_finance_context(include: [bankAccounts, categories])` | tem conta bancária? (o plano de contas **já vem pronto**, 23 categorias) |
-| CRM | `crm_config_fetch_crm_config_context` | tem time, funil, origem, tag? **Não traz `defaultType` das etapas nem a fila das equipes** — para isso, `crm_config_list_lead_statuses` por equipe e `crm_config_list_teams` |
+| CRM | `crm_config_fetch_crm_config_context` | tem time, funil, origem, tag, motivo de perda? Desde 30/09/2026 é uma chamada só: `funnelStages` traz o funil de cada equipe com o `defaultType` das etapas, e `teams` com `teamDetails: true` traz membros e fila |
 | Automação de CRM | `crm_automation_list_automations` | o que já roda sozinho (a conta nasce com automações **ligadas**) |
 | Automação de Gestão | `gestao_automacao_fetch_management_automation_context` | `systemAutomations`: idem, e os defaults também vêm **ligados** (`enabled`) |
-| **KoterZap** | `koterzap_configuracao_list_whatsapp_instances` + `list_chatbots` | tem número? **é Cloud API?** É esta linha que decide o que se pode prometer de mensagem automática, nos três módulos |
+| **KoterZap** | `koterzap_configuracao_fetch_koterzap_config_context(include: ["whatsappInstances"])` + `koterzap_configuracao_list_chatbots` | tem número? **é Cloud API?** (`instanceType` e `isCloudApi`) É esta linha que decide o que se pode prometer de mensagem automática, nos três módulos |
 | **Volume do CRM** | `crm_list_leads(pageSize: 1)` | o `total`. **Duas linhas de resposta e é o dado que mais muda a conversa** |
 | **Volume do Gestão** | `gestao_list_proposals(pageSize: 1)` | o `total`, e o `company: { id, name }` de brinde — o nome da corretora para a frase do passo 1 |
 
@@ -110,7 +110,7 @@ O diagnóstico produz uma segunda entrega, e ela é metade do valor do passo 2: 
 
 | # | Tarefa | Ofereça quando | Trava |
 |---|---|---|---|
-| 1 | Conectar o número em **Cloud API** | `list_whatsapp_instances` vazio, ou só com instância `EVOLUTION` | toda mensagem automática, nos dois motores |
+| 1 | Conectar o número em **Cloud API** | `whatsappInstances` vazio, ou só com instância `EVOLUTION` | toda mensagem automática, nos dois motores |
 
 **Sobrou uma.** As outras duas saíram da lista em 21/09/2026, por motivos diferentes:
 
@@ -136,12 +136,15 @@ Rodado na Koter Day em 21/09/2026, numa conta com Gestão, CRM e chatbot montado
 | 1 | **Origem ou tag duplicada só na caixa** | normalize `name` (sem acento, minúsculas) em `origins` e `tags` e procure repetido | `"Tráfego Pago"` e `"Tráfego pago"`, duas origens distintas, com leads em cada |
 | 2 | **Automação apontando para o nome errado** | para cada passo `CONDITION` com `field: "origin"`, confira se o `value` casa **literalmente** com alguma origem | a automação de resposta em 15 min casa `"Tráfego pago"`; o lead que entrou pela outra origem **nunca dispara**, e ninguém percebe |
 | 3 | **Ação sem parâmetro** | passo `ACTION` com `params: {}` | `SEND_WHATSAPP_TEMPLATE` vazio numa automação publicada |
-| 4 | **Ação que depende do que não existe** | `SEND_WHATSAPP_TEMPLATE` com `list_whatsapp_instances` vazio | promete mensagem que não sai |
+| 4 | **Ação que depende do que não existe** | `SEND_WHATSAPP_TEMPLATE` com `whatsappInstances` vazio | promete mensagem que não sai |
 | 5 | **Campo personalizado obrigatório** | `proposalFields` com `required: true` e `source: CUSTOM` | `data_teste` obrigatório — **trava a edição de toda proposta antiga que não o tem** |
 | 6 | **Grade variante órfã** | grade com `isDefault: false` **e** `sellerIds: []` | nenhuma na Koter Day. ⚠️ Não confunda com a grade **Padrão**: ela vale para todo mundo com `sellerIds` vazio — comprovado, o preview resolveu por ela com `source: "default"` |
 | 7 | **Motivo de perda redundante** | em `lossReasons`, procure pares que dizem a mesma coisa — não só caixa diferente, **sinônimo** | numa corretora real, 18 motivos com quatro pares sobrepostos: "Não tem interesse" duas vezes com ids distintos, "Desistência" × "Desistência do cliente", "Valor alto" × "Preço muito alto", "Cliente não atende telefone" × "Sem contato/Não atende" |
+| 8 | **Funil do Gestão sem status de venda** | em `statuses` de `gestao_config_fetch_gestao_config_context`, nenhum com `defaultType: "IMPLANTED"` | regra nova do MCP de 30/09/2026: só o status `IMPLANTED` conta como venda em relatório, **apuração de campanha e renovação**. Funil sem ele não conta venda nenhuma, e nada avisa |
 
 A #7 é nova e é a que mais aparece em conta antiga, porque **motivo de perda não tem deduplicação de nenhum tipo** — nem de caixa, como origem e tag passaram a ter. O estrago é de relatório, não de fluxo: o gargalo nº 1 da corretora fica partido em dois e nenhum dos dois parece grande o bastante para alguém agir. Não é urgente e **não se conserta sem ele mandar** (regra 4): motivo apagado é histórico de lead perdido que muda de nome.
+
+A #8 é a mais nova e a mais cara: o papel `IMPLANTED` passou a ser o que o Koter conta como venda em todo lugar, e uma conta montada antes disso pode ter o funil inteiro sem ele. O conserto é uma chamada (`gestao_config_save_management_status` com `defaultType: "IMPLANTED"` no status que significa "implantada"), mas **qual status é esse quem diz é ele** — e, numa conta em uso, marcar o papel passa a contar como venda tudo o que já está nesse status, então diga o número antes (regra 5).
 
 A #6 é o contraexemplo que vale guardar: parecia defeito e não era. **Antes de chamar algo de quebrado, prove com uma leitura** — foi `gestao_preview_proposal_payout` que mostrou a grade Padrão resolvendo normalmente.
 
@@ -149,13 +152,13 @@ A #2 é a que mais vale: **é falha silenciosa**. A automação está publicada,
 
 ### Numa conta grande, o 2c precisa de tesoura
 
-Na Koter Day, quatro defeitos. Numa corretora com anos de uso, as mesmas sete checagens acham **trinta** — e trinta achados entregues de uma vez não são um diagnóstico, são uma lista de tarefas que o corretor fecha a janela para não olhar.
+Na Koter Day, quatro defeitos. Numa corretora com anos de uso, as mesmas oito checagens acham **trinta** — e trinta achados entregues de uma vez não são um diagnóstico, são uma lista de tarefas que o corretor fecha a janela para não olhar.
 
 **Entregue no máximo três, e escolha por impacto, nunca por ordem da tabela:**
 
 | Prioridade | O que é | Exemplos |
 |---|---|---|
-| 1 | **Silencioso** — está quebrado, não dá erro, e ninguém sabe | checagens 2 e 4: automação que nunca dispara, ação que promete mensagem sem canal |
+| 1 | **Silencioso** — está quebrado, não dá erro, e ninguém sabe | checagens 2, 4 e 8: automação que nunca dispara, ação que promete mensagem sem canal, funil que não conta venda |
 | 2 | **Travando** — alguém já bateu nisso hoje | checagem 5: campo obrigatório que não deixa salvar proposta antiga |
 | 3 | **Cosmético** — atrapalha relatório, não atrapalha o dia | checagens 1, 6 e 7: duplicata de origem, tag, grade e motivo |
 
@@ -169,11 +172,11 @@ E o corte tem um segundo uso: **defeito cosmético em conta grande quase sempre 
 
 Cada conserto é da skill filha dona do assunto (`koter-crm-origens-tags`, `koter-crm-automacao`, `koter-gestao-campos`, `koter-gestao-comissoes`), e nenhum é automático: **origem e tag duplicadas não se apagam sem o corretor mandar** — regra 4.
 
-> ✅ **A origem duplicada agora se unifica de verdade.** Desde 21/09/2026, `crm_config_delete_origin` aceita `moveLeadsToOriginId`: origem com lead **só sai se você disser para onde os leads vão**, e a resposta devolve `movedLeads`. Some com o buraco antigo, em que o delete levava a atribuição junto em silêncio.
+> ✅ **A origem duplicada agora se unifica de verdade.** Desde 21/09/2026, excluir origem aceita `moveLeadsToOriginId` (hoje `crm_config_delete_crm_config_records` com `kind: "origin"`): origem com lead **só sai se você disser para onde os leads vão**, e a resposta devolve `movedLeads`. Some com o buraco antigo, em que o delete levava a atribuição junto em silêncio.
 >
 > E dá para conferir antes e depois: `crm_list_leads(origins: ["<nome exato>"])` lista os leads de uma origem, e todo lead devolvido traz `origin`. **Continua valendo a regra 4**: unificar duas origens é mexer no histórico dele, então é ele quem manda.
 >
-> Na Koter Day não sobrou o que unificar — a normalização do backend já juntou "Tráfego Pago" e "Tráfego pago" numa só, com 2 leads, e `create_origin` agora **recusa** variante de nome devolvendo o id da existente. Num cliente antigo, espere encontrar o par ainda separado.
+> Na Koter Day não sobrou o que unificar — a normalização do backend já juntou "Tráfego Pago" e "Tráfego pago" numa só, com 2 leads, e criar origem agora **recusa** variante de nome devolvendo o id da existente. Num cliente antigo, espere encontrar o par ainda separado.
 
 Os três consertos rodaram de verdade nesta passada: o campo obrigatório virou opcional (`data_teste`, `required: false` relido), a tag duplicada foi apagada (`"saude"`, sem uso), e a origem duplicada foi apagada — foi ela que revelou a perda de atribuição que o backend consertou depois.
 
@@ -205,7 +208,7 @@ O destino do fluxo **não é a configuração pronta** — é `koter-proposta` e
 
 ## Passo 5 · A conexão por módulo — a última entrega do onboarding
 
-A conexão completa do Koter tem **265 ferramentas**. Isso é certo para a `/introducao`, que atravessa os três módulos de propósito, e é errado para todo o resto: um assistente de comissão com 265 tools escolhe pior e ainda pode apagar origem do CRM sem querer.
+A conexão completa do Koter tem **180 ferramentas** (medido com `list_toolsets` em 30/09/2026; eram 356 em 22/09). Isso é certo para a `/introducao`, que atravessa os três módulos de propósito, e é errado para todo o resto: um assistente de comissão com 180 tools escolhe pior e ainda pode apagar origem do CRM sem querer.
 
 O MCP aceita **filtro por toolset na URL**, e é o que transforma o plugin num time com tesoura:
 
@@ -215,12 +218,12 @@ https://api.koter.app/mcp-user/koter?toolsets=crm,crm-config,crm-automation
 
 | Especialista | Tools | Cai |
 |---|---:|---|
-| Secretário `crm` | 25 | −91% |
-| Atendimento `koterzap-configuracao,koterzap-atendimento` | 51 | −81% |
-| Cadastro `gestao,gestao-config` | 26 | −90% |
-| CRM `crm-config,crm-automation,gestao-automacao` | 59 | −78% |
-| Vendas `crm,crm-config,gestao-automacao,gestao` | 82 | −69% |
-| Financeiro `gestao-comissao,gestao-financeiro,gestao-config` | 77 | −71% |
+| Secretário `crm` | 11 | −94% |
+| Atendimento `koterzap-configuracao,koterzap-atendimento` | 31 | −83% |
+| Cadastro `gestao,gestao-config` | 26 | −86% |
+| CRM `crm-config,crm-automation,gestao-automacao` | 27 | −85% |
+| Vendas `crm,crm-config,gestao-automacao,gestao` | 42 | −77% |
+| Financeiro `gestao-comissao,gestao-financeiro,gestao-config` | 77 | −57% |
 
 A tabela inteira, os 12 toolsets medidos, os porquês de cada recorte e a alavanca de sessão (`disable_toolset`) estão em **`references/conexao-por-modulo.md`**.
 
@@ -228,13 +231,13 @@ A tabela inteira, os 12 toolsets medidos, os porquês de cada recorte e a alavan
 
 1. **A `/introducao` não se recorta.** O passo 0 mora em `admin-cargos` e o ato 0 diagnostica os três módulos na mesma rodada. A separação não é como ela roda — **é o que ela entrega**.
 2. **Ofereça depois do ato 2**, junto com `koter-especialistas`, que é quem monta ficha e URL na mesma frase. Antes disso não significa nada: não se recorta uma ferramenta que ele ainda não usou.
-3. **Diga pela trava, não pela contagem.** "O de atendimento passa de 265 para 51, e de quebra deixa de conseguir mexer no seu funil sem querer." O campo "o que eu NÃO posso" da ficha deixa de ser promessa e passa a ser o que a conexão permite.
+3. **Diga pela trava, não pela contagem.** "O de atendimento passa de 180 para 31, e de quebra deixa de conseguir mexer no seu funil sem querer." O campo "o que eu NÃO posso" da ficha deixa de ser promessa e passa a ser o que a conexão permite.
 
 ## Retomada
 
 Ao ser chamada de novo, leia o estado salvo e abra com onde ele parou e quanto falta. Se o estado não existir ou estiver velho, **o diagnóstico reconstrói tudo** — ele é idempotente de propósito, e é por isso que o estado perdido nunca é um problema.
 
-A tarefa de tela do passo 2b também não precisa de pergunta ao retomar: `list_whatsapp_instances` diz se o número entrou. **Leia e constate** — "vi que o número já está ligado" ou "o número ainda não subiu" — em vez de pedir notícia. O que o estado guarda dela é só a data em que foi oferecida, para não oferecer duas vezes.
+A tarefa de tela do passo 2b também não precisa de pergunta ao retomar: `whatsappInstances`, em `koterzap_configuracao_fetch_koterzap_config_context`, diz se o número entrou. **Leia e constate** — "vi que o número já está ligado" ou "o número ainda não subiu" — em vez de pedir notícia. O que o estado guarda dela é só a data em que foi oferecida, para não oferecer duas vezes.
 
 ## Skills filhas
 

@@ -9,7 +9,7 @@ O coração do módulo. **Termina em prova, não em promessa:** a skill monta a 
 
 ## 0 · Pré-requisitos
 
-Fundação (operadoras cadastradas) e vendedores, **se ele repassa**. Corretor que não repassa configura só o recebimento e pula metade da skill.
+Fundação (com as operadoras com que ele trabalha anotadas no estado) e vendedores, **se ele repassa**. Corretor que não repassa configura só o recebimento e pula metade da skill.
 
 ## 1 · O vocabulário que evita configurar errado com número certo
 
@@ -35,7 +35,8 @@ No Koter isso é nativo: cada linha de parcela carrega `commissionType` com `AGE
 ## 2 · Detecção — antes da primeira pergunta
 
 ```
-gestao_config_fetch_gestao_config_context          → operadoras e vendedores
+gestao_comissao_get_commission_summary(by: "operator", segmentId?)
+                                                   → operadoras do ramo, com hasReceivable / hasPayoutDefault
 gestao_comissao_list_commission_grades             → grades existentes (e o overrideSplitMode de cada uma)
 gestao_comissao_get_commission_settings            → cadência, prazo, deságio, profundidade de override, prazos por operadora
 gestao_comissao_list_commission_campaigns          → campanhas já criadas
@@ -48,7 +49,7 @@ Cada uma como card de decisão de 2 a 4 opções, consequência em uma linha, re
 
 **P1 · Você repassa comissão para alguém?** → *dedutível*: se há vendedores cadastrados, confirme em vez de perguntar. **"Não repassa" encerra o roteiro em P5 e vai direto para a prova.**
 
-**P2 · Com quais operadoras, e qual é a maior?** → *dedutível*: as operadoras já estão cadastradas; a maior sai do volume de propostas. **Configure a maior primeiro e use como modelo.**
+**P2 · Com quais operadoras, e qual é a maior?** → *dedutível*: a fundação guardou as operadoras dele no estado, e a maior sai do volume de propostas. **Configure a maior primeiro e use como modelo.**
 
 **P3 · O que a operadora te paga na entrada?**
 > Um múltiplo da primeira mensalidade (agenciamento) / Só o percentual mensal / Os dois / Não sei, vou olhar o contrato
@@ -104,11 +105,11 @@ gestao_comissao_publish_commission_table
   validFrom   ← no futuro, agenda a versão
 ```
 
-**`insuranceCompanyId` aqui é o id do catálogo global**, o mesmo que a proposta grava. A seguradora da corretora saiu do MCP em 21/09/2026 — só existe o catálogo global. A modalidade é derivada da operadora no servidor; você não a informa.
+**`insuranceCompanyId` aqui é o id do catálogo global**, o mesmo que a proposta grava. A seguradora da corretora saiu do MCP em 21/09/2026 — só existe o catálogo global. A categoria é derivada da operadora no servidor; você não a informa.
 
 Publicar encerra a versão vigente e põe a nova em vigor numa transação só. **A primeira publicação de `PAYOUT_DEFAULT` cria a grade "Padrão" sozinha** — não crie grade antes.
 
-Variantes: `create_payout_variant(modalityGroupId, name, sellerIds)`, depois `update_commission_grade(gradeId, addSellerIds | removeSellerIds)`, e `apply_seller_deviation` simulado antes com `dryRun: true` (depois aplicado com `confirm` igual ao desfecho, `MATCH` ou `NEW`).
+Variantes: `create_payout_variant(segmentCategoryId, name, sellerIds)` (a categoria vem de `categories` em `gestao_list_segment_catalog`), depois `update_commission_grade(gradeId, addSellerIds | removeSellerIds)`, e `apply_seller_deviation` simulado antes com `dryRun: true` (depois aplicado com `confirm` igual ao desfecho, `MATCH` ou `NEW`).
 
 ### Exemplo real, publicado na Koter Day
 
@@ -125,7 +126,7 @@ PAYOUT_DEFAULT: [ {seq 1, parcela 1,  90%, AGENCIAMENTO, isLifetime false, manag
 
 A grade Padrão nasce com **`overrideSplitMode: "INTEGRAL"`** — confirmado na Koter Day. Integral significa que, se o vendedor tem dois gerentes, **cada um recebe o percentual inteiro e a casa paga duas vezes**. É a configuração que faz a corretora pagar mais do que recebeu e só descobrir no fechamento.
 
-Quando houver alguém com mais de um líder do mesmo tipo, mostre as três opções e recomende `PRINCIPAL`: `gestao_comissao_update_commission_grade(gradeId, overrideSplitMode)`. Quando não houver, não gaste a pergunta — mas **registre que ficou em INTEGRAL**, para reoferecer quando a equipe crescer.
+Quando houver alguém com mais de um líder do mesmo tipo, mostre as três opções e recomende `PRINCIPAL`: `gestao_comissao_update_commission_grade(gradeId, overrideSplitMode)`. A troca recalcula em fila as parcelas **ainda não pagas** das vendas da grade — o andamento aparece em `recomputeRuns` de `get_commission_settings`. Quando não houver, não gaste a pergunta — mas **registre que ficou em INTEGRAL**, para reoferecer quando a equipe crescer.
 
 `overrideMaxDepth` (1 a 10) decide quantos níveis o override sobe; vazio vale o teto de 10.
 
@@ -173,4 +174,4 @@ Grave o que foi publicado, por operadora, e o que ficou pendente (operadoras sem
 | Casa paga duas vezes o override | `overrideSplitMode: INTEGRAL`, que é o default | `update_commission_grade` com `overrideSplitMode: PRINCIPAL` |
 | Meta embutida na grade | meta é campanha | separe explicitamente; `koter-gestao-campanhas` |
 | Tabela publicada não aparece na proposta | `insuranceCompanyId` do cadastro legado da corretora em vez do catálogo | use o id do catálogo global |
-| Vendedor reclama de valor que mudou | imposto ou prazo alterado não regenera parcela antiga | mudanças valem para geração futura |
+| Vendedor reclama de valor ou data que mudou | imposto alterado não regenera parcela antiga; prazo ou cadência alterados em `save_commission_settings` **re-datam** as parcelas em aberto (só datas, nunca valores) | avise antes de salvar a rotina numa conta com parcela em aberto |

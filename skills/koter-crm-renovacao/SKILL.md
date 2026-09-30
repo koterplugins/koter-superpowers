@@ -64,13 +64,21 @@ Campos de data de `PROPOSAL`: `coverageStart` (Vigência), `billDueDate`, `impla
 
 ## 3 · O que o gatilho produz: tarefa no CRM, com o cliente junto
 
-`CREATE_TASK` no motor do Gestão cria a tarefa **já vinculada aos leads e contatos da proposta**, com responsável derivado do dono da proposta ou do vendedor.
+`CREATE_TASK` no motor do Gestão cria a tarefa **já vinculada aos leads e contatos da proposta**. Ele entra como um passo `ACTION` na lista `steps` da automação (o motor não usa mais `conditions` e `actions` separados):
+
+```
+steps: [
+  { id: "<uuid>", kind: "ACTION", type: "CREATE_TASK",
+    params: { title: "Revisar a renovação", scheduleType: "RELATIVE", dueInDays: 7,
+              assigneeType: "PROPOSAL_OWNER" } }
+]
+```
 
 É isso que faz a rotina valer: a tarefa não é um lembrete solto, ela abre no cliente certo, com o histórico do lado.
 
 **`dueInDays`** é o prazo da tarefa depois do disparo, não a antecedência — a antecedência é `offsetDays`. Confundir os dois é o erro mais fácil aqui.
 
-O responsável **não é parametrizável**: vem da proposta. Se a corretora tem uma pessoa dedicada à renovação que não é quem vendeu, a tarefa vai cair no vendedor — diga isso antes, e resolva com a equipe de renovação do passo 6, não tentando forçar o responsável.
+O responsável é `assigneeType`: `PROPOSAL_OWNER` (o padrão: o dono da proposta, senão o usuário do vendedor) ou `SPECIFIC_USER` com `assigneeUserId`. Se a corretora tem uma pessoa dedicada à renovação que não é quem vendeu, use `SPECIFIC_USER` com o `userId` dela — senão a tarefa cai no vendedor. Numa carteira dividida entre várias pessoas de renovação, um usuário fixo não basta, e aí o caminho é a equipe de renovação do passo 6.
 
 **Por isso a ponte da `koter-crm-lead` importa:** proposta sem lead vinculado (`gestao_set_proposal_links` com `leads`) gera tarefa sem cliente do lado. Antes de armar a renovação, confira se as propostas da carteira estão ligadas aos seus leads.
 
@@ -114,7 +122,7 @@ Ela reaproveita o contato da proposta (cria um se faltar), vincula o lead de vol
 
 Medido na Koter Day: primeiro disparo criou o contato e vinculou (log `SUCCESS`); segundo disparo na mesma proposta voltou `SUCCESS` **sem criar um segundo contato**, como promete a descrição.
 
-> ⚠️ Medido: o contato criado por `CREATE_CONTACT` **nasce só com o nome**. A ação promete nome, e-mail e nascimento, mas a proposta do Koter não tem campo de e-mail nem de nascimento do titular — então não há insumo, e por tabela o "reaproveita o contato de mesmo e-mail" nunca tem o que casar. Espere contato só com nome, e complete com `crm_update_contact` se o corretor precisar.
+> ⚠️ Medido: o contato criado por `CREATE_CONTACT` **nasce só com o nome**. A ação promete nome, e-mail e nascimento, mas a proposta do Koter não tem campo de e-mail nem de nascimento do titular — então não há insumo, e por tabela o "reaproveita o contato de mesmo e-mail" nunca tem o que casar. Espere contato só com nome, e complete com `crm_save_contact` (com `contactId`) se o corretor precisar.
 
 ## 6 · O funil de renovação: quando vale o custo
 
@@ -186,7 +194,7 @@ Se a tarefa de tela 1 (Cloud API) ainda estiver `pendente`, diga aqui em uma lin
 | Renovação de contrato de 31 some em abril | `dayHandling: SKIP` | `CLIP_TO_LAST_DAY` |
 | A tarefa vence antes de o corretor ter tempo | `dueInDays` confundido com `offsetDays` | `offsetDays` é a antecedência; `dueInDays` é o prazo da tarefa |
 | Tarefa de renovação sem cliente do lado | proposta sem lead vinculado | `gestao_set_proposal_links` com `leads` |
-| A tarefa caiu no vendedor, não na renovação | o responsável vem da proposta e não é parametrizável | equipe de renovação (passo 6) |
+| A tarefa caiu no vendedor, não na renovação | `assigneeType` omitido vale `PROPOSAL_OWNER` | `SPECIFIC_USER` com `assigneeUserId`, ou equipe de renovação (passo 6) |
 | O lead não aparece no funil de renovação | a automação não tem o passo `CREATE_LEAD`, ou o `teamId` dele aponta para outra equipe | acrescente o `CREATE_LEAD` com o `teamId` da equipe de renovação e confira em `list_automation_logs` |
 | Webhook não consegue criar o lead | payload fixo, sem telefone nem e-mail | não conte com esse caminho hoje |
 | Nada no log depois de criar | a varredura é diária | confira no dia seguinte |
