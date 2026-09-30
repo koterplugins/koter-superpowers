@@ -129,7 +129,7 @@ As 22 skills são o que o Koter sabe fazer. **Ninguém opera 22 skills de cabeç
 
 A lista é podada pelo diagnóstico, não servida inteira: corretora solo junta Vendas e CRM, sem KoterZap não há Atendimento, e cargo sem escrita em comissão recebe o Financeiro em modo leitura.
 
-**E cada especialista recebe a sua própria conexão.** A conexão completa do Koter tem 265 ferramentas; o MCP aceita filtro por toolset na URL (`?toolsets=crm,crm-config`), então o de atendimento fica com 51 e o secretário com 25. A trava deixa de ser promessa de texto e passa a ser o que a conexão permite. A tabela dos 12 toolsets e o recorte de cada um estão em `skills/introducao/references/conexao-por-modulo.md`; quem monta ficha e URL juntas é `koter-especialistas`. A única que não se recorta é a `/introducao`, que precisa do handshake e diagnostica os três módulos na mesma rodada.
+**E cada especialista recebe a sua própria conexão.** A conexão completa do Koter tem 180 ferramentas; o MCP aceita filtro por toolset na URL (`?toolsets=crm,crm-config`), então o de atendimento fica com 31 e o secretário com 11. A trava deixa de ser promessa de texto e passa a ser o que a conexão permite. A tabela dos 12 toolsets e o recorte de cada um estão em `skills/introducao/references/conexao-por-modulo.md`; quem monta ficha e URL juntas é `koter-especialistas`. A única que não se recorta é a `/introducao`, que precisa do handshake e diagnostica os três módulos na mesma rodada.
 
 **A trava é a parte que rende**, e é por isso que "o que eu NÃO posso" nunca sai da ficha: o especialista de vendas que não mexe no funil não quebra o funil às quintas.
 

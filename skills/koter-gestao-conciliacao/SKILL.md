@@ -14,7 +14,7 @@ gestao_financeiro_import_bank_statement(bankAccountId, fileName, content, encodi
     → { statementId, imported, duplicates, skipped, periodStart, periodEnd }
 ```
 
-**Só OFX** — não PDF, não CSV, não planilha. `fileName` termina em `.ofx`, `content` é o texto do arquivo (`encoding: "base64"` só para OFX antigo fora de UTF-8), limite de 10 MB. **Reimportar o mesmo período é seguro**: transação já conhecida volta em `duplicates` e não entra de novo.
+**Só OFX** — não PDF, não CSV, não planilha. `fileName` termina em `.ofx`, `content` é o texto do arquivo, como está — o charset declarado no cabeçalho do OFX (ex.: `CHARSET:1252`) é respeitado; `encoding: "base64"` só quando o arquivo tem caractere que esse charset não representa. Limite de 10 MB. **Reimportar o mesmo período é seguro**: transação já conhecida volta em `duplicates` e não entra de novo.
 
 O que a skill pede ao corretor é o arquivo, não um passeio pela tela:
 
@@ -27,19 +27,24 @@ Depois da importação, `list_bank_statements` e `list_bank_transactions` mostra
 ```
 gestao_financeiro_list_bank_transactions(bankAccountId, ...)   → o que o banco diz
 gestao_financeiro_get_reconcile_suggestions(transactionId)     → o que o Koter acha que casa
+gestao_financeiro_get_reconcile_suggestions(bankAccountId)     → as conciliações exatas 1:1 da conta
 gestao_financeiro_reconcile_bank_transactions(items[])        → casa, até 100 por chamada
-gestao_financeiro_unreconcile_bank_transaction(...)            → desfaz
+gestao_financeiro_unreconcile_bank_transaction(transactionId, reverseEntry?)   → desfaz
 ```
 
 Cada item é `{ transactionId, target }`, e `target.kind` diz com o que casa: `entry` (lançamento existente), `installment` (parcela de comissão, recebimento ou repasse), `installments` (um crédito da seguradora contra várias parcelas de recebimento, tudo ou nada), `payoutBatch` (débito contra lote de repasse já pago), `createEntry` (cria o lançamento já liquidado a partir da transação) ou `ignore`. O `target` das conciliações exatas de `get_reconcile_suggestions` serve direto — sem os campos de nome (`entryName`, `proposalName`) que a sugestão acrescenta.
 
 Trabalhe pelas sugestões, não pela lista crua: o corretor não quer ler 200 linhas de extrato. Mostre as que casam com confiança alta, peça um "pode casar" para o bloco, e mande o bloco numa chamada só. **O lote não é atômico**: cada item passa ou falha sozinho, e a resposta separa `succeeded` de `failed` — releia o `failed` e diga o que não entrou. Traga só as duvidosas uma a uma.
 
+Toda conciliação de transação com documento de contraparte cria ou completa uma **regra da contraparte**, que passa a sugerir (ou conciliar sozinha) as próximas; `ignore` só vira regra com `rememberCounterparty: true`. As regras aprendidas se leem e se corrigem com `list_counterparty_rules`, `update_counterparty_rule` e `delete_counterparty_rule`.
+
+**Desconciliar não desfaz tudo.** `unreconcile_bank_transaction` nunca reverte sozinho um recebimento de comissão (volta com aviso pedindo ajuste manual), e um lote de repasse com mais de um item continua pago — só o lote `AD_HOC` de item único é estornado junto.
+
 Transação que não casa com nada costuma ser: comissão que caiu junta de várias propostas, tarifa bancária, ou lançamento que ele nunca registrou. As três têm tratamento diferente — pergunte antes de forçar.
 
 ## 2 · As críticas — o que o Koter vigia sozinho
 
-`gestao_financeiro_get_finance_issue_settings` devolve quatro tipos, e na Koter Day **os quatro nascem ligados com tolerância zero**:
+`gestao_financeiro_get_finance_issue_settings` devolve quatro tipos configuráveis, e na Koter Day **os quatro nascem ligados com tolerância zero** (o schema confirma: tipo sem configuração salva vale habilitado com R$ 0,00):
 
 | Tipo | O que pega |
 |---|---|
@@ -52,7 +57,7 @@ Transação que não casa com nada costuma ser: comissão que caiu junta de vár
 
 > "Diferença de quanto você quer que eu ignore? Até R$ 1 / até R$ 5 / nenhuma, quero ver tudo"
 
-`save_finance_issue_settings` grava a tolerância por tipo.
+`save_finance_issue_settings` grava a tolerância por tipo. A fila de `list_finance_issues` ainda traz dois tipos que não se configuram, ligados ao Open Finance: `CONEXAO_BANCARIA_REQUER_ACAO` e `TRANSACAO_REMOVIDA_NO_BANCO`.
 
 ## 3 · Resolver
 
@@ -62,7 +67,7 @@ gestao_financeiro_list_finance_issues(ids)        → esperado, real, diferença
 gestao_financeiro_resolve_finance_issue(issueId, action, note)   → resolve; action IGNORE ignora
 ```
 
-Cada crítica já traz **as ações de resolução válidas para aquele tipo** em `availableActions` — use o que ela oferece em vez de improvisar. `note` é obrigatória e fica auditada, inclusive para ignorar. E mostre sempre esperado, real e diferença juntos: é a diferença que explica, não o valor.
+Cada crítica já traz **as ações de resolução válidas para aquele tipo** em `availableActions` — use o que ela oferece em vez de improvisar. Fechar a crítica, resolvida ou ignorada, **tira o bloqueio da origem** (a parcela ou o par campanha × vendedor voltam a andar), e `UNDO_RECONCILIATION` desfaz a conciliação na hora. `note` é obrigatória e fica auditada, inclusive para ignorar. E mostre sempre esperado, real e diferença juntos: é a diferença que explica, não o valor.
 
 **Ignorar não é resolver.** Ignorada some da fila e o dinheiro continua errado. Só ofereça ignorar quando a diferença for irrelevante e recorrente — e aí a resposta melhor é ajustar a tolerância, não ignorar uma a uma.
 

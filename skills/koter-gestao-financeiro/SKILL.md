@@ -9,7 +9,7 @@ Quinta etapa da trilha. Depende só da fundação — **não espere comissão pa
 
 ## 0 · A primeira coisa: o plano de contas já existe
 
-Numa conta zerada o Koter **já traz o plano de contas pronto**: 23 categorias com grupo de DRE definido, confirmado na Koter Day. Entre elas, três que são a contrapartida direta do módulo de comissão:
+Numa conta zerada o Koter **já traz o plano de contas pronto** (as categorias padrão são criadas na primeira leitura de `fetch_finance_context`): 23 categorias com grupo de DRE definido, confirmado na Koter Day. Entre elas, três que são a contrapartida direta do módulo de comissão:
 
 - **Comissões recebidas** (`RECEITA_OPERACIONAL`)
 - **Repasses a vendedores** (`DESPESAS_COMERCIAIS`)
@@ -24,6 +24,7 @@ E folha inteira já marcada com `isPayroll`: Salários, Encargos, Benefícios, P
 ```
 gestao_financeiro_fetch_finance_context(include?)   → numa chamada só:
     bankAccounts   → normalmente vazio; é o que realmente falta
+                     (bankAccountPositions: computedBalance, ledgerBalance, payoutBatchesSum)
     categories     → o plano pronto
     costCenters, payees
 gestao_financeiro_list_finance_recurrences
@@ -83,9 +84,11 @@ Os três saem de uma tool só, `gestao_financeiro_get_finance_report(report, ...
 | `cash_flow` | **`from` / `to`** (ISO), `granularity?`, `bankAccountId?` | não aceita `year` |
 | `cost_center` | `from` / `to`, `regime?` | rateio por centro |
 
-**O DRE é regime de caixa por padrão** (`regime: "caixa"`): só entra o que foi liquidado. Comprovado — a despesa dada baixa apareceu no mês; o a receber pendente, não. Diga isso ao corretor, porque ele vai estranhar não ver o que está a receber. Se ele quiser a visão por competência, `regime: "competencia"` traz os lançamentos não cancelados, pagos ou não.
+**O DRE é regime de caixa por padrão** (`regime: "caixa"`): só entra o que foi liquidado. Comprovado — a despesa dada baixa apareceu no mês; o a receber pendente, não. Diga isso ao corretor, porque ele vai estranhar não ver o que está a receber. Se ele quiser a visão por competência, `regime: "competencia"` traz os lançamentos não cancelados, pagos ou não, pela data de competência (ou de vencimento) — e, no DRE, as comissões entram pelo vencimento da parcela.
 
-O fluxo de caixa, ao contrário, separa **realizado** de **projetado** e parte da `base` (a soma dos saldos iniciais). É nele que o pendente aparece.
+O fluxo de caixa, ao contrário, separa **realizado** de **projetado** e parte da `base` (os saldos iniciais das contas ativas mais o realizado antes do primeiro período). É nele que o pendente aparece. Com `bankAccountId`, as comissões ficam de fora, porque não têm conta.
+
+**Folha depende de permissão:** sem `mng:payroll:read`, os lançamentos de folha somem do fluxo de caixa e do relatório por centro de custo, e no DRE viram uma linha só, "Pessoal". Se o número de quem pergunta não bate com o do dono, é isso.
 
 ## 7 · Validação e próxima
 

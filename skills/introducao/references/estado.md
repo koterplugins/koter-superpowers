@@ -10,7 +10,7 @@ Não existe tool no MCP que grave preferências ou progresso do onboarding. Enqu
 
 Uma chave por corretora, usando o `companyId` do handshake — a mesma máquina pode atender duas corretoras.
 
-> ⚠️ **O `companyId` é chave, não garantia.** Uma conexão pode trocar de corretora no meio da sessão (aconteceu em 21/09/2026: `list_*` continuou respondendo, com os dados de outra conta). Antes de **aplicar** qualquer coisa, releia `admin_cargos_get_my_effective_permissions` e confira que o `companyId` é o mesmo do arquivo. Se mudou, pare e avise — não grave no bloco errado nem escreva na corretora errada.
+> ⚠️ **O `companyId` é chave, não garantia.** Uma conexão pode trocar de corretora no meio da sessão (aconteceu em 21/09/2026: `list_*` continuou respondendo, com os dados de outra conta). Antes de **aplicar** qualquer coisa, releia o handshake (`admin_cargos_fetch_admin_roles_context` com `include: ["myPermissions"]`) e confira que o `companyId` é o mesmo do arquivo. Se mudou, pare e avise — não grave no bloco errado nem escreva na corretora errada.
 
 ## Por que perder o arquivo não é problema
 
@@ -22,7 +22,7 @@ O diagnóstico do passo 2 é **idempotente**: ele reconstrói o mapa de maturida
 |---|---|---|
 | `perfil.porte` | **quase sempre** | `gestao_config_list_sellers` com mais de um vendedor já diz `com_vendedores`. Só numa conta sem vendedor é que volta a ser pergunta — e aí é a pergunta normal do passo 1 |
 | `perfil.prioridade` | **não** | comissão ou atendimento é preferência, não configuração |
-| `pre_requisitos_de_tela.cloud_api_conectada` | **sim** | `list_whatsapp_instances` vazio ou só com `EVOLUTION` |
+| `pre_requisitos_de_tela.cloud_api_conectada` | **sim** | `whatsappInstances` de `koterzap_configuracao_fetch_koterzap_config_context` vazio ou só com `EVOLUTION` |
 | ~~`pre_requisitos_de_tela.template_meta_aprovado`~~ | **saiu do arquivo** | template da Meta deixou de ser tarefa da `/introducao` em 21/09/2026. Vira uma frase de orientação no ato 0 e o assunto inteiro pertence à `koter-zap-fundacao`, que é onde `list_meta_message_templates(instanceId)` tem uso. Não guarde estado disso |
 | ~~`pre_requisitos_de_tela.parcelas_geradas`~~ | **saiu do arquivo** | `list_proposal_installments(proposalId)` responde em uma chamada: `total: 0` é não gerada. Deixou de ser pergunta e de ser estado |
 | `lacunas` e a ferramenta que ele usa no lugar | **não** | nunca esteve no Koter |
@@ -89,7 +89,7 @@ Estado de pré-requisito: `pendente`, `feito`, `nao_se_aplica`, `dispensado` (el
 
 ### Idempotência
 
-Reentrar numa skill já `concluida` não pode duplicar nada. Por isso toda skill filha **detecta antes de criar** e casa por nome normalizado (sem acento, caixa dobrada). Desde 21/09/2026 o backend ajuda: `create_origin` **recusa** variante de caixa ou acento e devolve o id da existente, e `create_lead_tag` devolve a tag de mesmo nome. Mas ajuda só na criação nova — **o par antigo continua separado**, e é isso que a checagem 1 do passo 2c acha em conta com histórico. `create_loss_reason` não deduplica de jeito nenhum (checagem 7). Gravar a etapa como `concluida` é registro do que aconteceu, nunca autorização para pular a releitura.
+Reentrar numa skill já `concluida` não pode duplicar nada. Por isso toda skill filha **detecta antes de criar** e casa por nome normalizado (sem acento, caixa dobrada). Desde 21/09/2026 o backend ajuda: criar origem (`crm_config_save_origin` sem `originId`) **recusa** variante de caixa ou acento e devolve o id da existente, e `crm_config_save_lead_tag` sem `tagId` devolve a tag de mesmo nome no escopo. Mas ajuda só na criação nova — **o par antigo continua separado**, e é isso que a checagem 1 do passo 2c acha em conta com histórico. `crm_config_save_loss_reason` não deduplica de jeito nenhum (checagem 7). Gravar a etapa como `concluida` é registro do que aconteceu, nunca autorização para pular a releitura.
 
 Grave depois de **cada** skill filha, nunca só no fim. Corretor fecha a janela no meio — e deve reabrir de onde parou.
 

@@ -17,23 +17,23 @@ Permissões: `read:whatsapp-instance:list` para o diagnóstico, `manage:whatsapp
 
 Nada aqui depende do CRM nem do Gestão. Mas a `koter-crm-automacao` depende **desta**: é aqui que se descobre se `SEND_WHATSAPP_TEMPLATE` é possível.
 
-> **O diagnóstico desta skill provavelmente já foi feito.** A `/introducao` roda `list_whatsapp_instances` no passo 2, junto com o do Gestão e o do CRM, e entrega as tarefas de tela 1 e 2 (conectar Cloud API, aprovar template) logo no começo — justamente porque dependem da Meta e levam dias. Leia `pre_requisitos_de_tela` no estado **antes** de anunciar de novo: se já foram oferecidas, **pergunte se ele conseguiu**, não repita a explicação. Descobrir isto no fim do onboarding, depois de tudo pronto, é o erro que esta ordem existe para evitar.
+> **O diagnóstico desta skill provavelmente já foi feito.** A `/introducao` roda `fetch_koterzap_config_context` (com `include: ["whatsappInstances"]`) no passo 2, junto com o do Gestão e o do CRM, e entrega as tarefas de tela 1 e 2 (conectar Cloud API, aprovar template) logo no começo — justamente porque dependem da Meta e levam dias. Leia `pre_requisitos_de_tela` no estado **antes** de anunciar de novo: se já foram oferecidas, **pergunte se ele conseguiu**, não repita a explicação. Descobrir isto no fim do onboarding, depois de tudo pronto, é o erro que esta ordem existe para evitar.
 
-> **Confira o `companyId` antes de aplicar qualquer coisa.** `admin_cargos_get_my_effective_permissions` de novo, e compare com o que a `introducao` guardou. Já aconteceu de a conexão trocar de corretora no meio de uma sessão — e o sintoma é `Operação não permitida.` numa chamada que acabou de funcionar. Ver as armadilhas no fim.
+> **Confira o `companyId` antes de aplicar qualquer coisa.** `admin_cargos_fetch_admin_roles_context` com `include: ["myPermissions"]` de novo, e compare com o que a `introducao` guardou. Já aconteceu de a conexão trocar de corretora no meio de uma sessão — e o sintoma é `Operação não permitida.` numa chamada que acabou de funcionar. Ver as armadilhas no fim.
 
 ## 1 · Detecção
 
 ```
-koterzap_configuracao_list_whatsapp_instances
+koterzap_configuracao_fetch_koterzap_config_context   include: ["whatsappInstances"]
 koterzap_configuracao_list_inboxes
 koterzap_configuracao_list_message_templates
 ```
 
-> **O KoterZap nasce vazio.** Comprovado na Koter Day: `instances: []`, `inboxes: []`, `templates: []`, `chatbots: []`, `bases: []` — cinco listas zeradas.
+> **O KoterZap nasce vazio.** Comprovado na Koter Day: `instances: []` (hoje, `whatsappInstances: []`), `inboxes: []`, `templates: []`, `chatbots: []`, `bases: []` — cinco listas zeradas.
 >
 > Isso é o **oposto** do CRM, que nasce com quatro automações ligadas. Aqui não há nada de fábrica para revisar: ou existe número conectado, ou a conversa inteira é sobre o que fazer antes disso.
 
-Se `instances` vier vazio, pule para o passo 4 e não configure mais nada: **tudo no KoterZap pendura em um número.**
+Se `whatsappInstances` vier vazio, pule para o passo 4 e não configure mais nada: **tudo no KoterZap pendura em um número.**
 
 ## 2 · Os três tipos, e o que muda entre eles
 
@@ -68,16 +68,16 @@ Quando encontrar uma instância `COEXISTENCE`, diga isso em voz alta. É a causa
 
 ## 3 · Quem atende cada número
 
-Duas listas por instância, e elas não são a mesma coisa:
+Duas listas por instância (em `whatsappInstances`), e elas não são a mesma coisa:
 
 - **`allowedTeams`** — equipes que enxergam aquele número.
 - **`allowedUsers`** — pessoas soltas, sem passar por equipe.
 
-Ajuste pelo inbox: `koterzap_configuracao_set_inbox_allowed_teams` e `set_inbox_linked_instance`. Inbox com `allowedTeamIds` vazio significa **qualquer atendente**, não "ninguém".
+**Quem atende o número se ajusta na tela da instância, não pelo MCP.** A caixa WHATSAPP nasce vinculada à sua instância e segue as equipes dela; `koterzap_configuracao_update_inbox` recusa essa caixa. Ela serve para as caixas sem instância (e-mail e widget do site), e substitui a lista inteira de `allowedTeamIds`: leia antes com `list_inboxes` com `ids` e reenvie as que continuam. Vincular caixa a instância também é de tela. Caixa com `allowedTeamIds` vazio significa **qualquer atendente**, não "ninguém".
 
 > **A pegadinha que quebra automação do CRM:** a ação `CREATE_LEAD` exige que a instância esteja vinculada a **exatamente uma** equipe. Nenhuma equipe, duas equipes, ou liberada só para usuários: a ação é recusada. A equipe do lead criado sai dessa instância, e é por isso que precisa ser uma só.
 
-Então, ao arrumar `allowedTeams`, pergunte antes de mexer — muda quem enxerga aquele número, e isso é decisão do corretor, não sua.
+Então, ao pedir ao corretor que arrume `allowedTeams` na tela, confirme com ele antes a equipe certa — muda quem enxerga aquele número, e isso é decisão do corretor, não sua.
 
 ## 4 · O que o plugin não faz, e por que dizer isso logo
 
@@ -93,11 +93,11 @@ E a licença: registrar instância exige licença de WhatsApp na assinatura; pla
 
 **Diga os três de uma vez, no começo.** Descobrir no fim, depois de montar um chatbot e uma régua, que nada disso vai ao ar, é a pior sequência possível.
 
-### ⚠️ `create_message_template` não é o template da Meta
+### ⚠️ `save_message_template` não é o template da Meta
 
 Essa é a armadilha que mais engana nesta área inteira.
 
-> `koterzap_configuracao_create_message_template` cria uma **resposta rápida interna** — texto pronto que o atendente dispara com um clique no chat. A própria tool diz: *"Não são os templates aprovados pela Meta."*
+> `koterzap_configuracao_save_message_template` cria uma **resposta rápida interna** — texto pronto que o atendente dispara com um clique no chat. A própria `list_message_templates` diz: *"Não são os templates aprovados pela Meta: esses estão em list_meta_message_templates."*
 >
 > O template da Meta é outra entidade, ligada à instância, e **o MCP continua não criando nenhum** — a aprovação é da Meta.
 
@@ -107,20 +107,20 @@ Uma skill que "cria o template" assim e liga uma automação de mensagem vai fal
 
 ```
 koterzap_configuracao_list_meta_message_templates(instanceId, status?, name?, limit?, after?)
-    → { templates, paging }
+    → { templates, nextCursor }
 ```
 
-Só leitura, e **só funciona em instância Cloud API oficial**. É a tool que responde a pergunta que trava régua de mensagem e renovação: *existe template `APPROVED` para o `SEND_WHATSAPP_TEMPLATE` usar?* Antes de prometer qualquer automação que manda mensagem, consulte — e leve o nome do template aprovado para a automação, em vez de torcer.
+Só leitura, e **só funciona em instância oficial** (`CLOUD_API` ou `COEXISTENCE`; `isCloudApi` em `whatsappInstances` diz qual é). Pagina pela Meta: repita com `after` igual ao `nextCursor` até ele vir `null`. É a tool que responde a pergunta que trava régua de mensagem e renovação: *existe template `APPROVED` para o `SEND_WHATSAPP_TEMPLATE` usar?* Antes de prometer qualquer automação que manda mensagem, consulte — e leve o nome do template aprovado para a automação, em vez de torcer.
 
 Não confunda com `list_message_templates`, que lista as respostas rápidas internas e nem pede `instanceId`.
 
 > **Esta skill é a dona do assunto.** Desde 21/09/2026 a `/introducao` não rastreia mais o template da Meta: no ato 0 ela diz uma frase de orientação junto da tarefa de conectar o número, e para por aí. A conferência acontece aqui, **na hora em que a régua de mensagem for montada** — que é o único momento em que a resposta muda alguma decisão. Não peça ao corretor que "avise quando o template sair": leia.
 
-> ⚠️ **O erro não explica nada.** Medido na Koter Day em 21/09/2026 com um `instanceId` que não existe: a resposta foi só *"Recurso não encontrado."* — não diz que a instância não existe, nem que precisa ser Cloud API. **Confira antes com `list_whatsapp_instances`** e diga ao corretor o que falta; não repasse esse erro cru. (A Koter Day não tem nenhuma instância, então o caminho feliz desta tool segue sem prova.)
+> ⚠️ **O erro não explica nada.** Medido na Koter Day em 21/09/2026 com um `instanceId` que não existe: a resposta foi só *"Recurso não encontrado."* — não diz que a instância não existe, nem que precisa ser Cloud API. **Confira antes com `fetch_koterzap_config_context` (`whatsappInstances`, campo `isCloudApi`)** e diga ao corretor o que falta; não repasse esse erro cru. (A descrição nova da tool promete uma mensagem própria para cada caso — instância de outra corretora, `EVOLUTION`, conexão com a Meta incompleta —, mas isso ainda não foi visto. A Koter Day não tem nenhuma instância, então o caminho feliz desta tool segue sem prova.)
 
 ### E resposta rápida exige número
 
-> Comprovado na Koter Day: `create_message_template` tem `instances` com pelo menos um item obrigatório. Não dá para deixar respostas rápidas prontas esperando o número chegar. Com um id que não existe, o que volta é erro cru de banco:
+> Comprovado na Koter Day: `save_message_template` tem `instances` com pelo menos um item obrigatório ao criar. Não dá para deixar respostas rápidas prontas esperando o número chegar. Com um id que não existe, o que voltou em 21/09 foi erro cru de banco (a descrição nova diz que o id de fora da corretora "recusa a gravação inteira"; a mensagem pode ter mudado):
 >
 > ```
 > Foreign key constraint violated on the constraint:
@@ -157,9 +157,9 @@ Isso não é preferência de estilo: é o que gera denúncia no aplicativo, e tr
 Releia o que você mexeu, sempre:
 
 ```
-koterzap_configuracao_list_whatsapp_instances   → confere allowedTeams
-koterzap_configuracao_get_inbox                 → confere a instância vinculada
-koterzap_configuracao_list_message_templates    → confere as respostas criadas
+koterzap_configuracao_fetch_koterzap_config_context  → whatsappInstances: confere allowedTeams
+koterzap_configuracao_list_inboxes (ids)             → confere linkedWhatsAppInstance e allowedTeamIds
+koterzap_configuracao_list_message_templates         → confere as respostas criadas
 ```
 
 E feche com a frase que resume o canal, que é o entregável real desta skill:
@@ -182,12 +182,12 @@ Próxima, em até 4 opções:
 | Sintoma | Causa | Conserto |
 |---|---|---|
 | Automação de mensagem recusada | instância Evolution, não Cloud API | régua sem a ação de mensagem, ou conectar Cloud API |
-| Template "criado" e o envio falha | `create_message_template` é resposta rápida interna | aprovar na Meta, pela tela; conferir com `list_meta_message_templates` |
-| `list_meta_message_templates` devolve "Recurso não encontrado." | id inexistente, ou instância que não é Cloud API | cheque `list_whatsapp_instances` antes e diga qual dos dois é |
+| Template "criado" e o envio falha | `save_message_template` é resposta rápida interna | aprovar na Meta, pela tela; conferir com `list_meta_message_templates` |
+| `list_meta_message_templates` devolve "Recurso não encontrado." | id inexistente, ou instância que não é Cloud API | cheque `whatsappInstances` em `fetch_koterzap_config_context` antes e diga qual dos dois é |
 | Resposta rápida devolve erro de banco | não há instância, e `instances` é obrigatório | criar só depois que existir número |
 | "Ontem funcionava" | coexistência com o lado QR caído | a janela de 24h passou a valer; reconectar o QR |
 | Mensagem só sai depois que o cliente escreve | janela de 24h em Cloud API | é o comportamento correto; use template para reabrir |
-| `CREATE_LEAD` recusado na automação | instância sem exatamente uma equipe | `set_inbox_allowed_teams`, com o corretor |
+| `CREATE_LEAD` recusado na automação | instância sem exatamente uma equipe | ajustar as equipes na tela da instância, com o corretor |
 | Diagnóstico de atendimento parece quebrado numa conta nova | sem número, não há inbox nem conversa | as tools de atendimento devolvem vazio, não erro — é diagnóstico, não falha |
 | Número duplicado no pareamento | só uma instância conectada por número | desconectar a antiga antes |
 | `Operação não permitida.` numa chamada que funcionava | a conexão trocou de corretora | reler `companyId`; **não repetir a chamada** |
@@ -199,7 +199,7 @@ Conferido na Koter Day em 21/09/2026, com `instances: []`. As leituras de atendi
 | Chamada | Conta sem número |
 |---|---|
 | `koterzap_configuracao_list_inboxes` | `{inboxes: [], total: 0}` |
-| `koterzap_atendimento_get_conversation_counts` | `{mine: 0, pending: 0, all: 0, resolved: 0, archived: 0}` |
+| `koterzap_atendimento_get_conversation_counts` | `{counts: {mine: 0, pending: 0, all: 0, resolved: 0, archived: 0}}` |
 | `koterzap_atendimento_list_conversations` | `{conversations: [], total: 0}` |
 | `koterzap_atendimento_list_reply_templates` | `{templates: [], total: 0}` |
 

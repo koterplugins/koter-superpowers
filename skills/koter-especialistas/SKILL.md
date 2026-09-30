@@ -16,7 +16,7 @@ Esta skill resolve isso **recortando** o plugin em poucos especialistas, cada um
 Duas leituras, nenhuma escrita:
 
 ```
-admin_cargos_get_my_effective_permissions   → companyId, modules, permissions
+admin_cargos_fetch_admin_roles_context(include: ["myPermissions"])   → myPermissions.companyId, .modules, .permissions
 ```
 
 É o que poda a lista: quem não tem `KOTERZAP` em `modules` não ganha especialista de atendimento, e quem não tem permissão de escrita em comissão ganha o financeiro **em modo leitura**, dito na ficha.
@@ -109,7 +109,7 @@ A última linha é a que só existe aqui, e é o que separa um time de especiali
 
 **O campo 9 é o que faz o campo 4 valer.** Sem ele, "eu não mexo no seu funil" é uma promessa de texto, que a IA quebra na primeira vez que se confundir. Com ele, a tool nem está na lista. Ver a seção 4b.
 
-**O campo 6 não se inventa.** Cada ficha do catálogo já traz as armadilhas do assunto dela, tiradas de execução real na corretora de demonstração — `create_origin` e caixa alta, `LEAD_OWNER` sem dono, `AGENCIAMENTO` × `ANGARIACAO`, a base que indexa depois. Se você montar um especialista novo, vá buscar as dele nas `SKILL.md` das skills que ele carrega; ficha sem armadilha é ficha que ainda não foi escrita.
+**O campo 6 não se inventa.** Cada ficha do catálogo já traz as armadilhas do assunto dela, tiradas de execução real na corretora de demonstração — origem que exige equipe (`teamIds`), `LEAD_OWNER` sem dono, `AGENCIAMENTO` × `ANGARIACAO`, a base que indexa depois. Se você montar um especialista novo, vá buscar as dele nas `SKILL.md` das skills que ele carrega; ficha sem armadilha é ficha que ainda não foi escrita.
 
 ## 4b · O campo 9 na prática
 
@@ -122,29 +122,29 @@ Se a sua IA só aceita uma conexão do Koter, use a completa e me diga — eu de
 o resto da lista com disable_toolset assim que a conversa começa.
 ```
 
-**A cada ficha, a sua.** A conexão completa tem **265 tools**, medidas em 28/09/2026:
+**A cada ficha, a sua.** A conexão completa tem **180 tools**, medidas em 30/09/2026:
 
 | Especialista | `?toolsets=` | Tools |
 |---|---|---:|
-| Secretário Geral | `crm` | 25 |
-| Atendimento | `koterzap-configuracao,koterzap-atendimento` | 51 |
+| Secretário Geral | `crm` | 11 |
+| Atendimento | `koterzap-configuracao,koterzap-atendimento` | 31 |
 | Cadastro | `gestao,gestao-config` | 26 |
-| CRM | `crm-config,crm-automation,gestao-automacao` | 59 |
-| Vendas | `crm,crm-config,gestao-automacao,gestao` | 82 |
+| CRM | `crm-config,crm-automation,gestao-automacao` | 27 |
+| Vendas | `crm,crm-config,gestao-automacao,gestao` | 42 |
 | Financeiro | `gestao-comissao,gestao-financeiro,gestao-config` | 77 |
-| Implantação | *(a conexão completa, sem filtro)* | 265 |
+| Implantação | *(a conexão completa, sem filtro)* | 180 |
 
 Três coisas que essa tabela ensina e que não são óbvias:
 
 - **A implantação não se recorta.** A `/introducao` precisa do handshake (`admin-cargos`) e diagnostica os três módulos na mesma rodada. É a única que fica com tudo.
 - **Três especialistas atravessam módulo**, e é por isso que o recorte por especialista rende mais que "um link por módulo": Vendas e CRM levam `gestao-automacao`, porque o motor com relógio — o gatilho por data que arma a renovação — é do Gestão, e Vendas leva `gestao` porque ligar o lead ganho à proposta é `gestao_set_proposal_links` (com `leads`).
-- **Quem menos ganha agora é Vendas** (82), porque atravessa dois módulos. O financeiro caiu de 150 para 77 com o Gestão enxuto; se ainda incomodar, parta em dois — `gestao-comissao,gestao-config` (50) para comissão e repasse, `gestao-financeiro` (27) para caixa.
+- **Quem menos ganha agora é o Financeiro** (77, −57%), porque `gestao-comissao` sozinho tem 36 tools e ficou o maior toolset do MCP. Se incomodar, parta em dois — `gestao-comissao,gestao-config` (50) para comissão e repasse, `gestao-financeiro` (27) para caixa.
 
-**O que fica de fora de todos:** `admin-usuarios` (31 tools — convidar, remover, trocar cargo, mesclar pessoa). Só `koter-gestao-vendedores` precisa dele, para cadastrar e convidar vendedor, e isso é ato de implantação, não de rotina. Fica na conexão completa; o Financeiro trabalha sobre os vendedores que já existem e encaminha o resto.
+**O que fica de fora de todos:** `admin-usuarios` (16 tools — convidar, remover, trocar cargo, mesclar pessoa). Só `koter-gestao-vendedores` precisa dele, para cadastrar e convidar vendedor, e isso é ato de implantação, não de rotina. Fica na conexão completa; o Financeiro trabalha sobre os vendedores que já existem e encaminha o resto.
 
 A íntegra do raciocínio em `../introducao/references/conexao-por-modulo.md`.
 
-Se você **não montou a ficha pela `/introducao`**, não invente a URL: chame `list_toolsets` na conexão que estiver ligada e monte a partir do que ela devolver. Os números mudam — em 28/09/2026 o Gestão caiu à metade (`gestao-comissao` de 72 para 36, `gestao-config` de 32 para 14) e o total foi de 356 para 265.
+Se você **não montou a ficha pela `/introducao`**, não invente a URL: chame `list_toolsets` na conexão que estiver ligada e monte a partir do que ela devolver. Os números mudam — em 28/09/2026 o Gestão caiu à metade (`gestao-comissao` de 72 para 36, `gestao-config` de 32 para 14) e o total foi de 356 para 265; em 30/09/2026 o CRM e o KoterZap passaram pela mesma consolidação (criar e editar viraram um `save_*` só, apagar virou `delete_*_records`) e o total caiu para 180.
 
 ## 5 · O encaminhamento — a tabela que todo especialista carrega
 

@@ -26,7 +26,7 @@ gestao_comissao_update_installments(items[{ installmentId, markReceived: true, r
 gestao_comissao_save_payout_batch(sellerId, roundDate?)
 ```
 
-`generate` exige na proposta início de vigência, valor e uma tabela que resolva para a seguradora e a modalidade; a mensagem de falha diz o que falta. Não precisa de `pricing.value`: comprovado na Koter Day com `pricing: null` e `proposalValue: 1500`, gerou as 25 parcelas.
+`generate` exige na proposta início de vigência, valor e uma tabela que resolva para a seguradora e a categoria; a mensagem de falha diz o que falta. Não precisa de `pricing.value`: comprovado na Koter Day com `pricing: null` e `proposalValue: 1500`, gerou as 25 parcelas.
 
 ### O ciclo fechado, medido na Koter Day em 21/09/2026
 
@@ -52,9 +52,9 @@ gestao_comissao_update_installments(items[{ installmentId, dueDate }])
 gestao_comissao_reset_installment_status(installmentId, track: "receivable" | "payout")
 ```
 
-- **`actualGross` é o prêmio real do mês, não a comissão.** Medido: uma parcela de 8% sobre 1.500 baixada com `actualGross: 1800` virou `BAIXADA` com `amountReceivable: 144`, `hasDiscrepancy: true` — e **as parcelas seguintes em aberto foram regeneradas** valendo 1.800. Use só quando o prêmio mudou de verdade; prêmio igual ao previsto é `receivableStatus`. **Cada baixa recria com ids novos as parcelas ainda em aberto da mesma proposta**: no máximo uma baixa por proposta em cada chamada, e releia com `list_proposal_installments` antes da próxima.
+- **`actualGross` é o prêmio real do mês, não a comissão.** Medido: uma parcela de 8% sobre 1.500 baixada com `actualGross: 1800` virou `BAIXADA` com `amountReceivable: 144`, `hasDiscrepancy: true` — e **as parcelas seguintes em aberto foram regeneradas** valendo 1.800. Use só quando o prêmio mudou de verdade; prêmio igual ao previsto é `receivableStatus`. **Cada baixa recria com ids novos as parcelas ainda em aberto da mesma proposta** (as que já têm recebível resolvido ou repasse pago mantêm o id): no máximo uma baixa por proposta em cada chamada, e releia com `list_proposal_installments` antes da próxima.
 - **`dueDate` aproveita só o dia** — informe em uma parcela por proposta. O dia informado vira o dia de vencimento da proposta e re-ancora todas as parcelas ainda em aberto; o mês de cada uma não muda. Medido: dia 20 moveu 5 a 25 de `2027-02-10` para `2027-02-20` e seguintes, e as parcelas já baixadas ou pagas ficaram congeladas.
-- **`reset_installment_status` regenera, não "desfaz".** Medido: resetar o recebível da parcela 4 **recriou as parcelas 4 a 25 com ids novos**. Qualquer id de parcela igual ou posterior à resetada que a skill tenha em mãos deixa de existir depois do reset — **releia com `list_proposal_installments` antes do próximo passo**. E confirme com o corretor antes: parcela cujo repasse já foi pago em lote é recusada, com a mensagem apontando o lote a estornar.
+- **`reset_installment_status` regenera, não "desfaz".** Medido: resetar o recebível da parcela 4 **recriou as parcelas 4 a 25 com ids novos**, e o schema de hoje confirma para o caso da BAIXADA na trilha `receivable`: *"a própria parcela resetada e todas as ainda em aberto são recriadas com IDs NOVOS (só as que continuam baixadas ou pagas mantêm o id)"*. Qualquer id de parcela igual ou posterior à resetada que a skill tenha em mãos deixa de existir depois do reset — **releia com `list_proposal_installments` antes do próximo passo**. E confirme com o corretor antes: parcela cujo repasse já foi pago em lote é recusada, com a mensagem apontando o lote a estornar.
 
 ## 1 · A rodada
 
@@ -77,14 +77,17 @@ save_payout_batch(batchId, add|remove)   → inclui ou retira parcelas pela chav
 save_payout_batch_adjustments            → crédito ou débito manual
 set_payout_batch_invoice                 → a nota fiscal do corretor PJ
 pay_payout_batch                         → o ato manual que paga
-undo_payout_batch(mode)                  → revert estorna lote pago ou diferido; delete descarta lote aberto
+undo_payout_batch(mode)                  → revert estorna lote pago ou diferido; delete descarta lote aberto;
+                                           remove_invoice apaga a nota; delete_adjustments exclui ajuste manual
 ```
 
-**Ajuste tipado ≠ ajuste manual.** Campanha, crítica, empréstimo e arrasto de diferimento nascem dos coletores automáticos e **não podem ser criados à mão**. Só o ajuste genérico é manual — e é o que você usa para "combinei um extra com ele esse mês".
+**Ajuste tipado ≠ ajuste manual.** Campanha, crítica, empréstimo e arrasto de diferimento nascem dos coletores automáticos e **não podem ser criados à mão**. Só o ajuste genérico é manual — e é o que você usa para "combinei um extra com ele esse mês". Um ajuste tipado que não deve entrar nesta rodada sai com `excluded: true` em `save_payout_batch_adjustments` (o coletor não o recria); apagar, só o manual.
+
+**A nota fiscal por MCP é número e data.** `set_payout_batch_invoice(batchId, number, issuedAt)` registra a nota e congela o valor dela; o arquivo PDF/XML só se anexa pela tela.
 
 ## 3 · Piso, diferimento e o que o corretor não espera
 
-`payoutMinimumAmount` na rotina financeira é o piso da rodada. **Lote com líquido abaixo do piso é DIFERIDO, não pago** — o valor não some, acumula para a próxima rodada e aparece no extrato como "acumulando para o piso". Explique isso antes de fechar, senão vira ligação do vendedor.
+`payoutMinimumAmount` na rotina financeira é o piso da rodada. **Lote com líquido abaixo do piso é DIFERIDO, não pago** — o valor não some, acumula para a próxima rodada e aparece no extrato como "acumulando para o piso". Explique isso antes de fechar, senão vira ligação do vendedor. Duas coisas que o schema de `pay_payout_batch` avisa: no lote diferido **as amortizações de empréstimo são consumadas mesmo assim**; e pagar abaixo do piso só com `forceBelowFloor: true` **e** `forcedReason`, que fica auditado.
 
 Status possíveis: `ABERTO` (editável), `PAGO`, `DIFERIDO`, `ESTORNADO`.
 
@@ -116,7 +119,7 @@ Cada linha é rastreável à origem: parcela por chave natural, crédito de camp
 ## 6 · Regras de segurança desta skill
 
 - **Pagar é irreversível na prática.** `pay_payout_batch` só depois de mostrar o líquido, os débitos e a quem se refere, e receber o "pode pagar" na mesma conversa.
-- **`undo_payout_batch` com `mode: "revert"` existe**, mas desfazer pagamento gera ruído com o vendedor. Não trate como Ctrl+Z.
+- **`undo_payout_batch` com `mode: "revert"` existe**, mas desfazer pagamento gera ruído com o vendedor. Não trate como Ctrl+Z. E ele é recusado em lote já conciliado com o banco (desfaça a conciliação antes) e em diferimento cujo arrasto um lote posterior já absorveu (estorne aquele primeiro).
 - **Mudou regra? `save_payout_batch` com `batchId` e `refresh: true` antes de pagar.** Lote aberto não se atualiza sozinho.
 - **Nunca pague em lote vários vendedores sem listar antes** quem entra, quanto cada um leva e quanto some por piso.
 

@@ -11,7 +11,7 @@ Termina com o fluxo gravado, validado e **simulado com o trace na mesa** — nã
 
 ## 0 · Pré-requisitos
 
-Módulo `KOTERZAP` e permissão `manage:chatbots`. Licença de WhatsApp na assinatura (`create_chatbot` exige).
+Módulo `KOTERZAP` e permissão `manage:chatbots`. Licença de WhatsApp na assinatura (`save_chatbot` exige).
 
 **Não precisa de número conectado.** Precisa, sim, do CRM já com equipe e funil (`koter-crm-fundacao`), porque o transbordo aponta para equipe e as condições leem status e etiqueta.
 
@@ -21,25 +21,25 @@ Se houver base de conhecimento a usar, rode `koter-zap-conhecimento` antes — o
 
 ## 1 · A regra que organiza tudo: um bot por número
 
-`Chatbot` é único por instância de WhatsApp. **Não existem dois bots no mesmo número**, e não dá para ter um bot "de vendas" e outro "de pós-venda" na mesma linha. A separação entre os dois é *dentro* do fluxo, por triagem.
+`Chatbot` é único por instância de WhatsApp (a própria `save_chatbot` diz: *"Uma instância atende um chatbot só."*). **Não existem dois bots no mesmo número**, e não dá para ter um bot "de vendas" e outro "de pós-venda" na mesma linha. A separação entre os dois é *dentro* do fluxo, por triagem.
 
 Se o corretor quer atendimentos muito diferentes, a pergunta certa é se ele quer dois números — e isso é decisão dele, com custo de licença.
 
 ## 2 · A ordem que evita o bot meia-boca atendendo cliente
 
-> **O chatbot nasce `active: true`.** Comprovado na Koter Day: `create_chatbot` devolveu `"active": true, "whatsappInstanceId": null`.
+> **O chatbot nasce `active: true`.** Comprovado na Koter Day: a criação devolveu `"active": true, "whatsappInstanceId": null` (hoje é `save_chatbot` sem `chatbotId`, com `name` e `type: "FLOW"`).
 >
 > Criar é ligar. Mas sem instância ele é **inerte** — e é exatamente isso que dá a ordem segura.
 
 ```
-1. create_chatbot            sem whatsappInstanceId    ← nasce ativo, mas mudo
-2. update_chatbot_flow       o fluxo inteiro
-3. validate_chatbot_flow     antes de cada gravação
+1. save_chatbot              name + type FLOW, sem whatsappInstanceId   ← nasce ativo, mas mudo
+2. validate_chatbot_flow     antes de cada gravação
+3. save_chatbot_flow         o fluxo inteiro, com expectedUpdatedAt
 4. simulate_chatbot          a conversa, com trace
-5. edit_chatbot              vincula a instância        ← só agora ele atende
+5. save_chatbot              chatbotId + whatsappInstanceId   ← só agora ele atende
 ```
 
-**Vincular a instância é o último passo, nunca o primeiro.** A descrição da própria tool recomenda isso: *"Pode ficar em branco e ser vinculada depois com edit_chatbot, o que é mais seguro enquanto o fluxo não existe."*
+**Vincular a instância é o último passo, nunca o primeiro.** A descrição da própria tool recomenda isso: *"Um chatbot vinculado já responde as mensagens da instância: num FLOW, grave o fluxo antes de vincular."* O `whatsappInstanceId` sai de `whatsappInstances` em `fetch_koterzap_config_context`; `null` desvincula, e `active: false` pausa sem apagar.
 
 E isso resolve o caso comum: corretora que ainda não conectou o número **consegue deixar o bot pronto e conferido hoje**, e ligar quando o WhatsApp chegar. Diga isso ao corretor — é o contrário do que ele espera.
 
@@ -56,7 +56,7 @@ Doze tipos. Na prática, seis montam 90% dos fluxos:
 | `BUSINESS_HOURS` | dentro ou fora do expediente | `open` e `closed` |
 | `HANDOFF` | entrega a humano e **encerra a sessão do bot** | uma |
 
-As outras: `AI_ROUTER` (é a `koter-chatbot-ia`), `HTTP_REQUEST` (`success`/`error`), `ACTION` (age no CRM), `GO_BACK`, `END`. **`INPUT_WAIT` é formato antigo — não crie.**
+As outras: `AI_ROUTER` (é a `koter-chatbot-ia`), `HTTP_REQUEST` (`success`/`error`), `ACTION` (age no CRM: `CREATE_TASK`, `CREATE_NOTE`, `GENERATE_QUOTE` ou `CREATE_LEAD`, este com `teamId`, `assignmentType` e `preventDuplicate`), `GO_BACK`, `END`. **`INPUT_WAIT` é formato antigo — não crie.**
 
 Teto de 300 etapas, o que nunca é o limite real. O limite real é a paciência de quem está do outro lado.
 
@@ -77,7 +77,7 @@ A saída `default` é para o que não casou com nada. Sem ela, toda opção prec
 
 ## 4 · A descoberta: o chatbot enxerga o CRM melhor que a automação do CRM
 
-O `CONDITION` do chatbot lê, **na hora da conversa**, dados do contato e do lead:
+O `CONDITION` do chatbot lê, **na hora da conversa**, dados do contato e do lead (os ids de estágio, equipe e usuário, as tags e as `key` dos campos personalizados saem de `fetch_koterzap_config_context`):
 
 ```
 crm.lead.exists          crm.lead.status        crm.lead.tags
@@ -97,7 +97,7 @@ Quatro detalhes que mordem:
 3. **`IN`, `NOT_IN` e `ALL_OF` leem só `values`** e ignoram `value`. Preencher o campo errado não dá erro: dá condição que nunca bate.
 4. **O lead lido é o lead ativo do contato atualizado por último.** Contato com dois leads abertos é ambíguo por construção.
 
-Chave `crm.*` desconhecida ou operador fora da lista de cada campo é **recusada ao gravar**, não ao validar.
+Chave `crm.*` desconhecida, operador fora da lista de cada campo, ou `IN`/`NOT_IN`/`ALL_OF` sem `values`, é recusada — e hoje já no `validate_chatbot_flow`, não só ao gravar. Os operadores aceitos por campo: `exists` só `IS_EMPTY`/`IS_NOT_EMPTY`; `status`, `user` e `team` `EQUALS`, `NOT_EQUALS`, `IN`, `NOT_IN`, `IS_EMPTY`, `IS_NOT_EMPTY`; `tags` `IN` (tem alguma), `NOT_IN` (não tem nenhuma), `ALL_OF` (tem todas), `CONTAINS`, `NOT_CONTAINS`, `IS_EMPTY`, `IS_NOT_EMPTY`; `perception` (`COLD`, `WARM`, `HOT`) `EQUALS`, `NOT_EQUALS`, `IN`, `NOT_IN`; `billing.*` `EQUALS`, `NOT_EQUALS`, `GREATER_THAN`, `LESS_THAN`, `IS_EMPTY`, `IS_NOT_EMPTY`; `extra.*` qualquer um. Num campo personalizado `SELECT`, compare com o `value` da opção, não com o rótulo.
 
 ## 5 · O fluxo de referência
 
@@ -143,18 +143,21 @@ koterzap_configuracao_validate_chatbot_flow
 
 Devolve **o primeiro** problema, não a lista: é corrigir e validar de novo até `valid: true`. O fluxo de referência acima passou com `{ "valid": true, "nodes": 12, "edges": 16 }`.
 
-E o que ele **não** confere: se os ids referenciados pertencem à corretora. Id de base de conhecimento ou de equipe errado só estoura no `update_chatbot_flow` (`KNOWLEDGE_BASE_NOT_FOUND`). Tire os ids sempre de uma listagem, nunca de memória.
+E o que ele **não** confere: se os ids referenciados pertencem à corretora. Id de base de conhecimento errado só estoura no `save_chatbot_flow` (`KNOWLEDGE_BASE_NOT_FOUND`); id de equipe, usuário, estágio ou estado errado **não é conferido por nenhuma ferramenta** e só aparece quando o chatbot roda. Tire os ids sempre de `fetch_koterzap_config_context`, nunca de memória, e confira o `targetName` do `HANDOFF` na simulação.
 
 ### Gravar substitui tudo
 
-`update_chatbot_flow` troca o fluxo inteiro. **Etapa que ficar de fora é apagada, com as ligações dela.** O roteiro de edição é sempre:
+`save_chatbot_flow` troca o fluxo inteiro. **Etapa que ficar de fora é apagada, com as ligações dela.** O roteiro de edição é sempre:
 
 ```
-get_chatbot_flow → alterar mantendo os ids das etapas que continuam
-                 → validate → update_chatbot_flow com expectedUpdatedAt
+list_chatbots (ids: [chatbotId], include: ["flow"])
+    → alterar mantendo os ids das etapas que continuam
+    → validate_chatbot_flow → save_chatbot_flow com expectedUpdatedAt
 ```
 
-`expectedUpdatedAt` é a proteção contra o corretor ter mexido na tela enquanto você montava: se alguém salvou depois, a gravação é **recusada** em vez de sobrescrever. **Sempre passe.** Sem ele, o trabalho da tela some sem aviso.
+`expectedUpdatedAt` é a proteção contra o corretor ter mexido na tela enquanto você montava: se alguém salvou depois, a gravação é **recusada** em vez de sobrescrever. **Sempre passe** o `updatedAt` lido em `list_chatbots` ou devolvido pela última gravação. Sem ele, o trabalho da tela some sem aviso.
+
+Etapa nova ganha id novo ao gravar: a resposta traz o de-para em `nodeIdMap`. Releia antes de editar de novo.
 
 ## 7 · Simular é o que convence
 
@@ -162,7 +165,7 @@ get_chatbot_flow → alterar mantendo os ids das etapas que continuam
 koterzap_configuracao_simulate_chatbot
 ```
 
-Primeira chamada **sem `message`** abre a conversa. Depois, repita o `contactId` devolvido (prefixo `sim-`), o `currentNodeId` e o `variables` **mesclando `variables` e `internalVariables`** da resposta anterior.
+Primeira chamada **sem `message`** e sem `simulationId` abre a conversa. Depois, repita o `simulationId` devolvido (prefixo `sim-`), o `currentNodeId` e o `variables` **mesclando `variables` e `internalVariables`** da resposta anterior.
 
 > Comprovado na Koter Day, abertura do fluxo de referência:
 >
@@ -180,10 +183,10 @@ Primeira chamada **sem `message`** abre a conversa. Depois, repita o `contactId`
 
 Cuidados reais:
 
-- **`contactId` com prefixo `sim-` é descartável.** Um id de contato real **grava a sessão de verdade** — não use contato de cliente para testar.
+- **A simulação não usa contato real.** Não há mais `contactId`: nada da sessão é gravado, e os dados do contato vêm do seu usuário (o nome, de `pushName`).
 - **`HTTP_REQUEST` chama o endereço de verdade.** Peça confirmação antes de simular fluxo que tenha um.
 - **`AI_ROUTER` consome o orçamento de IA da corretora.** Simulação de fluxo com IA não é grátis.
-- **`ACTION` roda em modo de teste** e não grava no CRM. Essa é segura.
+- **`ACTION` e `HANDOFF` só são descritos** e não gravam no CRM. Esses são seguros.
 
 ### O que testar, no mínimo
 
@@ -225,19 +228,18 @@ Próxima, em até 4 opções:
 
 | Sintoma | Causa | Conserto |
 |---|---|---|
-| Etapas somem depois de editar | `update_chatbot_flow` substitui o fluxo inteiro | ler com `get_chatbot_flow` e devolver tudo |
+| Etapas somem depois de editar | `save_chatbot_flow` substitui o fluxo inteiro | ler com `list_chatbots` (`include: ["flow"]`) e devolver tudo |
 | Trabalho feito na tela desapareceu | gravou sem `expectedUpdatedAt` | sempre passar o `updatedAt` lido |
 | Menu sai com números duplicados | numeração escrita no `text` | `QUESTION` numera sozinho |
 | Cliente digita texto e o bot trava | falta a saída `default` | conectar `default` a humano ou IA |
 | Condição nunca bate | `IN`/`NOT_IN`/`ALL_OF` com `value` em vez de `values` | preencher `values` |
 | Desvio "é cliente" pega todo mundo | sem lead, só `IS_EMPTY` é verdadeira | usar `IS_NOT_EMPTY` e tratar o novo no `ELSE` |
 | Lead com faturamento 0 cai no "vazio" | 0 conta como vazio em `billing.*` | usar outro campo para esse corte |
-| `KNOWLEDGE_BASE_NOT_FOUND` ao gravar | validação não confere ids da corretora | ids sempre de listagem |
+| `KNOWLEDGE_BASE_NOT_FOUND` ao gravar | validação não confere ids da corretora, ou a base foi excluída | ids sempre de `fetch_koterzap_config_context`; tirar de `knowledgeBaseIds` a base apagada |
 | Bot já atendendo antes de estar pronto | nasce `active: true` | vincular a instância só no fim |
-| Sessão de teste gravada num cliente | `contactId` de contato real | usar o id com prefixo `sim-` |
 | O bot fala por cima do atendente | a sessão não foi pausada | treinar o "assumir"; `HANDOFF` encerra a sessão |
 | Condição compara a variável da triagem e nunca bate | `saveToVariable` guarda o **texto cru do cliente**, não o rótulo nem o id da opção | desviar pela saída da própria `QUESTION`, não por `CONDITION` sobre a variável |
-| Simulação volta ao "oi" a cada mensagem | `contactId` de contato real reabre o fluxo do início | conversa de várias mensagens só com o id `sim-` |
+| Simulação volta ao "oi" a cada mensagem | não devolveu `simulationId` e `currentNodeId` da resposta anterior | repetir o `simulationId` `sim-` e o estado |
 | Cliente responde a triagem e não recebe nada | o caminho cai direto num `AI_ROUTER`, que entra mudo | pôr um `MESSAGE` antes da etapa de IA |
 
 ## Provado na Koter Day
@@ -256,6 +258,6 @@ Rodado de ponta a ponta em 21/09/2026, com o simulador, no chatbot de referênci
 
 ### ⚠️ Duas descobertas que mudam como se simula
 
-**Com `contactId` de contato real, a simulação recomeça do `START` a cada chamada.** O `currentNodeId` que você devolve é ignorado; três chamadas seguidas repetiram `n1 → n2 → n3 → n4 → n6` e o `__nodePath` foi se acumulando. Conversa de várias mensagens **só funciona com o id de prefixo `sim-`** que a primeira chamada devolve. Consequência prática: um desvio que dependa de dado do CRM **depois** de uma `QUESTION` não tem como ser simulado — o contato `sim-` nunca tem lead, e o contato real nunca passa da primeira etapa. Para provar esse desvio, mova a condição para antes da primeira pergunta, rode, e devolva o fluxo ao lugar.
+**Em 21/09, com `contactId` de contato real, a simulação recomeçava do `START` a cada chamada**, e conversa de várias mensagens só funcionava com o id `sim-`. Hoje o simulador não aceita mais contato real: só `simulationId` (prefixo `sim-`), e os dados do contato vêm do seu usuário. As provas de `CONDITION` com lead real acima foram feitas pelo caminho antigo. Se a `CONDITION` encontra lead para o contato simulado ainda não foi conferido; até lá, trate o desvio por dado do CRM como provado pelo trace da primeira conversa real, não pela simulação.
 
 **A etapa `AI_ROUTER` entra muda.** Ao cair nela, a resposta veio com `messages: []` e `metadata: {awaitingUserInput: true}` — o agente não abre a conversa, ele espera a próxima mensagem do cliente. Aconteceu nos três caminhos que terminam em IA. Se o caminho inteiro for `QUESTION → AI_ROUTER`, o cliente responde a triagem e **não recebe nada**. Ponha um `MESSAGE` de passagem antes da etapa de IA.

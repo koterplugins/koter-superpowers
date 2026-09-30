@@ -40,6 +40,8 @@ gestao_comissao_save_seller_loan(sellerId, principalAmount, loanDate, interestPe
                                  chargeMode, capAmount?, capWindow?, retentionPercent?, schedule?)   ← sem loanId cria
 ```
 
+Com `loanId` edita um empréstimo ativo: modo de cobrança, teto, janela, retenção e cronograma mudam a qualquer hora e valem para as próximas rodadas; **principal, juros e data só até a primeira amortização** (por lote ou avulsa).
+
 **Os juros são um percentual único congelado na criação.** R$ 3.000 com 10% vira dívida de R$ 3.300 — confirmado na Koter Day (`interestAmount: 300`, `totalAmount: 3300`). Não é juros ao mês; não prometa que é.
 
 Três modos de cobrança, e a escolha muda a experiência do vendedor:
@@ -52,13 +54,13 @@ Três modos de cobrança, e a escolha muda a experiência do vendedor:
 
 **O desconto acontece sozinho nos lotes, e o vendedor nunca fica negativo:** a cascata limita ao disponível e o resíduo empurra para a rodada seguinte. Diga isso — é a pergunta que ele vai fazer.
 
-Ciclo de vida: `register_seller_loan_payment` (pagamento por fora), `revert_seller_loan_payment`, `save_seller_loan` com `loanId` e `suspended: true` + `suspensionReason` (pausa o desconto sem perdoar; `false` retoma) e `end_seller_loan` com `mode: "forgive"` (perdoa saldo) ou `mode: "cancel"` (criado por engano, só antes de qualquer amortização) — `reason` obrigatório nos dois.
+Ciclo de vida: `register_seller_loan_payment` (pagamento por fora; por padrão já gera a receita liquidada no financeiro, na categoria "Reembolso de empréstimos a vendedores"), `revert_seller_loan_payment` (desfaça a conciliação antes, se a receita estiver conciliada), `save_seller_loan` com `loanId` e `suspended: true` + `suspensionReason` (pausa o desconto sem perdoar; `false` retoma) e `end_seller_loan` com `mode: "forgive"` (perdoa saldo) ou `mode: "cancel"` (criado por engano, só antes de qualquer amortização e sem linha proposta em lote aberto) — `reason` obrigatório nos dois.
 
 **`forgive` e `cancel` são irreversíveis na prática.** Só com pedido explícito, na mesma conversa, e diga o saldo antes.
 
 ## 4 · A crítica que fecha o ciclo
 
-`VENDEDOR_DESLIGADO_COM_DIVIDA` é uma das quatro críticas financeiras e nasce ligada. Vendedor que sai devendo aparece sozinho na fila — é o motivo de registrar empréstimo no sistema em vez de no WhatsApp.
+`VENDEDOR_DESLIGADO_COM_DIVIDA` é uma das quatro críticas financeiras configuráveis e nasce ligada. Vendedor que sai devendo aparece sozinho na fila — é o motivo de registrar empréstimo no sistema em vez de no WhatsApp.
 
 ## 5 · Validação e próxima
 

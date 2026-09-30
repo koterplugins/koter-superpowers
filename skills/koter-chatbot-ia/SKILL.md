@@ -23,7 +23,7 @@ E uma das duas formas do agente já escolhida (passo 1). Se for etapa dentro de 
 |---|---|---|
 | O que é | o bot inteiro é o agente | o agente é **uma etapa** do fluxo |
 | Quem atende primeiro | a IA, desde o "oi" | a triagem, e a IA só em quem chegou lá |
-| Onde se configura | `update_chatbot_ai_config` | `content` da etapa, via `update_chatbot_flow` |
+| Onde se configura | `aiConfig` (`customPrompt` e `agentType`) em `save_chatbot` | `content` da etapa, via `save_chatbot_flow` |
 | Custo de IA | toda conversa | só os caminhos que passam pela etapa |
 | Quando usa | corretora que quer SDR de verdade | quase sempre |
 
@@ -33,7 +33,7 @@ O `AI_AGENT` puro se justifica em volume alto de lead novo e frio, onde a triage
 
 ## 2 · O agente cota sozinho — e isso muda a conversa
 
-`list_chatbot_ai_tools` devolve **26 ferramentas**. A surpresa é que a esteira de cotação inteira está lá:
+`fetch_koterzap_config_context` com `include: ["aiTools"]` devolve as ferramentas do agente (**26** na Koter Day), cada uma com `name`, `label`, `category` e `fixed`. São ferramentas **do agente de IA**, que ele usa na conversa — não tools do MCP. A surpresa é que a esteira de cotação inteira está lá:
 
 | Categoria | O que o agente consegue fazer |
 |---|---|
@@ -47,7 +47,7 @@ O `AI_AGENT` puro se justifica em volume alto de lead novo e frio, onde a triage
 
 ### O que desligar, e por quê
 
-`disabledTools` recebe os `name` da listagem. Duas recomendações padrão:
+`content.disabledTools` recebe os `name` de `aiTools`; uma ferramenta `fixed` não entra ali. Duas recomendações padrão:
 
 - **`update_lead` e `update_contact`** — agente que reescreve cadastro corrige nome errado e também apaga o certo. Deixe `create_lead` e `create_lead_note` ligados: acrescentar é seguro, sobrescrever não é.
 - **`send_quote_pdf`, na primeira semana.** Deixe o agente simular e apresentar as opções em texto, e o corretor mandar o PDF. Depois que ele confiar, ligue.
@@ -56,7 +56,7 @@ Ligar tudo de saída é o caminho mais curto para o corretor desligar o bot inte
 
 ## 3 · O prompt já vem pronto — use-o
 
-`list_chatbot_ai_tools` devolve também `defaultNodePrompt`, e ele **já traz as regras certas**:
+A mesma chamada devolve também `defaultAiNodePrompt`, e ele **já traz as regras certas**:
 
 - *"Fale de valores, coberturas, rede ou carências apenas com resultado de ferramenta deste atendimento"* — a trava contra inventar preço.
 - Coleta em no máximo duas perguntas: cidade, quantas pessoas e idades, PF ou PJ.
@@ -91,7 +91,9 @@ A segunda não é firula jurídica. Condição de saúde é dado sensível pela 
 
 `numberOfProducts` (1 a 10) limita quantas opções ele apresenta. **Use 3.** Duas parecem pouca escolha; cinco no WhatsApp viram um paredão que ninguém lê.
 
-`category` é `seller` ou `attendant`, e no `AI_AGENT` o equivalente é `agentType`: `VENDAS` (SDR, o padrão), `ATENDIMENTO_CLIENTE` (pós-venda) ou `OPERACIONAL` (uso interno).
+`category` é `seller` ou `attendant`, e no `AI_AGENT` o equivalente é `aiConfig.agentType` em `save_chatbot`: `VENDAS` (SDR, o padrão), `ATENDIMENTO_CLIENTE` (pós-venda) ou `OPERACIONAL` (uso interno). Os ids de `knowledgeBaseIds` e `stateIds` saem de `fetch_koterzap_config_context` (`knowledgeBases`, `states`).
+
+> **`AI_AGENT` exige `aiConfig` ao criar.** Sem ela o agente não responde, e um `AI_AGENT` sem `aiConfig` só é ligado ou vinculado junto com ela.
 
 ## 5 · Validação — e ela custa
 
@@ -100,6 +102,8 @@ koterzap_configuracao_simulate_chatbot
 ```
 
 > **Simular etapa de IA consome o orçamento de IA da corretora.** A própria tool avisa. Não fique testando variações de prompt em loop; teste o que importa.
+
+> **Só se simula `FLOW`.** A tool diz: *"Um AI_AGENT não tem fluxo para percorrer."* Para ter uma aproximação de um `AI_AGENT` antes de ligar, monte um `FLOW` de teste com `START → MESSAGE → AI_ROUTER` usando o mesmo prompt, simule, e apague depois — é aproximação, porque a persona de fábrica da etapa sai de `category`, não de `agentType`.
 
 O `metadata` da etapa `AI_ROUTER` no trace devolve `systemPrompt`, `handoff` e **`knowledgeCitations`** — é onde se prova que a resposta veio da base e não da cabeça do modelo.
 
@@ -150,7 +154,7 @@ Se o KoterZap era a última trilha, esta é a última skill de configuração do
 
 | Sintoma | Causa | Conserto |
 |---|---|---|
-| O agente inventa preço ou rede | prompt sem a trava de "só com ferramenta" | usar o `defaultNodePrompt` como base |
+| O agente inventa preço ou rede | prompt sem a trava de "só com ferramenta" | usar o `defaultAiNodePrompt` como base |
 | Ele responde pergunta sobre doença | falta a regra de dado sensível | a segunda das três frases do passo 3 |
 | Nunca cita a base | descrição da base genérica | reescrever dizendo **quando** consultar |
 | Cadastro do cliente ficou errado | `update_lead` / `update_contact` ligados | desligar em `disabledTools` |

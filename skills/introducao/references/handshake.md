@@ -1,20 +1,22 @@
 # Handshake — o que a primeira chamada responde
 
 ```
-admin_cargos_get_my_effective_permissions
+admin_cargos_fetch_admin_roles_context(include: ["myPermissions"])
 ```
 
-Resposta real (corretora de demonstração **Koter Day**, 18/09/2026):
+Até 28/09/2026 era uma tool própria, `get_my_effective_permissions`. Em 30/09 ela virou a parte `myPermissions` do contexto de cargos, e a resposta vem embrulhada nela. Peça **só** `myPermissions`: sem `include`, a chamada traz também o catálogo inteiro de permissões e os limites de carteira, que o handshake não usa.
+
+Resposta real (corretora de demonstração **Koter Day**, 18/09/2026; o formato de dentro não mudou):
 
 ```json
-{
+{ "myPermissions": {
   "companyId": "<id-da-corretora>",
   "permissions": ["admin:access", "manage:sellers", "mng:commission-grade:create",
                   "read:proposal:list", "create:proposal", "..."],
   "licensed": true,
   "crmAccess": true,
   "modules": ["SAUDE", "CRM", "KOTERZAP", "GESTAO"]
-}
+} }
 ```
 
 ## Como ler cada campo
