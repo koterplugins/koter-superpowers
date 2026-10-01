@@ -40,7 +40,7 @@ O que vale saber antes:
 
 - **`name` é o único obrigatório.** Todo o resto é opcional, e é por isso que dá para registrar o lead no meio de uma conversa de WhatsApp com o que ele tiver na mão.
 - **O contato vem junto, sozinho.** O `crm_save_lead` procura o contato por `phone`, `mobilePhone` e `email` (o telefone em qualquer grafia) e só cria um novo quando não acha nenhum. Comprovado: uma criação de lead devolveu `contactId` de um contato que não existia antes. Não crie contato antes do lead; se ele já existe, passe `contactId` ou o telefone.
-- **`origin` e `tags` vão pelo NOME; `interests` e `statusId` pelo id.** Mistura dos dois espaços é o erro mais comum aqui. **Um nome de origem que não bate com nenhum da lista (nem ignorando caixa, acento e espaço) vira origem nova, sem erro** — confira a grafia contra `origins` do contexto antes de mandar (ver `koter-crm-origens-tags`). Sem `origin`, o lead nasce como "Captação Própria".
+- **`origin` e `tags` vão pelo NOME; `interests` e `statusId` pelo id.** Mistura dos dois espaços é o erro mais comum aqui. **Um nome de origem que não existe na corretora é recusado** (desde 01/10/2026): *"A origem «…» não existe na corretora. Use o nome de uma origem de origins em fetch_crm_context."* Tire o nome de `origins` do contexto; origem nova se cria antes, com `crm_config_save_origin` (ver `koter-crm-origens-tags`). Sem `origin`, o lead nasce como "Captação Própria".
 - **`statusId` exige `teamId` na criação**, e é sempre conferido contra as etapas do time do lead. Sem `teamId`, o lead nasce fora de qualquer time e sem etapa do funil.
 - **`extra` usa a `key` do campo personalizado**, nunca o `label`, e todo valor vai como string. Na edição, `extra`, `tags` e `interests` substituem o conjunto inteiro: repita os atuais que devem ficar.
 - **`lgpd`** tem sentido jurídico: `CONSENT` é ele ter autorizado, `LEGITIMATE_INTEREST` e `PREEXISTING_CONTRACT` cobrem cliente e indicação. O padrão é `NOT_PROVIDED`. Marque o que é verdade, não o que é conveniente — e nunca marque `CONSENT` sem o corretor dizer que houve.
@@ -152,7 +152,7 @@ Com `usou_de_verdade` preenchido nas duas (aqui e em `koter-proposta`), o onboar
 | `list_leads` com `phone` não acha um lead que existe | o número é de outro dono e o cargo só vê os próprios leads | confirme por nome; a grafia do telefone não é mais a causa |
 | Dois leads da mesma pessoa | a busca vazia foi lida como "não existe" | trate vazio como inconclusivo |
 | Contato duplicado | contato criado à mão, com outro telefone, antes do lead | `save_lead` já acha ou cria o contato |
-| Origem nova e parecida com uma existente | `origin` vai por nome, e nome que não bate vira origem nova | compare com a lista, com acento e caixa, antes de mandar |
+| "A origem … não existe na corretora" | `origin` vai por nome, e o nome não está em `origins` | use um nome de `origins`; se a origem é nova mesmo, crie antes com `crm_config_save_origin` |
 | `extra` não grava | usou o `label` no lugar da `key` | leia a `key` no contexto |
 | Campos personalizados sumiram depois de editar | `extra` na edição substitui todos | repita os atuais que devem ficar |
 | Automação de tarefa não gerou nada | o lead está sem dono | passe `ownerUserId` na criação, ou corrija com `save_lead` |

@@ -103,7 +103,9 @@ koterzap_configuracao_simulate_chatbot
 
 > **Simular etapa de IA consome o orçamento de IA da corretora.** A própria tool avisa. Não fique testando variações de prompt em loop; teste o que importa.
 
-> **Só se simula `FLOW`.** A tool diz: *"Um AI_AGENT não tem fluxo para percorrer."* Para ter uma aproximação de um `AI_AGENT` antes de ligar, monte um `FLOW` de teste com `START → MESSAGE → AI_ROUTER` usando o mesmo prompt, simule, e apague depois — é aproximação, porque a persona de fábrica da etapa sai de `category`, não de `agentType`.
+> **O `AI_AGENT` também se simula** (desde 01/10/2026). Sem fluxo, cada mensagem é um turno do agente, com a memória em `session.aiTurns`, que você devolve na chamada seguinte junto com o `simulationId`. O trace traz um passo com `systemPrompt`, `handoff` e `knowledgeCitations`.
+>
+> ⚠️ **Cotação criada na simulação é real.** A tool avisa: *"se criar uma cotação, ela é real (as ferramentas do CRM não gravam, porque o contato simulado não existe)"*. Nas quatro perguntas abaixo, não peça cotação ao agente simulado; a esteira de cotação se prova com o número ligado.
 
 O `metadata` da etapa `AI_ROUTER` no trace devolve `systemPrompt`, `handoff` e **`knowledgeCitations`** — é onde se prova que a resposta veio da base e não da cabeça do modelo.
 

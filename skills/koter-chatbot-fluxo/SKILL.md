@@ -143,7 +143,7 @@ koterzap_configuracao_validate_chatbot_flow
 
 Devolve **o primeiro** problema, não a lista: é corrigir e validar de novo até `valid: true`. O fluxo de referência acima passou com `{ "valid": true, "nodes": 12, "edges": 16 }`.
 
-E o que ele **não** confere: se os ids referenciados pertencem à corretora. Id de base de conhecimento errado só estoura no `save_chatbot_flow` (`KNOWLEDGE_BASE_NOT_FOUND`); id de equipe, usuário, estágio ou estado errado **não é conferido por nenhuma ferramenta** e só aparece quando o chatbot roda. Tire os ids sempre de `fetch_koterzap_config_context`, nunca de memória, e confira o `targetName` do `HANDOFF` na simulação.
+E o que ele **não** confere: se os ids referenciados pertencem à corretora. Isso fica com o `save_chatbot_flow`: base de conhecimento errada estoura com `KNOWLEDGE_BASE_NOT_FOUND`, e usuário, equipe ou estágio **de outra corretora** em transferência, `CREATE_LEAD` ou condição é recusado com `ENTITY_OF_ANOTHER_COMPANY` (desde 01/10/2026). O que ainda passa calado: id que não existe mais, estado e plano — esses só aparecem quando o chatbot roda. Os `planIds` do `AI_ROUTER` vêm de `fetch_koterzap_config_context(include: ["plans"], planStateId, planCategory: "pf" | "pme" | "adesao")`. Tire os ids sempre de `fetch_koterzap_config_context`, nunca de memória, e confira o `targetName` do `HANDOFF` na simulação.
 
 ### Gravar substitui tudo
 

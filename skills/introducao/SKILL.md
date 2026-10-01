@@ -140,7 +140,7 @@ Rodado na Koter Day em 21/09/2026, numa conta com Gestão, CRM e chatbot montado
 | 5 | **Campo personalizado obrigatório** | `proposalFields` com `required: true` e `source: CUSTOM` | `data_teste` obrigatório — **trava a edição de toda proposta antiga que não o tem** |
 | 6 | **Grade variante órfã** | grade com `isDefault: false` **e** `sellerIds: []` | nenhuma na Koter Day. ⚠️ Não confunda com a grade **Padrão**: ela vale para todo mundo com `sellerIds` vazio — comprovado, o preview resolveu por ela com `source: "default"` |
 | 7 | **Motivo de perda redundante** | em `lossReasons`, procure pares que dizem a mesma coisa — não só caixa diferente, **sinônimo** | numa corretora real, 18 motivos com quatro pares sobrepostos: "Não tem interesse" duas vezes com ids distintos, "Desistência" × "Desistência do cliente", "Valor alto" × "Preço muito alto", "Cliente não atende telefone" × "Sem contato/Não atende" |
-| 8 | **Funil do Gestão sem status de venda** | em `statuses` de `gestao_config_fetch_gestao_config_context`, nenhum com `defaultType: "IMPLANTED"` | regra nova do MCP de 30/09/2026: só o status `IMPLANTED` conta como venda em relatório, **apuração de campanha e renovação**. Funil sem ele não conta venda nenhuma, e nada avisa |
+| 8 | **Funil do Gestão sem status de venda** | em `statuses` de `gestao_config_fetch_gestao_config_context`, nenhum com `defaultType: "IMPLANTED"` (desde 01/10/2026 a mesma resposta avisa em `notes`) | regra nova do MCP de 30/09/2026: só o status `IMPLANTED` conta como venda em relatório, **apuração de campanha e renovação**. Funil sem ele não conta venda nenhuma, e o aviso só aparece para quem lê o `notes` |
 
 A #7 é nova e é a que mais aparece em conta antiga, porque **motivo de perda não tem deduplicação de nenhum tipo** — nem de caixa, como origem e tag passaram a ter. O estrago é de relatório, não de fluxo: o gargalo nº 1 da corretora fica partido em dois e nenhum dos dois parece grande o bastante para alguém agir. Não é urgente e **não se conserta sem ele mandar** (regra 4): motivo apagado é histórico de lead perdido que muda de nome.
 
@@ -208,7 +208,7 @@ O destino do fluxo **não é a configuração pronta** — é `koter-proposta` e
 
 ## Passo 5 · A conexão por módulo — a última entrega do onboarding
 
-A conexão completa do Koter tem **180 ferramentas** (medido com `list_toolsets` em 30/09/2026; eram 356 em 22/09). Isso é certo para a `/introducao`, que atravessa os três módulos de propósito, e é errado para todo o resto: um assistente de comissão com 180 tools escolhe pior e ainda pode apagar origem do CRM sem querer.
+A conexão completa do Koter tem **178 ferramentas** (medido com `list_toolsets` em 01/10/2026; eram 356 em 22/09). Isso é certo para a `/introducao`, que atravessa os três módulos de propósito, e é errado para todo o resto: um assistente de comissão com 180 tools escolhe pior e ainda pode apagar origem do CRM sem querer.
 
 O MCP aceita **filtro por toolset na URL**, e é o que transforma o plugin num time com tesoura:
 
@@ -219,10 +219,10 @@ https://api.koter.app/mcp-user/koter?toolsets=crm,crm-config,crm-automation
 | Especialista | Tools | Cai |
 |---|---:|---|
 | Secretário `crm` | 11 | −94% |
-| Atendimento `koterzap-configuracao,koterzap-atendimento` | 31 | −83% |
+| Atendimento `koterzap-configuracao,koterzap-atendimento` | 28 | −84% |
 | Cadastro `gestao,gestao-config` | 26 | −86% |
 | CRM `crm-config,crm-automation,gestao-automacao` | 27 | −85% |
-| Vendas `crm,crm-config,gestao-automacao,gestao` | 42 | −77% |
+| Vendas `crm,crm-config,gestao-automacao,gestao` | 42 | −76% |
 | Financeiro `gestao-comissao,gestao-financeiro,gestao-config` | 77 | −57% |
 
 A tabela inteira, os 12 toolsets medidos, os porquês de cada recorte e a alavanca de sessão (`disable_toolset`) estão em **`references/conexao-por-modulo.md`**.
@@ -231,7 +231,7 @@ A tabela inteira, os 12 toolsets medidos, os porquês de cada recorte e a alavan
 
 1. **A `/introducao` não se recorta.** O passo 0 mora em `admin-cargos` e o ato 0 diagnostica os três módulos na mesma rodada. A separação não é como ela roda — **é o que ela entrega**.
 2. **Ofereça depois do ato 2**, junto com `koter-especialistas`, que é quem monta ficha e URL na mesma frase. Antes disso não significa nada: não se recorta uma ferramenta que ele ainda não usou.
-3. **Diga pela trava, não pela contagem.** "O de atendimento passa de 180 para 31, e de quebra deixa de conseguir mexer no seu funil sem querer." O campo "o que eu NÃO posso" da ficha deixa de ser promessa e passa a ser o que a conexão permite.
+3. **Diga pela trava, não pela contagem.** "O de atendimento passa de 178 para 28, e de quebra deixa de conseguir mexer no seu funil sem querer." O campo "o que eu NÃO posso" da ficha deixa de ser promessa e passa a ser o que a conexão permite.
 
 ## Retomada
 
