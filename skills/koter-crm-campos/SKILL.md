@@ -84,7 +84,7 @@ Diga isso na hora de criar o campo: o `value` que ele escolher agora vira contra
 
 Campo de referência **exige `template`**, que é o que diz o que ele referencia: `AGE`, `PROFESSION`, `STATE_CITY`, `PLAN_PRODUCTS` ou `PREFERRED_OPERATOR`. Sem `template`, a criação é recusada — o buraco antigo, de campo nascer apontando para nada, continua fechado.
 
-O parâmetro agora está no schema de `crm_config_save_custom_field_definition`: `type: "REFERENCE"` com `template: "AGE"` (por exemplo). O `template` fixa o tipo e não muda depois; se precisar de outro, crie outro campo.
+O parâmetro agora está no schema de `crm_config_save_custom_field_definition`: `type: "REFERENCE"` com `template: "AGE"` (por exemplo). Comprovado na Koter Day em 01/10/2026: o campo nasceu `REFERENCE`/`AGE`, `GLOBAL`, na categoria padrão, e saiu com `delete_crm_config_records`. O `template` fixa o tipo e não muda depois; se precisar de outro, crie outro campo.
 
 Confira relendo `customFieldDefinitions` em `crm_config_fetch_crm_config_context`. E lembre: campo `REFERENCE` **não serve de condição de automação** — ele vem com `conditionField: null`.
 
