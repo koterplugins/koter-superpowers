@@ -28,7 +28,7 @@ Cuidado com o **agenciamento diluído**: operadora que paga 30% extra da 1ª à 
 
 No Koter isso é nativo: cada linha de parcela carrega `commissionType` com `AGENCIAMENTO`, `COMISSAO`, `MISTO` ou `ANGARIACAO`, e `isLifetime` marca a parcela vitalícia. **Parcelas fixas e vitalícias formam conjuntos de numeração separados** — as duas podem ser `installmentNumber: 1`.
 
-> ⚠️ **`AGENCIAMENTO` e `ANGARIACAO` não são sinônimos no motor.** Uma linha marcada `ANGARIACAO` gera parcela com **zero dos dois lados** e é **excluída do lote de repasse** — no código, `isAcquisition = commissionType === ANGARIACAO`, e o lote filtra por `isAcquisition: false` (`installment-generation.service.ts:1088`, `prisma-installments-repository.ts:827`). `AGENCIAMENTO` não tem nada disso: entra com o percentual cheio e é coletada normalmente.
+> ⚠️ **`AGENCIAMENTO` e `ANGARIACAO` não são sinônimos no motor.** Uma linha marcada `ANGARIACAO` gera parcela com **zero dos dois lados** e é **excluída do lote de repasse**. `AGENCIAMENTO` não tem nada disso: entra com o percentual cheio e é coletada normalmente.
 >
 > Ou seja, **o múltiplo da primeira mensalidade se configura como `AGENCIAMENTO`**. Marcá-lo `ANGARIACAO` zera silenciosamente a maior parte do dinheiro da venda. `MISTO` tem efeito próprio: faz as camadas fixa e vitalícia rodarem **em paralelo** a partir da parcela 1, em vez de a vitalícia começar depois da última fixa.
 
