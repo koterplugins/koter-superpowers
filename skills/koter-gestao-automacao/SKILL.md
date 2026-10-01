@@ -82,7 +82,7 @@ Mudança de status de proposta **dispara as automações vinculadas àquele stat
 
 ## 4 · Mensagem automática depende de instância oficial
 
-**Por MCP, a automação de Gestão não manda mensagem**: as ações que `save_management_automation` aceita são as da tabela acima, e o aviso por aqui é `SEND_NOTIFICATION`, dentro do Koter. Se o contexto listar uma ação de mensagem com `configurableHere: false`, ela é de tela — e ainda assim só funciona com instância oficial Cloud API e template aprovado pela Meta. Antes de propor régua de mensagem, confira que existe (`koterzap_configuracao_fetch_koterzap_config_context` com `include: ["whatsappInstances"]`, olhando `isCloudApi`) — prometer lembrete por WhatsApp para quem não tem número oficial é promessa que não se cumpre.
+**Por MCP, a automação de Gestão não manda mensagem**: as ações que `save_management_automation` aceita são as da tabela acima, e o aviso por aqui é `SEND_NOTIFICATION`, dentro do Koter. O contexto lista `SEND_WHATSAPP_TEMPLATE` (e `SEND_WEBHOOK`) com `configurableHere: false` — conferido na Koter Day em 01/10/2026: existe, mas é de tela — e ainda assim só funciona com instância oficial Cloud API e template aprovado pela Meta. Antes de propor régua de mensagem, confira que existe (`koterzap_configuracao_fetch_koterzap_config_context` com `include: ["whatsappInstances"]`, olhando `isCloudApi`) — prometer lembrete por WhatsApp para quem não tem número oficial é promessa que não se cumpre.
 
 ## 5 · Acompanhar
 
