@@ -35,15 +35,16 @@ No Koter isso é nativo: cada linha de parcela carrega `commissionType` com `AGE
 ## 2 · Detecção — antes da primeira pergunta
 
 ```
-gestao_comissao_get_commission_summary(by: "operator", segmentId, segmentCategoryId)   # os dois obrigatórios
-                                                   → operadoras da categoria, com hasReceivable / hasPayoutDefault
+gestao_comissao_get_commission_summary(by: "operator", segmentId, segmentCategoryId,   # os dois obrigatórios
+                                       insuranceCompanySearch?, page?)
+                                                   → operadoras da categoria (100 por página, total em operatorsPaging), com managerName, hasReceivable / hasPayoutDefault
 gestao_comissao_list_commission_grades             → grades existentes (e o overrideSplitMode de cada uma)
 gestao_comissao_get_commission_settings            → cadência, prazo, deságio, profundidade de override, prazos por operadora
 gestao_comissao_list_commission_campaigns          → campanhas já criadas
 gestao_config_list_sellers                         → se repassa ou não
 ```
 
-> ⚠️ **O resumo por operadora é pesado, mesmo com a categoria.** Medido na Koter Day em 01/10/2026: Saúde · Adesão devolveu **322 operadoras em 213 mil caracteres**, porque cada linha traz a URL assinada do logo (~500 caracteres) e não há busca nem paginação. Não chame no diagnóstico. Para achar uma operadora, use `gestao_list_segment_catalog(segmentId, include: ["insuranceCompanies"], segmentCategoryId, insuranceCompanySearch)`, que é compacta. Chame o resumo só quando precisar de `hasReceivable` ou `hasPayoutDefault` de verdade, e numa categoria pequena primeiro.
+> ⚠️ **Busque a operadora pelo nome antes de listar a categoria.** Medido na Koter Day em 01/10/2026: Saúde · Adesão tem **322 operadoras**, em 4 páginas de 100 (`operatorsPaging.total`, cerca de 14 mil caracteres por página). Com `insuranceCompanySearch: "amil"` volta só Amil (Vallor) e Amil (Supermed), separadas pelo `managerName`. Não chame no diagnóstico; percorra as páginas só quando precisar do panorama inteiro.
 
 ## 3 · O roteiro — seis perguntas, o resto se deduz
 
