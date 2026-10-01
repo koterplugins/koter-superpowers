@@ -28,7 +28,7 @@ gestao_fetch_gestao_context(segmentId: <global>)  → proposalFields, customFiel
 
 > **`gestao_fetch_gestao_context` emagreceu, mas não é leve.** Medido na Koter Day em 21/09/2026, já sem o catálogo de seguradoras: **42.525 caracteres** (eram 173.211). `insuranceCompanies` não vem mais — a operadora se resolve por `list_segment_catalog`. Naquela medição o que pesava era a lista de modalidades (19.417 caracteres, 123 itens de todos os ramos); em 30/09/2026 ela virou `categories`, uma lista plana de todos os ramos, ainda sem medida nova. Continua sendo chamada de montagem de proposta, não de diagnóstico.
 >
-> **Como conviver:** chame só no momento em que for montar a proposta, nunca no diagnóstico, e leia apenas os campos que for usar. Para a seguradora, resolva pelo ramo com `gestao_list_segment_catalog(segmentId, include: ["insuranceCompanies"], insuranceCompanySearch)`, em vez de varrer as 2.304.
+> **Como conviver:** chame só no momento em que for montar a proposta, nunca no diagnóstico, e leia apenas os campos que for usar. Para a seguradora, resolva pela categoria com `gestao_list_segment_catalog(segmentId, include: ["insuranceCompanies"], segmentCategoryId, insuranceCompanySearch)`, em vez de varrer as 2.304.
 
 Escolha o ramo pelo que ele vende (a `koter-gestao-fundacao` guardou isso no estado — não pergunte de novo se já está lá). **A segunda chamada é obrigatória:** é ela que diz quais campos são obrigatórios *naquele ramo*, e a obrigatoriedade muda de ramo para ramo.
 
@@ -38,17 +38,17 @@ A categoria sai de `gestao_list_segment_catalog(segmentId, include: ["categories
 
 ```
 gestao_list_segment_catalog(segmentId: <global>, include: ["insuranceCompanies"],
-  insuranceCompanySearch: "<nome>" | segmentCategoryId: <categoria>)
+  segmentCategoryId: <categoria>, insuranceCompanySearch?: "<nome>")
 ```
 
-Um dos dois filtros é obrigatório desde 01/10/2026: sem eles, pedir `insuranceCompanies` é recusado. Devolve em `insuranceCompanies` o conjunto válido para aquele ramo, e `save_proposal` **rejeita seguradora fora do ramo**.
+`segmentCategoryId` é obrigatório (backend de 01/10/2026): primeiro a categoria, depois a operadora. A busca só afina dentro da categoria. A mesma operadora pode vir duas vezes na mesma categoria, uma por administradora; `managerName` separa as duas, e é ela que o corretor precisa escolher. Devolve em `insuranceCompanies` o conjunto válido para aquele ramo, e `save_proposal` **rejeita seguradora fora do ramo**.
 
-**A resposta agora é compacta e paginada.** Cada item vem com `{ id, name, segmentCategoryId }` e nada mais, ~128 caracteres; a paginação vem em `insuranceCompaniesPaging` (`insuranceCompanyPage`/`insuranceCompanyPageSize`, padrão 100, máximo 200). Medido em Saúde na Koter Day: `total: 571`, primeira página de 100 em **12.845 caracteres**.
+**A resposta agora é compacta e paginada.** Cada item vem com `{ id, name, managerName, segmentCategoryId }`, ~140 caracteres; a paginação vem em `insuranceCompaniesPaging` (`insuranceCompanyPage`/`insuranceCompanyPageSize`, padrão e máximo 100). Medido em Saúde na Koter Day: `total: 571`, primeira página de 100 em **12.845 caracteres**.
 
 **Busque, não pagine:**
 
 ```
-gestao_list_segment_catalog(segmentId, include: ["insuranceCompanies"], insuranceCompanySearch: "amil")
+gestao_list_segment_catalog(segmentId, include: ["insuranceCompanies"], segmentCategoryId: <id>, insuranceCompanySearch: "amil")
 gestao_list_segment_catalog(segmentId, include: ["insuranceCompanies"], segmentCategoryId: <id>)
 ```
 

@@ -26,12 +26,12 @@ gestao_fetch_gestao_context                       → segments (27 globais), cat
 gestao_fetch_gestao_context(segmentId: <global>)  → proposalFields e campos personalizados daquele ramo
 gestao_list_segment_catalog(segmentId)            → categories do ramo
 gestao_list_segment_catalog(segmentId, include: ["insuranceCompanies"],
-  segmentCategoryId | insuranceCompanySearch)     → seguradoras (um dos dois filtros é obrigatório)
+  segmentCategoryId, insuranceCompanySearch?)     → seguradoras da categoria (segmentCategoryId obrigatório)
 ```
 
 > **O catálogo de seguradoras saiu do contexto.** Medido na Koter Day em 21/09/2026, depois da mudança: `gestao_fetch_gestao_context` devolve **42.525 caracteres**, contra 173.211 antes — as chaves `insuranceCompanies` e `insurers` não existem mais na resposta. Naquela medição o que pesava era a lista de modalidades (19.417 caracteres, 123 itens, 46% do total); em 30/09/2026 ela deu lugar a `categories`, a lista plana das categorias de todos os ramos, e o tamanho precisa ser medido de novo. Ainda não é uma tool de diagnóstico: chame quando for montar proposta ou resolver ids de ramo, não no retrato da conta.
 >
-> **A operadora se resolve pelo ramo**, sempre: `gestao_list_segment_catalog(segmentId, include: ["insuranceCompanies"], insuranceCompanySearch)`. A resposta é compacta — `{ id, name, segmentCategoryId }`, ~128 caracteres por item, com a paginação em `insuranceCompaniesPaging`. Em Saúde são **571 operadoras**: a 1ª página de 100 são 12.845 caracteres e a lista inteira daria ~71 KB. **Desde 01/10/2026 a lista exige `segmentCategoryId` ou `insuranceCompanySearch`** — sem nenhum dos dois, pedir `insuranceCompanies` é recusado (conferido na Koter Day em 01/10/2026: *"Para listar as seguradoras informe segmentCategoryId … ou insuranceCompanySearch"*; "amil" em Saúde trouxe só as 3 linhas Amil, sem São Camilo), e as páginas vão até 100. Prefira a busca, e `includeInsuranceCompanyImages: true` só se precisar do logo (com imagens são ~1.440 caracteres por item, ~800 KB a lista de Saúde — é a resposta de 854 KB de antes).
+> **A operadora se resolve pelo ramo**, sempre: `gestao_list_segment_catalog(segmentId, include: ["insuranceCompanies"], segmentCategoryId, insuranceCompanySearch)`. A resposta é compacta — `{ id, name, managerName, segmentCategoryId }`, ~128 caracteres por item, com a paginação em `insuranceCompaniesPaging`. Em Saúde são **571 operadoras**: a 1ª página de 100 são 12.845 caracteres e a lista inteira daria ~71 KB. **A lista exige `segmentCategoryId`** (backend de 01/10/2026, madrugada; antes valia só a busca): pergunte a categoria antes da operadora, e use `insuranceCompanySearch` para afinar dentro dela. As páginas vão até 100. A mesma operadora pode aparecer duas vezes na mesma categoria, uma por administradora (na Koter Day, duas "Amil" em Saúde Adesão): `managerName` é o que separa as duas, então **mostre a administradora ao corretor**. Use e `includeInsuranceCompanyImages: true` só se precisar do logo (com imagens são ~1.440 caracteres por item, ~800 KB a lista de Saúde — é a resposta de 854 KB de antes).
 >
 > ⚠️ **A busca ordena por relevância, mas ainda pode cair no meio da palavra.** Vem primeiro o nome exato, depois os nomes com alguma palavra começando pelo termo; só quando nada disso existe entram os que apenas contêm o termo ("São C**amil**o" contém "amil"). Não diferencia caixa nem acento — o que ajuda —, mas **mostre as opções ao corretor em vez de escolher a primeira**.
 
@@ -128,7 +128,7 @@ Entidade é o convênio ou associação da venda por adesão, e **é da corretor
 
 Dois cuidados ao casar os nomes dele com o catálogo, mais tarde:
 
-- **O catálogo é grande, a resposta não precisa ser.** São 571 operadoras em Saúde. Com `insuranceCompanySearch` você lê 1 KB; sem ele, 12,8 KB por página; com `includeInsuranceCompanyImages: true`, 800 KB. Peça imagem só quando for mostrar logo.
+- **O catálogo é grande, a resposta não precisa ser.** São 571 operadoras em Saúde. Com `segmentCategoryId` e `insuranceCompanySearch` você lê 1 KB; só com a categoria, até 12,8 KB por página; com `includeInsuranceCompanyImages: true`, 800 KB. Peça imagem só quando for mostrar logo.
 - **Busca por pedaço do nome ainda pode mentir.** A busca põe o nome exato primeiro, mas quando nada começa pelo termo ela cai em quem só o contém ("São C**amil**o"). Compare nome inteiro, normalizando acento e caixa.
 
 ## 7 · Regras que não se quebram

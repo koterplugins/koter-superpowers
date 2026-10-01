@@ -66,7 +66,7 @@ Duas ações fazem a ponte do Gestão para o CRM. As duas exigem **proposta no c
 |---|---|
 | `insuranceId` | o **ramo** (`segments` de `fetch_gestao_context`) |
 | `segmentId` | a **categoria** do ramo (a antiga modalidade: PF, PME, Adesão; confira em `contextFieldNotes` o id que ela guarda hoje) |
-| `planId` | a **seguradora** do catálogo global (`list_segment_catalog` com `include: insuranceCompanies` e `insuranceCompanySearch` ou `segmentCategoryId`, um dos dois obrigatório) |
+| `planId` | a **seguradora** do catálogo global (`list_segment_catalog` com `include: insuranceCompanies` e `segmentCategoryId`, obrigatório) |
 
 Monte condição lendo `contextFieldNotes`, nunca pelo nome do campo. E o campo de data da vigência no `dateField` **é a chave que `dateFieldsBySource.PROPOSAL` trouxer**: na Koter Day ela veio como `coverageStart`, mas o exemplo do schema de hoje fala em `vigencia` — não escreva nenhuma das duas de memória.
 
