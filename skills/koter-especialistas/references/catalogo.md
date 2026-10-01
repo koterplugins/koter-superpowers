@@ -36,7 +36,7 @@ Os nomes de skill são literais. Os nomes de tool aparecem só onde são a armad
 https://api.koter.app/mcp-user/koter?toolsets=gestao,gestao-config
 ```
 
-26 ferramentas, das 180 da conexão completa. Comissão, parcela e caixa não estão na minha lista — não é disciplina, é a conexão.
+26 ferramentas, das 178 da conexão completa. Comissão, parcela e caixa não estão na minha lista — não é disciplina, é a conexão.
 
 ---
 
@@ -71,7 +71,7 @@ https://api.koter.app/mcp-user/koter?toolsets=gestao,gestao-config
 https://api.koter.app/mcp-user/koter?toolsets=gestao-comissao,gestao-financeiro,gestao-config
 ```
 
-77 ferramentas, das 180 da conexão completa. Comissão sozinha são 36 ferramentas; se eu ficar grande para a sua IA, dá para me partir em dois, comissão e caixa. **Cadastrar e convidar vendedor novo fica de fora** — isso é implantação, e pede a conexão completa; eu trabalho sobre os vendedores que já existem.
+77 ferramentas, das 178 da conexão completa. Comissão sozinha são 36 ferramentas; se eu ficar grande para a sua IA, dá para me partir em dois, comissão e caixa. **Cadastrar e convidar vendedor novo fica de fora** — isso é implantação, e pede a conexão completa; eu trabalho sobre os vendedores que já existem.
 
 > **Modo leitura.** Quando o cargo não tem escrita em comissão, esta ficha nasce com o campo 3 cortado para leitura — DRE, fluxo, lote e grade eu leio e explico, não altero — e o campo 4 ganha: "publicar tabela e pagar lote dependem de permissão que seu cargo não tem; quem faz é o administrador da corretora."
 
@@ -106,7 +106,7 @@ https://api.koter.app/mcp-user/koter?toolsets=gestao-comissao,gestao-financeiro,
 https://api.koter.app/mcp-user/koter?toolsets=crm,crm-config,gestao-automacao,gestao
 ```
 
-42 ferramentas, das 180 da conexão completa. Levo dois toolsets do Gestão porque o meu trabalho atravessa: a régua de renovação é automação **do Gestão**, e ligar o lead ganho à proposta também.
+42 ferramentas, das 178 da conexão completa. Levo dois toolsets do Gestão porque o meu trabalho atravessa: a régua de renovação é automação **do Gestão**, e ligar o lead ganho à proposta também.
 
 > **Corretora solo.** Aqui eu absorvo o especialista de CRM: o campo 2 ganha `koter-crm-fundacao`, `koter-crm-campos` e `koter-crm-automacao`, e a primeira linha do campo 4 sai. Corretor sozinho não tem de quem proteger o próprio funil.
 
@@ -143,7 +143,7 @@ https://api.koter.app/mcp-user/koter?toolsets=crm,crm-config,gestao-automacao,ge
 https://api.koter.app/mcp-user/koter?toolsets=crm-config,crm-automation,gestao-automacao
 ```
 
-27 ferramentas, das 180 da conexão completa. Os **dois** motores de automação são meus — o do CRM e o do Gestão, que é o que tem relógio. O dia a dia do lead não está na minha lista, e é assim que deve ser.
+27 ferramentas, das 178 da conexão completa. Os **dois** motores de automação são meus — o do CRM e o do Gestão, que é o que tem relógio. O dia a dia do lead não está na minha lista, e é assim que deve ser.
 
 ---
 
@@ -178,7 +178,7 @@ https://api.koter.app/mcp-user/koter?toolsets=crm-config,crm-automation,gestao-a
 https://api.koter.app/mcp-user/koter?toolsets=koterzap-configuracao,koterzap-atendimento
 ```
 
-31 ferramentas, das 180 da conexão completa. Acrescente `,crm-config` (42 no total) **só** se o meu fluxo for desviar pelo funil ou criar lead — o `HANDOFF` e o `CREATE_LEAD` precisam ler equipe e etapa.
+28 ferramentas, das 178 da conexão completa. Acrescente `,crm-config` (39 no total) **só** se o meu fluxo for desviar pelo funil ou criar lead — o `HANDOFF` e o `CREATE_LEAD` precisam ler equipe e etapa.
 
 ---
 
@@ -215,7 +215,7 @@ https://api.koter.app/mcp-user/koter?toolsets=koterzap-configuracao,koterzap-ate
 https://api.koter.app/mcp-user/koter?toolsets=crm
 ```
 
-11 ferramentas, das 180 da conexão completa. Sou o mais enxuto dos sete, de propósito: abro o seu dia, não configuro nada. O resto do que eu preciso são conectores da sua IA, não do Koter.
+11 ferramentas, das 178 da conexão completa. Sou o mais enxuto dos sete, de propósito: abro o seu dia, não configuro nada. O resto do que eu preciso são conectores da sua IA, não do Koter.
 
 ---
 
@@ -247,7 +247,7 @@ https://api.koter.app/mcp-user/koter?toolsets=crm
 https://api.koter.app/mcp-user/koter
 ```
 
-**Sem filtro, as 180 — eu sou a única exceção.** O handshake vive no toolset de administração, e eu diagnostico os três módulos na mesma rodada de propósito. E é uma das minhas entregas: eu monto a conexão recortada dos outros seis.
+**Sem filtro, as 178 — eu sou a única exceção.** O handshake vive no toolset de administração, e eu diagnostico os três módulos na mesma rodada de propósito. E é uma das minhas entregas: eu monto a conexão recortada dos outros seis.
 
 > Esta ficha **só existe em conta nova**. Numa corretora já montada ela não entra na lista — e se entrar, o corretor vai achar que precisa refazer tudo.
 

@@ -199,8 +199,7 @@ Conferido na Koter Day em 21/09/2026, com `instances: []`. As leituras de atendi
 | Chamada | Conta sem número |
 |---|---|
 | `koterzap_configuracao_list_inboxes` | `{inboxes: [], total: 0}` |
-| `koterzap_atendimento_get_conversation_counts` | `{counts: {mine: 0, pending: 0, all: 0, resolved: 0, archived: 0}}` |
-| `koterzap_atendimento_list_conversations` | `{conversations: [], total: 0}` |
+| `koterzap_atendimento_list_conversations(include: ["counts"])` | `{conversations: [], total: 0, counts: {mine: 0, pending: 0, all: 0, resolved: 0, archived: 0}}` |
 | `koterzap_atendimento_list_reply_templates` | `{templates: [], total: 0}` |
 
 A exceção é `koterzap_atendimento_search_inbox_messages`, que **exige `inboxId`**: sem nenhuma caixa, não há id para passar e a chamada não tem como ser feita. Não a inclua no diagnóstico — ela só entra depois que existe número.

@@ -24,13 +24,14 @@ Uma proposta grava ramo, categoria e operadora do **catálogo global do Koter** 
 ```
 gestao_fetch_gestao_context                       → segments (27 globais), categories (lista plana, com segmentId), proposalFields
 gestao_fetch_gestao_context(segmentId: <global>)  → proposalFields e campos personalizados daquele ramo
-gestao_list_segment_catalog(segmentId)            → categories e insuranceCompanies do ramo
-                                                     (include escolhe só uma das partes)
+gestao_list_segment_catalog(segmentId)            → categories do ramo
+gestao_list_segment_catalog(segmentId, include: ["insuranceCompanies"],
+  segmentCategoryId | insuranceCompanySearch)     → seguradoras (um dos dois filtros é obrigatório)
 ```
 
 > **O catálogo de seguradoras saiu do contexto.** Medido na Koter Day em 21/09/2026, depois da mudança: `gestao_fetch_gestao_context` devolve **42.525 caracteres**, contra 173.211 antes — as chaves `insuranceCompanies` e `insurers` não existem mais na resposta. Naquela medição o que pesava era a lista de modalidades (19.417 caracteres, 123 itens, 46% do total); em 30/09/2026 ela deu lugar a `categories`, a lista plana das categorias de todos os ramos, e o tamanho precisa ser medido de novo. Ainda não é uma tool de diagnóstico: chame quando for montar proposta ou resolver ids de ramo, não no retrato da conta.
 >
-> **A operadora se resolve pelo ramo**, sempre: `gestao_list_segment_catalog(segmentId, include: ["insuranceCompanies"], insuranceCompanySearch)`. A resposta é compacta — `{ id, name, segmentCategoryId }`, ~128 caracteres por item, com a paginação em `insuranceCompaniesPaging`. Em Saúde são **571 operadoras**: a 1ª página de 100 são 12.845 caracteres e a lista inteira daria ~71 KB. **Use `insuranceCompanySearch` em vez de paginar** (e `segmentCategoryId` para ficar só numa categoria), e `includeInsuranceCompanyImages: true` só se precisar do logo (com imagens são ~1.440 caracteres por item, ~800 KB a lista de Saúde — é a resposta de 854 KB de antes).
+> **A operadora se resolve pelo ramo**, sempre: `gestao_list_segment_catalog(segmentId, include: ["insuranceCompanies"], insuranceCompanySearch)`. A resposta é compacta — `{ id, name, segmentCategoryId }`, ~128 caracteres por item, com a paginação em `insuranceCompaniesPaging`. Em Saúde são **571 operadoras**: a 1ª página de 100 são 12.845 caracteres e a lista inteira daria ~71 KB. **Desde 01/10/2026 a lista exige `segmentCategoryId` ou `insuranceCompanySearch`** — sem nenhum dos dois, pedir `insuranceCompanies` é recusado, e as páginas vão até 100. Prefira a busca, e `includeInsuranceCompanyImages: true` só se precisar do logo (com imagens são ~1.440 caracteres por item, ~800 KB a lista de Saúde — é a resposta de 854 KB de antes).
 >
 > ⚠️ **A busca ordena por relevância, mas ainda pode cair no meio da palavra.** Vem primeiro o nome exato, depois os nomes com alguma palavra começando pelo termo; só quando nada disso existe entram os que apenas contêm o termo ("São C**amil**o" contém "amil"). Não diferencia caixa nem acento — o que ajuda —, mas **mostre as opções ao corretor em vez de escolher a primeira**.
 
@@ -93,7 +94,7 @@ gestao_config_save_management_status(statusId, name, defaultType: "REVIEW" | "PE
 
 `name` é obrigatório — **repita o nome atual para não renomear sem querer**. Só um status por papel em cada corretora: comprovado na Koter Day, marcar `IMPLANTED` num segundo status foi recusado com *"O papel IMPLANTED já pertence ao status «Implantada» (<id>). Remova o papel dele antes de atribuir a outro."* — a mensagem entrega o nome e o id de quem tem, então **não adivinhe: leia o erro e conte ao corretor**.
 
-**Funil sem `IMPLANTED` não conta venda em lugar nenhum** — nem em analytics, nem na apuração de campanha, nem na renovação. Depois de criar o funil, pergunte qual etapa significa "vendido de verdade" e marque:
+**Funil sem `IMPLANTED` não conta venda em lugar nenhum** — nem em analytics, nem na apuração de campanha, nem na renovação. Desde 01/10/2026 `fetch_gestao_config_context` avisa isso em `notes`: *"Nenhum status tem o papel IMPLANTED: o funil não conta nenhuma venda…"*. Depois de criar o funil, pergunte qual etapa significa "vendido de verdade" e marque:
 
 > "Qual dessas etapas quer dizer que a venda entrou mesmo? É ela que vai contar no relatório e puxar a renovação."
 

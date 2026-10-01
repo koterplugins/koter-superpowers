@@ -35,7 +35,7 @@ No Koter isso é nativo: cada linha de parcela carrega `commissionType` com `AGE
 ## 2 · Detecção — antes da primeira pergunta
 
 ```
-gestao_comissao_get_commission_summary(by: "operator", segmentId?)
+gestao_comissao_get_commission_summary(by: "operator", segmentId)   # segmentId obrigatório
                                                    → operadoras do ramo, com hasReceivable / hasPayoutDefault
 gestao_comissao_list_commission_grades             → grades existentes (e o overrideSplitMode de cada uma)
 gestao_comissao_get_commission_settings            → cadência, prazo, deságio, profundidade de override, prazos por operadora
