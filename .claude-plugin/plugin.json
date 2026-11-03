@@ -1,12 +1,15 @@
 {
   "name": "koter",
-  "version": "0.1.0",
-  "description": "O Koter dentro de qualquer IA: onboarding e configuração da corretora de seguros ponta a ponta, via MCP, mais os agentes especialistas que operam a rotina. Comece por /introducao; organize seu time de IA com /especialistas.",
+  "displayName": "Koter",
+  "version": "0.2.0",
+  "description": "Configure e toque sua corretora no Koter conversando com a sua IA: configuração guiada, multicálculo auto, comissão, CRM, KoterZap e agentes especialistas. Comece por /introducao.",
   "author": {
     "name": "Koter",
     "url": "https://koter.app"
   },
   "homepage": "https://koter.app",
+  "repository": "https://github.com/koterplugins/koter-superpowers",
+  "license": "MIT",
   "keywords": [
     "koter",
     "corretora",
@@ -19,6 +22,6 @@
     "onboarding",
     "agentes",
     "especialistas",
-    "subagentes"
+    "multicalculo"
   ]
 }
