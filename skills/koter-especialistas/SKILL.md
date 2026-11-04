@@ -1,253 +1,294 @@
 ---
 name: koter-especialistas
-description: Monta os agentes especialistas do Koter dentro da IA que o corretor usa — financeiro, cadastro, vendas, CRM, atendimento e secretário geral —, cada um já sabendo quais skills carrega, o que pode e o que não pode. Use quando pedirem para organizar agentes, criar especialistas, "montar meu time de IA", separar assuntos em agentes, ou quando o corretor perguntar como não ficar explicando tudo de novo a cada conversa.
+description: Monta um especialista do Koter na IA do corretor, com entrevista, ficha, conexão e permissões. Use quando pedirem para criar agente, montar time de IA ou parar de explicar tudo a cada conversa.
 ---
 
 # koter-especialistas
 
-O plugin tem 22 skills. Ninguém opera 22 skills de cabeça — nem o corretor, nem a IA, que a cada conversa nova começa sem saber se o assunto é comissão ou lead.
+O plugin tem 29 skills. Ninguém opera isso de cabeça, nem o corretor, nem a IA, que a cada conversa nova começa sem saber se o assunto é comissão ou lead.
 
-Esta skill resolve isso **recortando** o plugin em poucos especialistas, cada um com um assunto, as skills daquele assunto e as travas daquele assunto. É a única skill do plugin que **não escreve nada no Koter**: ela escreve na IA.
+Esta skill **entrevista o corretor e sai com um especialista só**: um recorte do plugin com assunto, skills, trava, conexão e permissões, provado num caso real. Depois vem o próximo. O catálogo é cardápio, não instalação.
 
-**Ela termina com os especialistas existindo e conferidos** — arquivo relido, ou o corretor confirmando que colou. Nunca com uma lista de sugestões.
+É a única skill do plugin que **não escreve nada no Koter**: ela escreve na IA dele. Termina com o especialista existindo e provado, nunca com uma lista de sugestões.
 
-## 0 · Pré-requisitos
+## 0 · Antes de perguntar
 
-Duas leituras, nenhuma escrita:
+Detecte o que dá para detectar. Duas leituras, nenhuma escrita:
 
 ```
-admin_cargos_fetch_admin_roles_context(include: ["myPermissions"])   → myPermissions.companyId, .modules, .permissions
+admin_cargos_fetch_admin_roles_context(include: ["myPermissions"])   → companyId, modules, permissions, licensed, crmAccess
 ```
 
-É o que poda a lista: quem não tem `KOTERZAP` em `modules` não ganha especialista de atendimento, e quem não tem permissão de escrita em comissão ganha o financeiro **em modo leitura**, dito na ficha.
+Sem essa ferramenta, o cargo não alcança `admin-cargos`: chame `list_toolsets`. Toolset com `toolsCount` acima de zero está aberto, e o retrato é parcial. Detalhes em `../introducao/references/handshake.md`.
 
-O segundo é o diagnóstico da `introducao` (passo 2), **se já tiver rodado**. Se não rodou, não force: esta skill funciona com o handshake sozinho, e o que ela perde é só a poda fina.
+- `companyId` nulo: nada segue até ele selecionar uma corretora no Koter.
+- `permissions` com `all`: a conexão não é de corretora. Pare e avise. Corretora nunca recebe `all`.
+- Diagnóstico da `introducao` já rodado: aproveite o `porte`. Se não rodou, não force.
 
-> ⚠️ **`permissions: ["all"]` é perfil master.** Pare, avise e não monte nada — um especialista de conta master escreve na corretora errada com a cara de quem está ajudando. A regra vale aqui como vale em todo o plugin.
+Olhe também as suas próprias ferramentas: você escreve arquivo? Está em Claude Code? O que você descobrir sozinho, não pergunte. A sonda está em `references/hospedeiros.md`.
 
-## 1 · O que é um especialista, e o que não é
+## 1 · Dois tipos de agente, e diga qual é este
 
-Um especialista é **um recorte do plugin com nome, escopo e trava**, materializado no formato que a IA hospedeira entender: um agente, um projeto, uma pasta ou um bloco de texto que o corretor cola.
+| | Agente do corretor | Agente do cliente |
+|---|---|---|
+| Mora em | IA do corretor, via MCP | KoterZap: etapa `AI_ROUTER` ou chatbot `AI_AGENT` |
+| Fala com | o corretor | o segurado, no WhatsApp |
+| Cota | auto (`cotacao-auto`) | saúde, dentro do KoterZap. Nenhuma ferramenta de auto |
+| Trava principal | permissão por ferramenta na IA | `disabledTools`, `transfer_to_human` fixa, barreiras do canal |
 
-Ele **não** é uma cópia do plugin com outro nome, e **não** é uma persona ("você é um consultor experiente e carismático"). O que faz um especialista funcionar são cinco linhas concretas — quais skills ele carrega, o que pode, o que não pode, o que é pré-requisito de tela e por onde ele começa a ler. Sem isso, seis agentes são seis conversas iguais em pastas diferentes.
+**Toda ficha deste catálogo é agente do corretor.** Ele lê, rascunha e grava com aprovação. Nenhuma ferramenta MCP manda mensagem a cliente: o especialista prepara o texto e o corretor envia. As saídas indiretas são automação com template, chatbot ativo e webhook de automação, e são elas que pedem cuidado.
 
-**A trava é a parte que rende.** O especialista de vendas que não mexe no funil não quebra o funil às quintas; o financeiro que não cria lead não polui o CRM. É isso que o corretor ganha ao separar, e é por isso que o item "o que não pode" nunca sai da ficha.
+O Especialista de Atendimento configura o agente do cliente. Ele não é esse agente. O agente do cliente se monta com `koter-chatbot-ia`.
 
-## 2 · Detecte a capacidade do hospedeiro — não suponha
+## 2 · A entrevista: quatro perguntas, numa mensagem
 
-Nem toda IA cria agente. Algumas criam arquivo, outras criam projeto, outras não criam nada — e as três precisam terminar com o corretor tendo os especialistas na mão.
+Comece aqui, antes de falar em agente. Pergunte de uma vez, sem questionário:
 
-**A sonda é sua, não do corretor.** Ele não sabe responder "sua IA suporta subagentes?", e perguntar isso é jogar o problema no colo dele. Olhe as suas próprias ferramentas e o disco, nesta ordem — o procedimento inteiro, com os caminhos e os formatos, está em `references/hospedeiros.md`:
+> "Antes de montar, quatro perguntas. Se preferir, manda um áudio contando sua semana que eu tiro as respostas dele.
+> 1. Qual IA você usa? (Claude, ChatGPT, Gemini, Grok, outra)
+> 2. Qual plano? (grátis, pago individual, de empresa, não sei)
+> 3. O que te toma tempo toda semana e você queria largar?
+> 4. O que nunca pode ser automatizado na sua corretora?"
 
-| Sonda | O que ela responde |
+Quem não souber o plano abre as configurações da IA e manda um print.
+
+| Pergunta | O que ela decide |
 |---|---|
-| Você tem ferramenta de **escrever arquivo**? | separa o caminho A dos outros dois |
-| Existe pasta de convenção de agente? (`.claude/agents/`, `.cursor/rules/`, `.github/chatmodes/`, `AGENTS.md`) | diz **em que formato** escrever |
-| Nenhuma das duas | o hospedeiro tem Projetos/GPTs/Gems? Isso sim **se pergunta**, em uma escolha de 3 opções |
+| Qual IA e qual plano | a entrega, a conexão e se o Koter liga. A mesma marca muda de resposta por plano (`references/hospedeiros.md`) |
+| O que dói toda semana | **qual** especialista nasce primeiro (passo 3) |
+| O que nunca automatizar | o campo 2 (onde eu paro), o campo 5 e o que fica "Bloqueada" na IA |
 
-E daí saem os três caminhos:
+Sinistro, recusa, reclamação e recomendação de cobertura ficam com o corretor mesmo que ele não diga. Quando a resposta 1 ou 2 fechar um caminho, diga logo, com a fala pronta de `references/hospedeiros.md`. Não deixe ele descobrir sozinho.
 
-| Caminho | Quando | O que o corretor recebe | Como se confere |
-|---|---|---|---|
-| **A · Agente de arquivo** | você escreve arquivo e existe convenção | um arquivo por especialista, no formato nativo | **releia o arquivo** e mostre o caminho |
-| **B · Projeto na IA** | o hospedeiro tem Projeto/GPT/Gem, você não escreve nele | o texto pronto de cada especialista, **um por vez**, com onde colar | ele confirma que colou; você pergunta um por um |
-| **C · Nada disso** | chat comum, sem projeto e sem arquivo | o texto de cada especialista como bloco copiável, e **você passa a vestir um por vez** nesta mesma conversa | ele guarda onde quiser; a conversa segue com o especialista ativo dito em voz alta |
+## 3 · Saia com um especialista
 
-**O caminho C não é o prêmio de consolação.** Um corretor no celular, num chat comum, com o texto do especialista financeiro colado no começo da conversa, tem exatamente o que o caminho A entrega — só não tem persistência. Diga isso assim, sem pedir desculpa:
+Compare a dor com esta tabela e proponha **um**:
 
-> "Sua IA não guarda agente, então vou te dar o texto de cada especialista. Cola o do financeiro quando for falar de comissão e a conversa já começa sabendo tudo. Guarda os seis nas suas notas: é um copiar e colar por assunto."
+| O que ele disse | Especialista |
+|---|---|
+| "perco tempo cotando auto", "recotar", "comparar seguradora" | **Multicálculo Auto** |
+| lead parado, retorno esquecido, renovação que escapa | **Vendas** |
+| "o que eu tenho hoje", tarefa que some | **Secretário Geral** |
+| proposta, beneficiário, venda que não foi implantada | **Cadastro** |
+| quanto entrou, quanto devo, fechar o mês, repasse | **Financeiro** |
+| funil que não reflete a venda, automação que ninguém entende | **CRM** |
+| "respondo a mesma coisa o dia todo", bot, WhatsApp | **Atendimento** |
+| conta nova, "não sei por onde começar" | **Implantação** (`/introducao`) |
+| trazer histórico de outro sistema | **Migração**, sob demanda |
 
-**Nunca prometa o caminho A sem ter escrito o arquivo.** Se a escrita falhar, caia para B ou C na mesma resposta, sem perguntar — o corretor não tem como decidir isso melhor que você.
+Duas dores empatadas: prefira a que acontece toda semana, tem passos estáveis e é **correr atrás, não aconselhar**. Pedido que não está na tabela: monte com o mesmo molde (passo 4).
 
-## 3 · Escolha os especialistas — pelo diagnóstico, não pelo catálogo
-
-`references/catalogo.md` tem **sete** fichas prontas. Ninguém recebe as sete. A poda é automática e sai do passo 0:
+A resposta passa por esta poda antes de virar proposta:
 
 | Regra | Efeito |
 |---|---|
-| `porte: solo` | **Vendas e CRM viram um só** (`Especialista de Vendas`, carregando também a estrutura). Corretor sozinho não tem quem quebre o funil dele |
-| `KOTERZAP` fora de `modules` | sem especialista de atendimento — e diga por quê |
-| `GESTAO` fora de `modules` | sem financeiro e sem cadastro; sobra CRM e secretário |
-| sem permissão de escrita em comissão | o financeiro nasce **em modo leitura**: lê DRE, lote e grade, não publica tabela nem paga lote |
-| Gestão e CRM ainda vazios | **o de implantação entra e é o primeiro**; numa conta já montada ele não existe |
-| o corretor pediu um que não está no catálogo | monte com o **mesmo molde** (seção 4). O catálogo é o começo, não o teto |
+| `AUTO` fora de `modules`, ou `cotacao-auto` sem ferramenta em `list_toolsets` | sem Multicálculo Auto, e diga por quê |
+| `KOTERZAP` fora de `modules` | sem Atendimento |
+| `GESTAO` fora de `modules` | sem Financeiro e sem Cadastro |
+| `crmAccess: false` | sem Vendas, CRM e Secretário |
+| `licensed: false` | diga antes: boa parte da escrita vai falhar |
+| `porte: solo` | Vendas absorve o CRM, quando o CRM for pedido |
+| cargo sem escrita em comissão | Financeiro com o aviso da ficha |
+| Gestão e CRM vazios | Implantação vem primeiro. Numa conta montada ela não entra |
 
-O resultado típico de uma corretora com vendedores e os três módulos são **cinco**: cadastro, financeiro, vendas, CRM e atendimento — mais o secretário, que é de outra natureza.
+Faça a proposta em uma frase, e deixe ele trocar:
 
-**Mostre a lista antes de criar**, em uma frase por especialista, e deixe ele cortar:
+> "Pelo que você contou, o primeiro é o de Multicálculo Auto. Ele cota pessoa física, compara as ofertas e te entrega o texto para você mandar ao cliente. Monto esse, a gente prova num caso real, e só então vemos o próximo. Pode ser?"
 
-> "Pelo que li da sua conta, cinco fazem sentido: cadastro (proposta e beneficiário), financeiro (comissão, repasse, caixa), vendas (lead e renovação), CRM (funil, origem, automação) e atendimento (WhatsApp e bot). O secretário geral eu explico à parte, porque ele não é do Koter. Corto algum?"
+**Não monte time.** Sete agentes logo de cara custam atenção e uso, e nenhum fica provado. Coordenador só faz sentido com dois ou três já provados.
 
-## 4 · O molde da ficha — nove campos, nenhum opcional
+## 4 · O molde da ficha: dez campos, nenhum opcional
 
-Todo especialista nasce com os nove. Faltando um, o agente improvisa justamente onde dói: escreve sem reconferir a corretora, promete mensagem sem Cloud API, apaga origem com lead dentro.
-
-```
-1 · Nome e quando me chamar        uma linha, na língua do corretor
-2 · Skills que eu carrego          nomes literais das skills do plugin
-3 · O que eu posso                 os verbos, por objeto do Koter
-4 · O que eu NÃO posso             e para quem eu mando (seção 5)
-5 · Pré-requisito de tela          o que só o corretor faz, e o que trava
-6 · As armadilhas do meu assunto   3 a 5, literais, com o conserto junto
-7 · Por onde eu começo             a primeira leitura, sempre leitura
-8 · As regras que eu herdo         o núcleo comum, copiado inteiro
-9 · A conexão que eu uso           a URL do Koter com os toolsets do meu assunto
-```
-
-**O campo 8 é copiado igual em todos**, e é ele que faz seis agentes soarem como um produto:
+Todo especialista nasce com os dez. Faltando um, o agente improvisa onde dói.
 
 ```
-- Reconfiro o companyId antes de cada rodada de escrita, não só no começo.
-- Detecto antes de perguntar: o que o Koter responde, eu não pergunto.
-- Toda pergunta minha é uma escolha de 2 a 4 opções, com consequência e recomendação.
-- Não apago nada sem o corretor mandar, por escrito, na mesma conversa.
-- Termino em configuração aplicada e relida, nunca em explicação de tela.
-- Fora do meu assunto eu encaminho, não improviso.
+1  · Nome e quando me chamar             uma linha, na língua do corretor
+2  · Com quem falo, meu indicador        um trabalho, um número que ele acompanha,
+     e onde eu paro                      um ponto de parada
+3  · Skills que eu carrego               nomes literais das skills do plugin
+4  · O que eu posso                      os verbos, por objeto do Koter
+5  · O que eu NÃO posso e para quem      a trava, com o encaminhamento (passo 7)
+     mando
+6  · Pré-requisito de tela               o que só o corretor faz, e o que trava
+7  · Armadilhas do meu assunto           3 a 8, literais, com o conserto junto
+8  · Por onde eu começo                  a primeira leitura, sempre leitura
+9  · Regras que eu herdo                 o núcleo comum, copiado inteiro
+10 · A conexão que eu uso                a URL ou o pacote, conforme a IA
 ```
 
-A última linha é a que só existe aqui, e é o que separa um time de especialistas de seis cópias do mesmo assistente.
+**Campo 2 é a vaga de emprego.** "Cuido de cotação auto de pessoa física. Meu indicador é cotação parada. Paro em sinistro, recusa, ou se faltar dado depois de duas perguntas." Sem isso, o especialista é uma persona. Acrescente aqui o que o corretor disse na pergunta 4.
 
-**O campo 9 é o que faz o campo 4 valer.** Sem ele, "eu não mexo no seu funil" é uma promessa de texto, que a IA quebra na primeira vez que se confundir. Com ele, a tool nem está na lista. Ver a seção 4b.
+**Campo 7 não se inventa.** As fichas prontas trazem as armadilhas tiradas das skills. Especialista novo: vá buscá-las na seção "Armadilhas conhecidas" das skills que ele carrega.
 
-**O campo 6 não se inventa.** Cada ficha do catálogo já traz as armadilhas do assunto dela, tiradas de execução real na corretora de demonstração — origem que exige equipe (`teamIds`), `LEAD_OWNER` sem dono, `AGENCIAMENTO` × `ANGARIACAO`, a base que indexa depois. Se você montar um especialista novo, vá buscar as dele nas `SKILL.md` das skills que ele carrega; ficha sem armadilha é ficha que ainda não foi escrita.
+**Campo 9 é igual em todos** e está no fim de `references/catalogo.md`. Vai inteiro em cada entrega: referência cruzada não sobrevive, cada ficha é lida sozinha.
 
-## 4b · O campo 9 na prática
+**Cada regra na sua camada.** Fato fixo da corretora (comissão combinada, tom) vai nas instruções. Procedimento vai na skill. Prêmio, parcela e vigência vêm da ferramenta, sempre. "Nunca" vai na permissão da IA. Memória guarda preferência, nunca número.
 
-O campo 9 é uma linha na ficha e uma URL que o corretor cola na IA dele:
+## 5 · Campo 10: recorte onde a IA recorta, pacote onde não recorta
 
-```
-9 · A conexão que eu uso
-https://api.koter.app/mcp-user/koter?toolsets=crm-config,crm-automation,gestao-automacao
-Se a sua IA só aceita uma conexão do Koter, use a completa e me diga — eu desligo
-o resto da lista com disable_toolset assim que a conversa começa.
-```
+`?toolsets=` é o teto da conexão. **Corta assunto, não corta escrita**: toda conexão nasce gravando dentro do assunto dela. Quem separa ler de escrever é a permissão na IA (passo 6).
 
-**A cada ficha, a sua.** A conexão completa tem **178 tools**, medidas em 01/10/2026:
+Recorte por especialista de verdade só existe onde a IA faz: **Claude Code por agente, tarefa agendada, n8n ou Make por nó.** Nesses lugares, com a URL do campo 10, a ferramenta de fora nem aparece.
 
-| Especialista | `?toolsets=` | Tools |
-|---|---|---:|
-| Secretário Geral | `crm` | 11 |
-| Atendimento | `koterzap-configuracao,koterzap-atendimento` | 28 |
-| Cadastro | `gestao,gestao-config` | 26 |
-| CRM | `crm-config,crm-automation,gestao-automacao` | 27 |
-| Vendas | `crm,crm-config,gestao-automacao,gestao` | 42 |
-| Financeiro | `gestao-comissao,gestao-financeiro,gestao-config` | 77 |
-| Implantação | *(a conexão completa, sem filtro)* | 178 |
+No resto, use os três pacotes. Conexões que dividem área no mesmo cliente de IA podem se revogar, e o sintoma é 401 numa conexão que funcionava. Estes três não se tocam:
 
-Três coisas que essa tabela ensina e que não são óbvias:
+| Pacote | `?toolsets=` |
+|---|---|
+| **Venda** | `crm,crm-config,cotacao-auto` |
+| **Dinheiro** | `gestao,gestao-config,gestao-contratos,gestao-comissao,gestao-financeiro` |
+| **Operação** | `crm-automation,gestao-automacao,koterzap-configuracao,koterzap-atendimento` |
 
-- **A implantação não se recorta.** A `/introducao` precisa do handshake (`admin-cargos`) e diagnostica os três módulos na mesma rodada. É a única que fica com tudo.
-- **Três especialistas atravessam módulo**, e é por isso que o recorte por especialista rende mais que "um link por módulo": Vendas e CRM levam `gestao-automacao`, porque o motor com relógio — o gatilho por data que arma a renovação — é do Gestão, e Vendas leva `gestao` porque ligar o lead ganho à proposta é `gestao_set_proposal_links` (com `leads`).
-- **Quem menos ganha agora é o Financeiro** (77, −57%), porque `gestao-comissao` sozinho tem 36 tools e ficou o maior toolset do MCP. Se incomodar, parta em dois — `gestao-comissao,gestao-config` (50) para comissão e repasse, `gestao-financeiro` (27) para caixa.
+- Nunca deixe na URL um toolset que a conexão não concede: dá 400. Sem o módulo, tire o toolset.
+- Claude Free tem uma conexão só: o pacote do módulo principal.
+- A conexão inteira encosta em tudo. Só a Implantação usa, e ela pode derrubar os pacotes no mesmo cliente de IA.
+- Monte a URL antes de conectar. Depois, trocar exige recriar o conector. `enable_toolset` e `disable_toolset` não ajudam na claude.ai.
+- Quem conectou antes de a área existir precisa reconectar para ganhá-la. Confira sempre com `list_toolsets`.
+- Cada URL é um login. Para quem nunca fez isso, comece com uma.
 
-**O que fica de fora de todos:** `admin-usuarios` (17 tools — convidar, remover, trocar cargo, mesclar pessoa). Só `koter-gestao-vendedores` precisa dele, para cadastrar e convidar vendedor, e isso é ato de implantação, não de rotina. Fica na conexão completa; o Financeiro trabalha sobre os vendedores que já existem e encaminha o resto.
+Não escreva número de ferramenta em ficha nenhuma: mande conferir com `list_toolsets`. O manual da conexão é `../introducao/references/conexao-por-modulo.md`.
 
-A íntegra do raciocínio em `../introducao/references/conexao-por-modulo.md`.
+Na fala com o corretor, nada de toolset:
 
-Se você **não montou a ficha pela `/introducao`**, não invente a URL: chame `list_toolsets` na conexão que estiver ligada e monte a partir do que ela devolver. Os números mudam — em 28/09/2026 o Gestão caiu à metade (`gestao-comissao` de 72 para 36, `gestao-config` de 32 para 14) e o total foi de 356 para 265; em 30/09/2026 o CRM e o KoterZap passaram pela mesma consolidação (criar e editar viraram um `save_*` só, apagar virou `delete_*_records`) e o total caiu para 180 (178 em 01/10/2026).
+> "Vou te passar um link do Koter só para venda. A IA escolhe melhor, e essa conexão nem enxerga sua comissão. Ela ainda grava lead, e por isso a gente deixa a escrita pedindo sua aprovação."
 
-## 5 · O encaminhamento — a tabela que todo especialista carrega
+## 6 · Uma fonte, cinco entregas, e as permissões no primeiro dia
 
-Sem ela, o corretor bate na trava e fica parado. Com ela, a trava vira uma frase de uma linha. Cada ficha leva a sua, no campo 4:
+A ficha é uma só, em `references/catalogo.md`. Muda o suporte, nunca o conteúdo.
+
+| Entrega | Quando | O que o corretor recebe | Como se confere |
+|---|---|---|---|
+| **A · Arquivo em Claude Code** | Claude Code, ou IA que lê arquivo de agente | um arquivo em `~/.claude/agents/`, com `mcpServers` | releia, e peça para listar os agentes |
+| **S · Skill empacotada** | Claude, e o que aceita pasta com `SKILL.md` | um ZIP, subido uma vez | ele abre uma conversa e o especialista aparece |
+| **B · Colar em Projeto** | Claude e ChatGPT, sem `SKILL.md` ou somando à S | o texto, com onde colar | ele confirma que colou |
+| **G · Grok Bot** | Grok Bot | a primeira mensagem do Bot e as regras "perguntar antes" | ele pede ao Bot para listar o que guardou |
+| **C · Colar na conversa** | qualquer chat, inclusive sem Koter | um bloco para guardar, e você veste o especialista aqui | conversa nova com o texto colado |
+
+Formatos, moldes e o passo a passo por produto estão em `references/hospedeiros.md`. S e B combinam: a skill leva o procedimento, o Projeto leva a corretora. **Nunca prometa A sem ter escrito o arquivo.** Se a escrita falhar, caia para S, B ou C na mesma resposta, sem perguntar.
+
+**C não é prêmio de consolação.** O texto colado no começo da conversa faz o mesmo trabalho: só não persiste.
+
+**Permissão não fica para depois.** Logo depois de conectar, aplique a tabela por toolset de `references/hospedeiros.md`:
+
+| Tipo | Permissão |
+|---|---|
+| Leitura | liberada |
+| Escrita | "Precisa de aprovação" |
+| Exclusão e desfazer | bloqueada |
+| Portas de cuidado | "Precisa de aprovação", sempre, mesmo para quem liberou o resto |
+
+As portas de cuidado alcançam o cliente da corretora: `crm_automation_save_automation`, `crm_automation_import_automation`, `gestao_automacao_save_management_automation`, `koterzap_configuracao_save_chatbot`, `koterzap_configuracao_save_chatbot_flow`, `koterzap_configuracao_import_chatbot`. Chatbot `FLOW` nasce ligado. IA que decide pela marcação da ferramenta não freia a maioria delas.
+
+"Agente só de leitura" não é trava: é texto. Onde a IA dá permissão por ferramenta, ela é a trava. Onde não dá, diga isso ao corretor.
+
+## 7 · O encaminhamento
+
+Sem esta tabela, o corretor bate na trava e fica parado. Cada ficha leva as linhas dos outros, no campo 5:
 
 | Se ele pedir | Quem resolve |
 |---|---|
-| cadastrar proposta, beneficiário, campo de proposta, status | **Cadastro** |
-| tabela de comissão, baixa, lote de repasse, DRE, extrato, empréstimo, campanha | **Financeiro** |
-| lead, follow-up, venda, perda, renovação | **Vendas** |
-| equipe, funil, origem, tag, motivo de perda, automação de CRM | **CRM** |
-| número de WhatsApp, bot, base de conhecimento, template | **Atendimento** |
-| e-mail, agenda, tarefa fora do Koter | **Secretário geral** |
-| "não sei por onde começar", conta nova | **Implantação** (`/introducao`) |
+| cotar seguro auto, recotar, comparar ofertas, PDF da seguradora | **Multicálculo Auto** |
+| proposta, beneficiário, campo de proposta, status, implantar a venda | **Cadastro** |
+| comissão, evento de contrato, baixa, repasse, extrato, caixa, DRE, empréstimo, campanha | **Financeiro** |
+| lead, retorno, venda, perda, renovação | **Vendas** |
+| equipe, funil, origem, tag, motivo de perda, automação | **CRM** |
+| número de WhatsApp, agente do cliente, bot, base de conhecimento, template | **Atendimento** |
+| meu dia, e-mail, agenda, tarefa fora do Koter | **Secretário Geral** |
+| conta nova, "não sei por onde começar" | **Implantação** (`/introducao`) |
+| migrar de outro sistema, importar planilha, desfazer importação | **Migração** |
+| cotar saúde | nenhum: não é aberto pelo MCP. O Atendimento configura o agente do KoterZap, que cota saúde no WhatsApp |
 
-A frase do encaminhamento é sempre a mesma forma: **o que é, quem faz, e o que ele diz.**
+A frase tem sempre a mesma forma: **o que é, quem faz, e o que dizer a ele.**
 
-> "Isso é funil, e funil é do especialista de CRM — se você abrir ele e disser 'quero uma etapa nova entre Proposta e Fechado', sai em um minuto."
+> "Isso é funil, e funil é do especialista de CRM. Abre ele e diz 'quero uma etapa nova entre Proposta e Fechado'."
 
-## 6 · O secretário geral é outra coisa, e diga isso
+Se o especialista citado ainda não existe, diga isso: "esse ainda não montamos, quer que eu faça na mão e a gente anote para virar o próximo?"
 
-Ele é o único da lista **sem skill do Koter para carregar**, porque e-mail, agenda e tarefa de fora não são do Koter. Tratá-lo como os outros é prometer integração que o plugin não tem.
+## 8 · O Secretário Geral é outra coisa, e diga isso
 
-O que ele **de fato** tem:
+Ele não carrega skill do Koter: e-mail, agenda e tarefa de fora não são do Koter. Tratá-lo como os outros é prometer integração que o plugin não tem.
 
-- **Leitura da agenda que já existe dentro do Koter**: `crm_list_tasks` (`type: today | upcoming | pending`) é a lista de follow-up do corretor, e ela é de verdade. Um secretário que abre o dia com "você tem 4 follow-ups hoje, dois do lead que entrou ontem" já vale a pasta.
-- **Recomendação de conectores**, que é o resto do trabalho dele. Não integração: **recomendação**, com o nome do conector e o que ele destrava.
+O que ele tem de verdade é `crm_list_tasks` (`type: today | upcoming | pending`), a lista de retorno do corretor, e a **recomendação** de conectores da IA. Ele usa o toolset `crm`, que grava, então a escrita dele fica "Bloqueada" na IA.
 
-| O que ele quer | Conector a recomendar | O que muda |
-|---|---|---|
-| ler e escrever e-mail | Gmail ou Outlook | responder cliente sem sair da IA, e achar a proposta que veio por e-mail |
-| agenda | Google Calendar ou Outlook Calendar | a tarefa do Koter vira compromisso com hora |
-| tarefas e anotação | Todoist, Notion, Linear | o que não é lead nem proposta para de morar na cabeça dele |
-| arquivo | Google Drive, OneDrive | apólice e proposta em PDF ao alcance da conversa |
+> "O Secretário Geral não vem pronto: o Koter não guarda seu e-mail nem sua agenda. Ele já lê suas tarefas do Koter hoje. Para o resto, você conecta Gmail e Agenda na sua IA, e aí ele cruza as duas coisas. Monto assim mesmo?"
 
-**Diga a verdade inteira, de uma vez:**
+Nunca diga que conectou. Conectar é ato do corretor, na configuração da IA dele.
 
-> "O secretário geral é o único que não vem pronto: o Koter não guarda seu e-mail nem sua agenda. Ele já consegue ler suas tarefas do Koter hoje. Para o resto, você conecta o Gmail e o Google Agenda na sua IA — é configuração dela, não minha — e aí ele passa a cruzar as duas coisas. Quer que eu monte ele assim mesmo, já útil com as tarefas?"
+## 9 · Aplique e prove
 
-Se a IA hospedeira tiver como listar ou sugerir conectores, use — mas **nunca diga que conectou**. Conectar é ato do corretor, na configuração da IA dele.
+Um só. Mostre a ficha preenchida com o que ele contou, entregue, conecte, aplique as permissões e faça ele trabalhar na frente do corretor.
 
-## 7 · Aplique
-
-Um especialista por vez, na ordem em que eles rendem: **implantação (se existir) → cadastro → vendas → financeiro → CRM → atendimento → secretário**. Cadastro e vendas primeiro porque são o dia a dia; o resto é "faça uma vez".
-
-Entre um e outro, **pare e mostre**. Seis fichas despejadas de uma vez não são lidas por ninguém — e no caminho B ou C, seis blocos de texto seguidos garantem que ele cole zero.
-
-## 8 · Valide relendo, como toda skill do plugin
-
-| Caminho | A releitura |
+| Entrega | A releitura |
 |---|---|
-| **A** | releia cada arquivo escrito e confira que os **nove campos** estão lá. Diga o caminho completo de cada um |
-| **B** | pergunte um por um: "o financeiro já está colado?". Só marque o seguinte quando ele confirmar o anterior |
-| **C** | peça para ele **abrir uma conversa nova e colar o de cadastro**. A prova é a IA respondendo já sabendo o assunto |
+| **A** | releia o arquivo, confira os **dez campos** e `name`, e peça para listar os agentes. Arquivo sem `name` é ignorado sem aviso |
+| **S** | peça para abrir uma conversa nova e dizer a frase do assunto. Skill que não dispara: reveja a `description` |
+| **B** | ele confirma que colou. Depois, conversa nova dentro do Projeto |
+| **G** | "liste o que você guardou", e corrija |
+| **C** | conversa nova com o texto colado |
 
-**A prova final é a mesma nos três, e é ela que fecha a skill:** faça o especialista trabalhar uma vez, na frente dele.
+A prova fecha a skill, com um caso real e conferindo no Koter:
 
-> "Cola o de vendas e escreve só 'entrou um lead, Maria, 11 99000-0000, veio do Instagram'. Se ele cadastrar a Maria sem te perguntar mais nada, está funcionando."
+> "Escreve só 'cota o gol do João' e confere o que ele pede. Se pedir tudo de uma vez, mostrar o espelho e esperar seu 'pode', está funcionando. Disse que criou? Abre o Koter e olha."
 
-Esse teste é o equivalente, aqui, do que `koter-proposta` e `koter-crm-lead` são na passada única: **configuração pronta e ninguém usando é onboarding que falhou.**
+Disparar cotação gasta consulta, então essa prova pode parar no espelho. Em outro especialista, use uma tarefa real da dor que ele contou, na frase dele.
 
-## 9 · Estado
+Configuração pronta e ninguém usando é onboarding que falhou. Para confiar de verdade, `koter-prova` monta a prova com casos dele. Para tirar mais do agente, `koter-superpoderes`.
 
-Grave em `.koter/onboarding.json` (`references/estado.md` da `introducao`), no bloco da corretora:
+**A confiança sobe por fluxo.** No primeiro mês, rascunho: o especialista prepara e o corretor faz. Depois, escrita com aprovação. "Sempre permitir" em escrita só fluxo a fluxo, depois da prova, e nunca nas portas de cuidado.
+
+**Skill nasce do uso.** Corrigiu três coisas numa cotação? Diga "salve isso como skill". Toda correção vira linha de armadilha no campo 7.
+
+## 10 · Depois, o próximo
+
+Ofereça o próximo só quando o primeiro tiver passado na prova e o corretor tiver usado de novo por conta própria. Volte à resposta da pergunta 3: qual é a próxima dor? Monte da mesma forma, um por vez.
+
+A cada novo especialista, reveja a conexão. Em Claude Code, recortes que se tocam (Secretário e Vendas, Cadastro e Financeiro) podem se revogar: se surgir 401, volte aos três pacotes.
+
+## 11 · Rotina, se ele quiser
+
+Só depois da prova, só em leitura. **Rotina agendada lê e entrega ao corretor.** Ela não envia nem grava.
+
+- Primeira linha: "Antes de tudo, confirme que consegue ler o Koter. Se não conseguir, escreva só 'Koter fora' e pare."
+- Nasce pausada, e o corretor liga uma a uma.
+- Antes de agendar: quem é o dono, horário e fuso, de onde lê, o que entrega, e o que faz se a fonte faltar.
+- Sem novidade, silêncio. Com novidade, poucas linhas: "Bom dia, 3 coisas hoje."
+- Leva só a conexão dela, em hora quebrada (7:07).
+
+Onde dá para agendar, por plano, está em `references/hospedeiros.md`.
+
+## 12 · Estado
+
+Grave em `.koter/onboarding.json` (`../introducao/references/estado.md`), no bloco da corretora:
 
 ```json
 "especialistas": {
-  "caminho": "A",
-  "formato": ".claude/agents",
-  "criados": ["cadastro", "vendas", "financeiro", "crm", "atendimento"],
+  "entrevista": { "ia": "claude", "plano": "pro", "dor": "cotar auto", "nunca": ["sinistro", "recusa"] },
+  "criados": [
+    { "nome": "multicalculo", "entrega": "S", "conexao": "venda", "provado": true }
+  ],
+  "proximo": "vendas",
   "recusados": ["secretario"],
-  "conectores_sugeridos": ["gmail", "google-calendar"],
-  "em": "2026-09-21"
+  "conectores_sugeridos": ["gmail"],
+  "em": "2026-11-03"
 }
 ```
 
-`caminho`: `A`, `B`, `C`. `criados` são os que o corretor confirmou. **Recusado não se reoferece** — quem disse não ao secretário não quer ser perguntado de novo na semana seguinte.
+`entrega`: `A`, `S`, `B`, `G` ou `C`. `criados` são os que o corretor confirmou. **Recusado não se reoferece.** Nada de CPF, apólice ou valor aqui.
 
-Ao reentrar, **releia antes de recriar**: no caminho A, o arquivo diz a verdade; nos B e C, o estado é tudo o que existe, então trate-o como memória de conversa e pergunte em vez de afirmar.
+Ao reentrar, releia antes de recriar. Em A, o arquivo diz a verdade. Nas outras, o estado é tudo o que existe: pergunte em vez de afirmar.
 
-## 10 · Onde esta skill encosta nas outras
+## 13 · Onde esta skill encosta nas outras
 
 | Ponte | O quê |
 |---|---|
-| `introducao` | ela dá o diagnóstico e o `porte` que podam a lista. Esta skill é o passo natural **depois** do ato 2 — quando ele já cadastrou proposta e lead e a pergunta vira "e agora, como eu uso isso todo dia?" |
-| todas as 22 skills | são a matéria-prima. Cada especialista é um recorte delas, **por nome literal** — nunca uma paráfrase |
-| `references/catalogo.md` | as sete fichas prontas |
-| `references/hospedeiros.md` | a sonda de capacidade, os formatos por hospedeiro e os textos de fallback |
+| `introducao` | dá o diagnóstico e o `porte`. Esta skill vem depois do ato 2, quando a pergunta vira "e agora, como eu uso isso todo dia?" |
+| `koter-prova` | a prova antes de confiar |
+| `koter-superpoderes` | como tirar mais do agente depois que ele roda |
+| `koter-chatbot-ia` | o agente do cliente, que não é ficha deste catálogo |
+| `references/catalogo.md` | as nove fichas e o campo 9 |
+| `references/hospedeiros.md` | a sonda, a tabela por plano, as cinco entregas, as permissões por toolset e a rotina |
 
-## Ensaiado em 21/09/2026
+## Conferência
 
-A sonda e o molde foram **rodados**, não só escritos:
-
-- **A sonda do passo 2 correu num hospedeiro real** que escreve arquivo e não tinha nenhuma das convenções conhecidas. Resultado: caminho A com `.claude/agents/` criada, que é exatamente a saída que o degrau 2 prescreve quando nenhuma pasta existe.
-- **A ficha do Financeiro foi gerada como arquivo de agente e relida**: os oito campos de então presentes (o nono, a conexão, entrou em 22/09/2026), cabeçalho com `name` e `description`, **3.300 caracteres**. Duas consequências úteis: o molde cabe folgado no campo de instruções de um projeto (caminho B), e reler conferindo os títulos numerados é um teste de dois segundos.
-- **As 22 skills do plugin estão cobertas**, conferido por comparação entre os nomes citados nas fichas e as pastas de `skills/` — nenhuma skill ficou sem especialista, e nenhum nome citado aponta para pasta inexistente.
-
-## Pendente de validação
-
-**Nada nesta skill foi rodado contra a corretora de demonstração**, e não por acaso: ela não escreve no Koter. O que ela escreve é arquivo ou texto, e isso se confere relendo — o que o passo 8 manda fazer.
-
-O que **fica em aberto de verdade**, e deve ser conferido no primeiro corretor real:
-
-- **A sonda do passo 2 foi desenhada, não medida em campo.** Os caminhos de `.claude/agents/`, `.cursor/rules/`, `.github/chatmodes/` e `AGENTS.md` são as convenções conhecidas; um hospedeiro com convenção diferente cai no caminho B ou C, que é o comportamento seguro, mas perde o caminho A que talvez tivesse.
-- **O secretário geral nunca rodou com conector ligado.** A leitura de `crm_list_tasks` é do Koter e está provada em `koter-crm-lead`; o cruzamento com agenda e e-mail depende de conector do corretor e não foi exercitado aqui.
-- **A poda por permissão** (`financeiro em modo leitura`) foi escrita a partir da lista de permissões do handshake, não observada numa conta de cargo restrito.
+Nomes de tool, recortes e permissões conferidos no inventário e lidos no código do Koter em 03/11/2026, não executados. Formatos e planos das IAs vêm de páginas lidas na mesma data, sem teste em conta real.
+Sem execução: a entrevista com corretor, as cinco entregas de ponta a ponta, o login a partir de `mcpServers`, a convivência de recortes que se tocam, o Koter no Grok Bot e a poda por cargo restrito.
+O Secretário Geral nunca rodou com conector ligado. Indicadores e pontos de parada das fichas são sugestão, sem medição.

@@ -1,5 +1,6 @@
 {
   "name": "koter",
+  "description": "Plugin do Koter para corretoras de seguros.",
   "owner": {
     "name": "Koter",
     "url": "https://koter.app"
@@ -8,7 +9,7 @@
     {
       "name": "koter",
       "source": "./",
-      "description": "O Koter dentro de qualquer IA: onboarding e configuração da corretora ponta a ponta, mais os agentes especialistas que operam a rotina."
+      "description": "Configure e toque sua corretora no Koter conversando com a sua IA: configuração guiada, multicálculo auto, comissão, CRM, KoterZap e agentes especialistas. Comece por /introducao."
     }
   ]
 }
