@@ -50,7 +50,7 @@ No Koter, a tela **Acessos** (dentro de MCP, "O que seu cargo pode conectar") mo
 
 **O login é por OAuth.** Quem conecta não copia chave nenhuma:
 
-1. Cola a URL na IA e autoriza.
+1. No Claude e no Claude Code, a conexão vem com o plugin, e o login abre no primeiro uso. Nas outras IAs, cola a URL e autoriza.
 2. Entra no Koter e vê a lista de áreas, agrupadas por módulo.
 3. Marca as áreas. O Koter concede só o que o cargo dele permite, mesmo que ele tenha marcado mais.
 4. A IA volta conectada.
@@ -221,7 +221,7 @@ OPERAÇÃO  https://api.koter.app/mcp-user/koter?toolsets=crm-automation,gestao-
 - Dentro da IA, deixe ligado só o pacote da conversa, e "Precisa de aprovação" na escrita.
 - `admin-usuarios`, `admin-cargos` e `importacao` ficam fora dos três de propósito: são de implantação, não de rotina. Uma conexão só com eles não encosta em nenhum pacote.
 - `formularios` também fica fora dos três. Quem cuida dos formulários de captura acrescenta a área ao pacote Venda (`?toolsets=crm,crm-config,cotacao-auto,formularios`, 43 tools) e marca `formularios` no consentimento. Os pacotes continuam sem área repetida.
-- **A conexão inteira encosta em tudo.** No mesmo cliente de IA, criar uma conexão inteira depois dos pacotes pode derrubá-los, e criar um pacote depois dela pode derrubá-la.
+- **A conexão inteira encosta em tudo.** No mesmo cliente de IA, criar uma conexão inteira depois dos pacotes pode derrubá-los, e criar um pacote depois dela pode derrubá-la. A que vem com o plugin no Claude e no Claude Code é inteira: quem usar os pacotes ali deixa a do plugin desligada.
 - **Claude Free: uma conexão só.** Escolha o pacote do módulo principal, sem `all`.
 
 **Quem trabalha com dinheiro precisa de `gestao-contratos`.** O contrato só nasce por `gestao_contratos_save_contract`: sem esse toolset não há implantação, e sem implantação não há comissão.

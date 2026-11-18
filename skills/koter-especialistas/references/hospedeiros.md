@@ -37,7 +37,7 @@ Quem não souber o plano abre as configurações e manda um print.
 | Produto e plano | Liga o Koter? | Entrega | Conexão | Rotina | Celular |
 |---|---|---|---|---|---|
 | **Claude Free** | Sim, uma conexão personalizada | B ou S. Skill exige "execução de código" ligada. Plugin não | Uma: o pacote do módulo principal | Não | Usa a conexão feita no computador |
-| **Claude Pro, Max, Ultra** | Sim | Plugin, S e B. Sub-agente fica acinzentado no chat | Três pacotes, um ligado por conversa | Tarefa agendada no Cowork, até de hora em hora | Usa. Instalar conector pelo celular está em beta |
+| **Claude Pro, Max, Ultra** | Sim | Plugin, S e B. Sub-agente fica acinzentado no chat | A do plugin. Três pacotes, um ligado por conversa, só com a do plugin desligada | Tarefa agendada no Cowork, até de hora em hora | Usa. Instalar conector pelo celular está em beta |
 | **Claude Team, Enterprise** | Sim. Só o Owner adiciona, cada membro faz login | Igual ao Pro | Igual ao Pro | Tarefa agendada no Cowork | Web e celular do Cowork em Team (beta) |
 | **Claude Code** (Pro para cima) | Sim | **A** | **Recorte por agente** | Tarefa agendada na nuvem, intervalo mínimo de 1 hora | Agente de `.claude/` não carrega em sessão de nuvem |
 | **ChatGPT Free, Go** | Provável que não | C, sem Koter | Nenhuma | 3 tarefas, no máximo diária | Sim |
