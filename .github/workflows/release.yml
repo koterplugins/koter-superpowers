@@ -32,13 +32,14 @@ jobs:
         with:
           token: ${{ secrets.RELEASE_TOKEN }}
 
-      - name: Merge the release pull request
+      # GitHub merges the release pull request once its required CI check passes; the tag and release come on that push.
+      - name: Queue the release pull request for merge
         run: |
-          pr=$(gh pr list -R "$GITHUB_REPOSITORY" --state open --label "autorelease: pending" --json number --jq '.[0].number')
+          pr=$(gh pr list -R "$GITHUB_REPOSITORY" --state open --label "autorelease: pending" --json number,autoMergeRequest --jq '[.[] | select(.autoMergeRequest == null)][0].number // empty')
           [ -n "$pr" ] || exit 0
           # GitHub may still be computing mergeability right after the pull request opens.
-          for attempt in 1 2 3 4 5; do
-            gh pr merge "$pr" -R "$GITHUB_REPOSITORY" --squash && exit 0
+          for attempt in 1 2 3; do
+            gh pr merge "$pr" -R "$GITHUB_REPOSITORY" --auto --squash && exit 0
             sleep 15
           done
           exit 1
