@@ -8,6 +8,8 @@
     "url": "https://koter.app"
   },
   "homepage": "https://koter.app",
+  "icon": "./assets/icon.png",
+  "privacyPolicyUrl": "https://koter.app/privacidade",
   "repository": "https://github.com/koterplugins/koter-superpowers",
   "license": "Apache-2.0",
   "keywords": [
