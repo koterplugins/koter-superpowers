@@ -7,7 +7,6 @@
 - [ ] Cada afirmação nova sobre o Koter foi conferida na conexão ou no código (diga qual e a data).
 - [ ] O que alcança o cliente final está na porta de cuidado da skill.
 - [ ] Sem dado real e sem detalhe interno do Koter.
-- [ ] O `CHANGELOG.md` ganhou a linha em `Unreleased`.
 
 ## O que ficou sem verificar
 

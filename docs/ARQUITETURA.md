@@ -7,6 +7,9 @@ Para quem vai revisar ou escrever skill. Para usar o plugin, o [README](../READM
 ```
 .claude-plugin/plugin.json
 .claude-plugin/marketplace.json
+.mcp.json                               a conexão MCP do Koter
+assets/icon.png
+scripts/                                o pacote do ChatGPT e as checagens do CI
 commands/
   introducao.md  multicalculo.md  especialistas.md  superpoderes.md  prova.md
 skills/

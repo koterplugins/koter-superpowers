@@ -2,7 +2,7 @@
 
 **Configure e toque a sua corretora conversando com a sua IA.**
 
-[![Licença Apache 2.0](https://img.shields.io/badge/licen%C3%A7a-Apache%202.0-blue.svg)](LICENSE) [![Versão](https://img.shields.io/badge/vers%C3%A3o-0.1.0-informational.svg)](CHANGELOG.md) [![Koter](https://img.shields.io/badge/Koter-koter.app-0a7cff.svg)](https://koter.app/ia)
+[![Licença Apache 2.0](https://img.shields.io/badge/licen%C3%A7a-Apache%202.0-blue.svg)](LICENSE) [![Versão](https://img.shields.io/github/v/tag/koterplugins/koter-superpowers?sort=semver&label=vers%C3%A3o&color=informational)](CHANGELOG.md) [![Koter](https://img.shields.io/badge/Koter-koter.app-0a7cff.svg)](https://koter.app/ia)
 
 Você digita `/introducao`. O plugin lê a sua corretora no Koter, mostra o que está pronto e o que falta, e configura o resto com você, aplicando de verdade em vez de explicar onde fica o botão. Depois, parte do trabalho da semana passa pela conversa.
 
@@ -144,7 +144,7 @@ O especialista é escrito na sua IA, não no Koter: como agente, como skill, com
 - **Quer mudar ou escrever uma skill?** Leia o [CONTRIBUTING.md](CONTRIBUTING.md) e a [arquitetura do plugin](docs/ARQUITETURA.md).
 - **Falha de segurança:** em privado, pelo [SECURITY.md](SECURITY.md). Nunca em issue pública.
 - **Dúvida da sua conta no Koter** (login, cobrança, módulos): [koter.app/ajuda](https://koter.app/ajuda) ou suporte@koter.app.
-- **O que mudou em cada versão:** [CHANGELOG.md](CHANGELOG.md).
+- **O que mudou em cada versão:** [CHANGELOG.md](CHANGELOG.md). Cada versão tem uma [release](https://github.com/koterplugins/koter-superpowers/releases) com o pacote do ChatGPT.
 
 Quem participa segue o [Código de conduta](CODE_OF_CONDUCT.md).
 
