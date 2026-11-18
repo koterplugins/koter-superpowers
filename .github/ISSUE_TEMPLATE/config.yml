@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Falha de segurança
+    url: https://github.com/koterplugins/koter-superpowers/security/advisories/new
+    about: Reporte em privado. Não abra issue pública.
+  - name: Suporte do Koter (conta, login, cobrança)
+    url: https://koter.app/ajuda
+    about: Dúvida da sua conta no Koter, fora do plugin.

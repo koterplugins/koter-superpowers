@@ -1,0 +1,225 @@
+---
+name: koter-zap-fundacao
+description: Diagnostica o WhatsApp da corretora: números, tipos, quem atende e o que cada tipo permite. Use quando pedirem para configurar o WhatsApp ou a mensagem automática não sair.
+---
+
+# koter-zap-fundacao
+
+A primeira etapa do KoterZap, e a mais ingrata: **boa parte dela é dizer ao corretor o que o plugin não faz.** Conectar número é tela e é Meta, e nenhuma tool MCP responde o cliente numa conversa. O que esta skill entrega é o diagnóstico honesto do canal e tudo o que dá para arrumar em volta dele.
+
+Termina com o corretor sabendo, em uma frase, **o que o WhatsApp dele consegue fazer hoje**, e com quem atende cada número definido.
+
+## 0 · Pré-requisitos
+
+Módulo `KOTERZAP` em `modules` (passo 0 da `introducao`). Sem ele, é o caso "módulo que falta" do passo 1b: constatação com três saídas, não pergunta.
+
+Permissões do cargo: ver as instâncias de WhatsApp para o diagnóstico; "Ver lista de templates Cloud API" para `koterzap_configuracao_list_meta_message_templates`; gerenciar instâncias e gerenciar caixas de entrada para ajustar.
+
+Nada aqui depende do CRM nem do Gestão. Mas a `koter-crm-automacao` depende **desta**: é aqui que se descobre se `SEND_WHATSAPP_TEMPLATE` é possível.
+
+> **O diagnóstico desta skill provavelmente já foi feito.** A `/introducao` roda `koterzap_configuracao_fetch_koterzap_config_context` (com `include: ["whatsappInstances"]`) no passo 2, junto com o do Gestão e o do CRM, e entrega as tarefas de tela 1 e 2 (conectar Cloud API, aprovar template) logo no começo, justamente porque dependem da Meta e levam dias. Leia `pre_requisitos_de_tela` no estado **antes** de anunciar de novo: se já foram oferecidas, **pergunte se ele conseguiu**, não repita a explicação. Descobrir isto no fim do onboarding, depois de tudo pronto, é o erro que esta ordem existe para evitar.
+
+> **Confira o `companyId` antes de aplicar qualquer coisa.** `admin_cargos_fetch_admin_roles_context` com `include: ["myPermissions"]` de novo, e compare com o que a `introducao` guardou. Se o cargo não alcança `admin-cargos`, o plano B é `list_toolsets`. Já aconteceu de a conexão trocar de corretora no meio de uma sessão, e o sintoma é `Operação não permitida.` numa chamada que acabou de funcionar. Ver as armadilhas no fim.
+
+## 1 · Detecção
+
+```
+koterzap_configuracao_fetch_koterzap_config_context   include: ["whatsappInstances"]
+koterzap_configuracao_list_inboxes
+koterzap_configuracao_list_message_templates
+```
+
+> **O KoterZap nasce vazio:** números, caixas, respostas rápidas, chatbots e bases, cinco listas zeradas.
+>
+> Isso é o **oposto** do CRM, que nasce com quatro automações ligadas. Aqui não há nada de fábrica para revisar: ou existe número conectado, ou a conversa inteira é sobre o que fazer antes disso.
+
+Se `whatsappInstances` vier vazio, **leia `notes` antes de concluir**. Com `notes.whatsappInstances` preenchido, foi o cargo que não pôde ler as instâncias, não a corretora que não tem número. E quem não gerencia instâncias vê só as das próprias equipes ou atribuídas a ele. Vazio sem nota, para quem enxerga tudo, é conta sem número: pule para o passo 4 e não configure mais nada, porque **tudo no KoterZap pendura em um número.**
+
+## 2 · Os três tipos, e o que muda entre eles
+
+`instanceType` vem em três sabores, e a diferença não é técnica, é de o que o corretor pode prometer ao cliente:
+
+| | `EVOLUTION` | `CLOUD_API` | `COEXISTENCE` |
+|---|---|---|---|
+| Como conecta | QR code, pelo app WhatsApp Business | credencial oficial da Meta | os dois no mesmo número |
+| Mensagem livre | sempre | só dentro da janela de 24h | pelo QR enquanto aberto; senão, janela |
+| Template aprovado pela Meta | **não** | sim | sim |
+| Automação de mensagem no CRM | **não** | sim | sim |
+| Lista e botões interativos | não | só dentro da janela | só dentro da janela |
+
+**Leia `instanceType` antes de prometer qualquer disparo.** "Tem WhatsApp conectado" e "dá para automatizar mensagem" são coisas diferentes, e confundir as duas é o jeito mais rápido de montar uma automação que nunca envia.
+
+### A janela de 24h, em português
+
+A Meta só deixa a empresa escrever para o cliente **nas 24 horas seguintes à última mensagem que o cliente mandou**. Passou disso, só template aprovado reabre a conversa.
+
+O erro que aparece é literal: *"A janela de conversa de 24h expirou. Envie um template aprovado para reabrir o atendimento."*
+
+Duas consequências que o corretor precisa ouvir antes de montar qualquer coisa:
+
+1. **Régua de follow-up por WhatsApp em número Cloud API só funciona com template.** "Mandar um oi no terceiro dia" não existe sem template aprovado.
+2. **Só conta o inbound recente.** Mensagem que o cliente mandou mês passado não reabre nada.
+
+### A coexistência muda de comportamento sozinha
+
+`COEXISTENCE` é credencial da Meta **mais** o lado QR no mesmo número. Enquanto o QR está conectado, a mensagem livre sai por ele, sem janela. **Se o QR cai, o mesmo número passa a se comportar como Cloud API pura**, e a janela de 24h começa a morder de um dia para o outro, sem ninguém ter mexido em nada.
+
+Quando encontrar uma instância `COEXISTENCE`, diga isso em voz alta. É a causa número um de "ontem funcionava".
+
+## 3 · Quem atende cada número
+
+Duas listas por instância (em `whatsappInstances`), e elas não são a mesma coisa:
+
+- **`allowedTeams`**: equipes que enxergam aquele número.
+- **`allowedUsers`**: pessoas soltas, sem passar por equipe.
+
+**Quem atende o número se ajusta na tela da instância, não pelo MCP.** A caixa WHATSAPP nasce vinculada à sua instância e segue as equipes dela; `koterzap_configuracao_update_inbox` recusa essa caixa. Ela serve para as caixas sem instância (e-mail e widget do site), e substitui a lista inteira de `allowedTeamIds`: leia antes com `koterzap_configuracao_list_inboxes` com `ids` e reenvie as que continuam. Vincular caixa a instância também é de tela. Caixa com `allowedTeamIds` vazio significa **qualquer atendente**, não "ninguém".
+
+> **A pegadinha que quebra automação do CRM:** a ação `CREATE_LEAD` tira a equipe do lead da instância: a equipe de destino escolhida na tela da instância, senão a primeira de `allowedTeams`, senão uma equipe de quem está em `allowedUsers`. Só falha quando nada disso dá equipe, com *"A instância não tem equipe de destino dos leads. Escolha uma nas configurações da instância."*, ou com a criação automática de leads desligada na instância. A equipe de destino não vem em `whatsappInstances`: só a tela mostra. E nenhum gatilho entrega hoje a mensagem que a ação pede: mesmo com tudo certo, ela falha com *"CREATE_LEAD exige mensagem no contexto da automação."* Para criar lead pelo WhatsApp, use a etapa `ACTION` com `CREATE_LEAD` do chatbot.
+
+Então, ao pedir ao corretor que arrume `allowedTeams` ou a equipe de destino na tela, confirme com ele antes a equipe certa: muda quem enxerga aquele número e para onde vão os leads dele, e isso é decisão do corretor, não sua.
+
+## 4 · O que o plugin não faz, e por que dizer isso logo
+
+Quatro coisas, todas fora do alcance de qualquer skill:
+
+| O quê | Por quê | O que dizer |
+|---|---|---|
+| **Criar instância** | Não existe tool de MCP para isso, em nenhum dos três tipos | "Conectar o número é na tela do Koter, leva dois minutos com o celular na mão" |
+| **Registrar Cloud API** | Exige o cadastro embutido da Meta, ou token + wabaId + phoneNumberId | "Esse é o caminho oficial; a Meta entra no meio e pede verificação da empresa" |
+| **Aprovar template** | A aprovação é da Meta, e isso não está no MCP | "Você escreve o template na tela, a Meta aprova em algumas horas ou dias" |
+| **Responder o cliente na conversa** | `koterzap-atendimento` só lê, busca, baixa anexo e transcreve | "Eu preparo o texto, quem manda é você. O que sai sozinho é o que estiver configurado para sair" |
+
+E a licença: registrar instância exige licença de WhatsApp na assinatura; plano free aceita **uma** instância conectada.
+
+**Diga os quatro de uma vez, no começo.** Descobrir no fim, depois de montar um chatbot e uma régua, que nada disso vai ao ar, é a pior sequência possível.
+
+### As portas que chegam ao cliente
+
+Nenhuma tool responde a conversa, mas o MCP deixa **configurar** o que manda, e a maioria dessas gravações não sai marcada como perigosa:
+
+| Porta | Tool | Como chega ao cliente |
+|---|---|---|
+| Tarefa | `crm_save_task` | `actions` com `SEND_WHATSAPP_TEMPLATE` ou `SEND_EMAIL` no horário da tarefa; `guestEmails` faz o Google mandar convite |
+| Automação do CRM | `crm_automation_save_automation` | `SEND_WHATSAPP_TEMPLATE`, com instância oficial e template aprovado, e `SEND_EMAIL` |
+| Automação da gestão | `gestao_automacao_save_management_automation` | `SEND_EMAIL` ao contato da proposta; o WhatsApp de lá se monta na tela, mas a tool pode ligar a regra que o carrega |
+| E-mail das automações | `crm_automation_save_email_template`, `gestao_automacao_save_email_template`, `crm_automation_save_email_footer`, `gestao_automacao_save_email_footer` | muda o que as automações ligadas mandam no próximo envio |
+| Chatbot | `koterzap_configuracao_save_chatbot`, `koterzap_configuracao_save_chatbot_flow` | `active: true` liga o bot, que fala sozinho, inclusive o agente de IA; `replaceOccupant: true` tira o bot que atendia |
+| Webhook | `SEND_WEBHOOK` dentro das automações | manda contexto a um endereço externo já cadastrado na tela |
+
+**Essas tools ficam sempre em "Precisa de aprovação"** na IA do corretor. Revisá-las vale mais do que revisar as de excluir. `koterzap_configuracao_save_chatbot_flow` já sai marcada como destrutiva; as outras não. As cópias (`crm_automation_import_automation`, `koterzap_configuracao_import_chatbot`) nascem desligadas.
+
+### `koterzap_configuracao_save_message_template` não é o template da Meta
+
+Essa é a armadilha que mais engana nesta área inteira.
+
+> `koterzap_configuracao_save_message_template` cria uma **resposta rápida interna**: texto pronto que o atendente dispara com um clique no chat. A própria `koterzap_configuracao_list_message_templates` diz: *"Não são os templates aprovados pela Meta: esses estão em list_meta_message_templates."*
+>
+> O template da Meta é outra entidade, ligada à instância, e **o MCP continua não criando nenhum**: a aprovação é da Meta.
+
+Uma skill que "cria o template" assim e liga uma automação de mensagem vai falhar **no envio**, longe dali. Nunca feche esse laço.
+
+### Mas agora dá para SABER se existe template aprovado
+
+```
+koterzap_configuracao_list_meta_message_templates(instanceId, status?, name?, limit?, after?)
+    → { templates, nextCursor }
+```
+
+Só leitura, e **só funciona em instância oficial** (`CLOUD_API` ou `COEXISTENCE`; `isCloudApi` em `whatsappInstances` diz qual é). Pagina pela Meta: repita com `after` igual ao `nextCursor` até ele vir `null`. É a tool que responde a pergunta que trava régua de mensagem e renovação: *existe template `APPROVED` para o `SEND_WHATSAPP_TEMPLATE` usar?* Antes de prometer qualquer automação que manda mensagem, consulte, e leve o `name` e o `language` do template aprovado para a automação, em vez de torcer.
+
+Não confunda com `koterzap_configuracao_list_message_templates`, que lista as respostas rápidas internas e nem pede `instanceId`.
+
+> **Esta skill é a dona do assunto.** A `/introducao` não rastreia o template da Meta: no ato 0 ela diz uma frase de orientação junto da tarefa de conectar o número, e para por aí. A conferência acontece aqui, **na hora em que a régua de mensagem for montada**, que é o único momento em que a resposta muda alguma decisão. Não peça ao corretor que "avise quando o template sair": leia.
+
+> **Cada recusa tem a sua mensagem.** Instância de fora da corretora: *"Instância "<id>" não encontrada na corretora."* `EVOLUTION`: a resposta diz o tipo e que template da Meta só existe em `CLOUD_API` ou `COEXISTENCE`. Conexão com a Meta incompleta: manda concluir na tela. Mesmo assim, **confira antes com `koterzap_configuracao_fetch_koterzap_config_context` (`whatsappInstances`, campo `isCloudApi`)** e diga ao corretor o que falta, em vez de repassar a recusa. Na primeira chamada com instância oficial, confira na resposta o `name` e o `language` antes de levar o template para a automação.
+
+### E resposta rápida exige número
+
+> `koterzap_configuracao_save_message_template` tem `instances` obrigatório ao criar, e a instância precisa ser da corretora. Não dá para deixar respostas rápidas prontas esperando o número chegar.
+
+Ou seja: **respostas rápidas são passo de depois.** Se não há instância, anote o texto que o corretor quer e volte a criar quando o número existir.
+
+## 5 · As respostas rápidas que se pagam
+
+Quando já houver número, três textos resolvem a maior parte do dia, e é por eles que se começa:
+
+1. **Primeiro contato**: quem é a corretora, e a pergunta que qualifica ("é para você, família ou empresa?").
+2. **Pedido de documentos**: a lista exata, sempre a mesma, sempre esquecida pela metade.
+3. **Cotação enviada**: o texto que acompanha o PDF e marca o próximo passo com data.
+
+O nome vira um atalho único na corretora, então nomeie pelo que o atendente vai digitar (`docs`, `cotacao`), não pelo assunto. Ele é gravado como slug, sem barra nem acento: "Boas vindas" vira `boas-vindas`, e `/docs` vira `docs`.
+
+Apagar uma resposta rápida (`koterzap_configuracao_delete_koterzap_config_records`, `kind: "message_template"`, `confirm: true`) a tira de todas as instâncias em que ela aparecia. Só com pedido dele.
+
+**Não crie mais do que três de saída.** Biblioteca de quinze respostas que ninguém decora é pior que nenhuma: o atendente volta a escrever na mão e ainda perde tempo procurando.
+
+## 6 · O que nunca prometer por este canal
+
+O número é o ativo da corretora. Perder o número é perder a carteira inteira de conversas, e a Meta bloqueia sem aviso e sem recurso prático.
+
+1. **Disparo em massa para base fria.** É o caminho mais curto para o bloqueio, e viola a regra de opt-in.
+2. **Mensagem sobre doença, tratamento, carência por preexistência.** Dado sensível pela LGPD, num canal que o cliente compartilha com a família.
+3. **Aviso de reajuste automático.** A conversa mais delicada do ano não vai por robô. A automação avisa **o corretor**, não o cliente.
+4. **Negativa e cancelamento.** Má notícia por robô vira reclamação, às vezes processo.
+
+Isso não é preferência de estilo: é o que gera denúncia no aplicativo, e denúncia derruba número.
+
+## 7 · Validação
+
+Releia o que você mexeu, sempre:
+
+```
+koterzap_configuracao_fetch_koterzap_config_context  → whatsappInstances: confere allowedTeams
+koterzap_configuracao_list_inboxes (ids)             → confere linkedWhatsAppInstance e allowedTeamIds
+koterzap_configuracao_list_message_templates         → confere as respostas criadas
+```
+
+E feche com a frase que resume o canal, que é o entregável real desta skill:
+
+> "Você tem um número, do tipo Evolution, atendido pela equipe Comercial. Ele conversa normalmente e não tem limite de janela, mas **não dispara mensagem automática**, porque isso só existe no número oficial da Meta. Se quiser régua de WhatsApp, o caminho é conectar um Cloud API; enquanto isso, a régua vira tarefa para você."
+
+## 8 · Estado e próxima
+
+Grave em `.koter/onboarding.json`: etapa `concluida`, os números e seus tipos, e, o campo que mais importa para as outras skills, **se existe Cloud API e se existe template aprovado**. A `koter-crm-automacao`, a `koter-crm-renovacao` e as duas skills de chatbot leem essa resposta.
+
+Próxima, em até 4 opções:
+
+- **`koter-chatbot-fluxo`**: montar o bot de triagem, que funciona mesmo sem número conectado *(recomendada)*
+- `koter-zap-conhecimento`: a base que o agente de IA vai consultar
+- `koter-crm-automacao`: agora que se sabe o que o canal aguenta
+- parar por aqui
+
+## Armadilhas conhecidas
+
+| Sintoma | Causa | Conserto |
+|---|---|---|
+| Automação recusada com *"não é do tipo Cloud API, exigida para envio de template"* | instância Evolution | régua sem a ação de mensagem, ou conectar Cloud API |
+| Template "criado" e o envio falha | `koterzap_configuracao_save_message_template` é resposta rápida interna | aprovar na Meta, pela tela; conferir com `koterzap_configuracao_list_meta_message_templates` |
+| `koterzap_configuracao_list_meta_message_templates` recusa | instância de fora da corretora, sem Cloud API ou com a Meta incompleta | cheque `whatsappInstances` em `koterzap_configuracao_fetch_koterzap_config_context` antes e diga qual dos três é |
+| Resposta rápida recusada | não há instância, e `instances` é obrigatório | criar só depois que existir número |
+| "Ontem funcionava" | coexistência com o lado QR caído | a janela de 24h passou a valer; reconectar o QR |
+| Mensagem só sai depois que o cliente escreve | janela de 24h em Cloud API | é o comportamento correto; use template para reabrir |
+| Automação com `CREATE_LEAD` falha ao rodar | nenhum gatilho entrega a mensagem que a ação exige; também instância sem equipe de destino, ou criação automática de leads desligada | usar `ACTION` com `CREATE_LEAD` no chatbot |
+| `whatsappInstances` vazio numa corretora que tem número | o cargo não lê as instâncias (motivo em `notes`), ou só vê as das próprias equipes | ler `notes`; conferir com quem enxerga tudo antes de dizer que não há número |
+| Diagnóstico de atendimento parece quebrado numa conta nova | sem número, não há inbox nem conversa | as tools de atendimento devolvem vazio, não erro: é diagnóstico, não falha |
+| Número duplicado no pareamento | só uma instância conectada por número | desconectar a antiga antes |
+| `Operação não permitida.` numa chamada que funcionava | a conexão trocou de corretora | reler `companyId`; **não repetir a chamada** |
+
+## As tools de atendimento numa conta sem número
+
+Numa conta sem nenhum número, as leituras de atendimento **respondem normalmente e voltam vazias**: não dão erro, então servem no diagnóstico do passo 2 sem tratamento especial:
+
+| Chamada | Conta sem número |
+|---|---|
+| `koterzap_configuracao_list_inboxes` | `{inboxes: [], total: 0}` |
+| `koterzap_atendimento_list_conversations(include: ["counts"])` | `{conversations: [], total: 0, counts: {...}}`, com as contagens zeradas |
+| `koterzap_atendimento_list_reply_templates` | `{templates: [], total: 0}` |
+
+A exceção é `koterzap_atendimento_search_inbox_messages`, que **exige `inboxId`**: sem nenhuma caixa, não há id para passar e a chamada não tem como ser feita. Não a inclua no diagnóstico: ela só entra depois que existe número.
+
+Confirma o que a seção 1 já dizia: **o KoterZap nasce vazio**, e vazio aqui é resposta, não defeito.
+
+### Com número: o que espera resposta
+
+Com número, `koterzap_atendimento_list_conversations` (`onlyMine`, `statuses: ["OPEN","PENDING"]`) é o ponto de partida para achar o que espera resposta. Áudio com `needsTranscription: true` se transcreve com `koterzap_atendimento_transcribe_audio_message`, que grava a transcrição na mensagem e **consome a chave OpenAI da corretora**: é escrita, ainda que não chegue ao cliente, então transcreva só o que o corretor pediu.

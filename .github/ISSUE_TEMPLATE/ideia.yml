@@ -1,0 +1,17 @@
+name: Ideia ou skill nova
+description: Uma rotina da corretora que o plugin ainda não cobre.
+labels: ["ideia"]
+body:
+  - type: textarea
+    id: rotina
+    attributes:
+      label: Qual rotina
+      description: O que a corretora faz hoje, quem faz e com que frequência.
+    validations:
+      required: true
+  - type: textarea
+    id: resultado
+    attributes:
+      label: O que a IA deveria entregar
+    validations:
+      required: true

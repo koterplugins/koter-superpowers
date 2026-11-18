@@ -1,0 +1,44 @@
+name: Skill diverge do Koter
+description: Uma skill ou comando diz algo que o Koter não faz, ou faz diferente.
+labels: ["skill-desatualizada"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por avisar. **Não cole dado real** (CPF, telefone, e-mail, nome de cliente ou de corretora). Troque por exemplo fictício.
+  - type: input
+    id: skill
+    attributes:
+      label: Skill ou comando
+      placeholder: koter-crm-lead, /introducao…
+    validations:
+      required: true
+  - type: textarea
+    id: diz
+    attributes:
+      label: O que a skill diz
+      description: Cole a frase e diga o arquivo, se souber.
+    validations:
+      required: true
+  - type: textarea
+    id: faz
+    attributes:
+      label: O que o Koter fez
+      description: A ferramenta chamada, o que foi enviado e o que voltou (mensagem de erro literal, se houver).
+    validations:
+      required: true
+  - type: dropdown
+    id: ia
+    attributes:
+      label: Em qual IA
+      options: [Claude (chat), Claude Code, Cowork, ChatGPT, Grok, Outra]
+    validations:
+      required: true
+  - type: dropdown
+    id: efeito
+    attributes:
+      label: Teve efeito fora do esperado?
+      description: Se a IA mandou mensagem a cliente, apagou ou gravou algo indevido, reporte também pelo SECURITY.md.
+      options: [Não, Gravou ou apagou algo indevido, Alcançou um cliente]
+    validations:
+      required: true
