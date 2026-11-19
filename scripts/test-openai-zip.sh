@@ -2,8 +2,9 @@
 # Checks the structure of the package built by build-openai.sh.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+plugin=plugins/koter
 
-version=$(jq -r .version .claude-plugin/plugin.json)
+version=$(jq -r .version "$plugin/.claude-plugin/plugin.json")
 zip="dist/koter-openai-$version.zip"
 pkg=$(mktemp -d)
 trap 'rm -rf "$pkg"' EXIT
@@ -11,7 +12,7 @@ unzip -q "$zip" -d "$pkg"
 
 fail() { echo "$zip: $*" >&2; exit 1; }
 
-diff -rq skills "$pkg/skills" || fail "skills/ differs from the source"
+diff -rq "$plugin/skills" "$pkg/skills" || fail "skills/ differs from the source"
 for extra in commands hooks .app.json .mcp.json .claude-plugin; do
   [ ! -e "$pkg/$extra" ] || fail "$extra must not ship"
 done
@@ -28,7 +29,7 @@ jq -e --arg version "$version" '
   and .extensions["com.openai"].publication.countries == []
 ' "$pkg/plugin.json" > /dev/null || fail "plugin.json is missing a field or breaks a limit"
 
-jq -e --arg url "$(jq -r .mcpServers.koter.url .mcp.json)" '
+jq -e --arg url "$(jq -r .mcpServers.koter.url "$plugin/.mcp.json")" '
   .["$schema"] == "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
   and (.mcpServers | keys) == ["koter"]
   and .mcpServers.koter.type == "streamable-http" and .mcpServers.koter.url == $url

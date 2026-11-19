@@ -1,6 +1,6 @@
 # Como contribuir
 
-Obrigado por querer melhorar o plugin do Koter. Este repositório é só texto: skills, comandos e manifestos. Quem executa é a IA do corretor, pela conexão MCP do Koter. Por isso, **uma frase errada aqui vira uma ação errada na corretora de alguém**, e a régua de revisão é alta.
+Obrigado por querer melhorar o plugin do Koter. Ele fica em `plugins/koter/` e é só texto: skills, comandos e manifestos. Quem executa é a IA do corretor, pela conexão MCP do Koter. Por isso, **uma frase errada aqui vira uma ação errada na corretora de alguém**, e a régua de revisão é alta.
 
 ## Antes de abrir uma PR
 

@@ -24,7 +24,13 @@ jobs:
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Validate the Claude plugin
+        run: claude plugin validate ./plugins/koter
+
+      - name: Validate the marketplace
         run: claude plugin validate .
+
+      - name: Check the files in the plugin folder
+        run: scripts/check-plugin-folder.sh
 
       - name: Check the tools cited in the skills
         run: node scripts/check-tools.mjs

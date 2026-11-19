@@ -27,7 +27,7 @@ const formKey = /^(condutor|endereco|questionario|segurado|veiculo|vigencia)_/;
 const citation = /`([a-z][a-z0-9]*(?:_[a-z0-9]+)+)(?:\([^`]*\))?`/g;
 
 const unknown = [];
-for (const dir of ['skills', 'commands']) {
+for (const dir of ['plugins/koter/skills', 'plugins/koter/commands']) {
   for (const file of readdirSync(join(root, dir), { recursive: true })) {
     if (!file.endsWith('.md')) continue;
     const path = join(dir, file);

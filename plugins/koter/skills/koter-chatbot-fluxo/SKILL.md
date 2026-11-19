@@ -1,6 +1,6 @@
 ---
 name: koter-chatbot-fluxo
-description: Monta o chatbot de WhatsApp: triagem, horário, desvio pelo CRM e transbordo, e prova por simulação antes de ligar. Use quando pedirem chatbot, menu, URA ou robô de primeiro atendimento.
+description: "Monta o chatbot de WhatsApp: triagem, horário, desvio pelo CRM e transbordo, e prova por simulação antes de ligar. Use quando pedirem chatbot, menu, URA ou robô de primeiro atendimento."
 ---
 
 # koter-chatbot-fluxo

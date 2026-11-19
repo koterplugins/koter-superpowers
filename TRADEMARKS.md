@@ -14,7 +14,7 @@ O código e o texto deste repositório estão sob a [licença Apache 2.0](LICENS
 - Apresentar um fork, um serviço ou um conector como **oficial**, **da Koter** ou **aprovado pela Koter**.
 - Usar a marca num conector ou servidor MCP que não seja o `api.koter.app`.
 
-**Fork modificado** precisa de outro nome e outro ícone, e do aviso de que não é o plugin oficial, como a seção 4(b) da licença já pede para arquivo alterado. O `name` do `.claude-plugin/plugin.json` não pode continuar `koter`.
+**Fork modificado** precisa de outro nome e outro ícone, e do aviso de que não é o plugin oficial, como a seção 4(b) da licença já pede para arquivo alterado. O `name` do `plugins/koter/.claude-plugin/plugin.json` não pode continuar `koter`.
 
 ## Para pedir outro uso
 

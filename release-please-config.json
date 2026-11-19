@@ -6,7 +6,7 @@
       "extra-files": [
         {
           "type": "json",
-          "path": ".claude-plugin/plugin.json",
+          "path": "plugins/koter/.claude-plugin/plugin.json",
           "jsonpath": "$.version"
         }
       ],
