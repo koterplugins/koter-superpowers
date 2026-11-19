@@ -10,6 +10,9 @@
   "homepage": "https://koter.app",
   "icon": "./assets/icon.png",
   "privacyPolicyUrl": "https://koter.app/privacidade",
+  "termsOfServiceUrl": "https://koter.app/termos",
+  "supportUrl": "https://koter.app/ajuda",
+  "documentationUrl": "https://koter.app/ia",
   "repository": "https://github.com/koterplugins/koter-superpowers",
   "license": "Apache-2.0",
   "keywords": [
