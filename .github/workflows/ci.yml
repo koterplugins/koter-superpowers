@@ -19,9 +19,7 @@ jobs:
           persist-credentials: false
 
       - name: Install Claude Code
-        run: |
-          curl -fsSL https://claude.ai/install.sh | bash -s stable
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+        run: npm install -g @anthropic-ai/claude-code@2.1.328
 
       - name: Validate the Claude plugin
         run: claude plugin validate ./plugins/koter
