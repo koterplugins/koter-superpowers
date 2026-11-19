@@ -1,6 +1,6 @@
 ---
 name: koter-zap-fundacao
-description: Diagnostica o WhatsApp da corretora: números, tipos, quem atende e o que cada tipo permite. Use quando pedirem para configurar o WhatsApp ou a mensagem automática não sair.
+description: "Diagnostica o WhatsApp da corretora: números, tipos, quem atende e o que cada tipo permite. Use quando pedirem para configurar o WhatsApp ou a mensagem automática não sair."
 ---
 
 # koter-zap-fundacao

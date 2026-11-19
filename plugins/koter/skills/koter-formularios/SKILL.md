@@ -1,6 +1,6 @@
 ---
 name: koter-formularios
-description: Monta o formulário de captura do Koter: perguntas, condições, publicação e respostas. Use quando pedirem formulário de captura, formulário para o site ou lead e pedido de cotação vindos de formulário.
+description: "Monta o formulário de captura do Koter: perguntas, condições, publicação e respostas. Use quando pedirem formulário de captura, formulário para o site ou lead e pedido de cotação vindos de formulário."
 ---
 
 # koter-formularios

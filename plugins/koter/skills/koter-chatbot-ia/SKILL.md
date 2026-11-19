@@ -1,6 +1,6 @@
 ---
 name: koter-chatbot-ia
-description: Configura o agente do cliente no WhatsApp: limites, prompt, ferramentas e prova antes de ligar. Use quando pedirem bot com IA, SDR automático ou agente que responde e cota saúde no KoterZap.
+description: "Configura o agente do cliente no WhatsApp: limites, prompt, ferramentas e prova antes de ligar. Use quando pedirem bot com IA, SDR automático ou agente que responde e cota saúde no KoterZap."
 ---
 
 # koter-chatbot-ia

@@ -1,70 +1,72 @@
 # Arquitetura do plugin
 
-Para quem vai revisar ou escrever skill. Para usar o plugin, o [README](../README.md) basta.
+Para quem vai revisar ou escrever skill. Para usar o plugin, o [guia do plugin](../plugins/koter/README.md) basta.
 
 ## Estrutura
 
 ```
-.claude-plugin/plugin.json
-.claude-plugin/marketplace.json
-.mcp.json                               a conexão MCP do Koter
-assets/icon.png
-scripts/                                o pacote do ChatGPT e as checagens do CI
-commands/
-  introducao.md  multicalculo.md  especialistas.md  superpoderes.md  prova.md
-skills/
-  introducao/                           roteadora: handshake → perfil → diagnóstico → plano → execução
-    references/passada-unica.md         a ordem entre as trilhas e a lista de tela do corretor
-    references/handshake.md             a primeira chamada, o plano B e cada erro de conexão
-    references/estado.md                onde mora o progresso do onboarding
-    references/conexao-por-modulo.md    o manual do MCP
-    references/trilha-gestao.md         a ordem dentro do Gestão
-    references/trilha-crm.md            a ordem dentro do CRM
-    references/trilha-koterzap.md       a ordem dentro do KoterZap
+.claude-plugin/marketplace.json           o marketplace, que aponta para plugins/koter
+scripts/                                  o pacote do ChatGPT e as checagens do CI
+plugins/koter/                            o plugin, a pasta que o Claude instala
+  .claude-plugin/plugin.json
+  .mcp.json                               a conexão MCP do Koter
+  assets/icon.png
+  README.md                               o guia do plugin
+  commands/
+    introducao.md  multicalculo.md  especialistas.md  superpoderes.md  prova.md
+  skills/
+    introducao/                           roteadora: handshake → perfil → diagnóstico → plano → execução
+      references/passada-unica.md         a ordem entre as trilhas e a lista de tela do corretor
+      references/handshake.md             a primeira chamada, o plano B e cada erro de conexão
+      references/estado.md                onde mora o progresso do onboarding
+      references/conexao-por-modulo.md    o manual do MCP
+      references/trilha-gestao.md         a ordem dentro do Gestão
+      references/trilha-crm.md            a ordem dentro do CRM
+      references/trilha-koterzap.md       a ordem dentro do KoterZap
 
-  koter-gestao-fundacao/                funil de status e entidades de adesão
-  koter-gestao-campos/                  campos personalizados de proposta e beneficiário
-  koter-gestao-vendedores/              vendedores, gestores e hierarquia
-  koter-gestao-comissoes/               tabela da operadora, repasse, variantes e estorno
-  koter-gestao-financeiro/              caixa, plano de contas, DRE e fluxo
-  koter-gestao-baixa-parcelas/          baixa de conta a pagar e a receber
-  koter-gestao-conciliacao/             extrato, conciliação e críticas
-  koter-gestao-repasse/                 do recebimento ao lote de repasse pago
-  koter-gestao-emprestimos-antecipacao/ antecipação, empréstimo e débito de estorno
-  koter-gestao-campanhas/               metas e premiação
-  koter-gestao-automacao/               o que roda sozinho no Gestão
-  koter-proposta/                       proposta e beneficiários
-  koter-contrato/                       implantação, eventos do contrato e prévia de comissão
+    koter-gestao-fundacao/                funil de status e entidades de adesão
+    koter-gestao-campos/                  campos personalizados de proposta e beneficiário
+    koter-gestao-vendedores/              vendedores, gestores e hierarquia
+    koter-gestao-comissoes/               tabela da operadora, repasse, variantes e estorno
+    koter-gestao-financeiro/              caixa, plano de contas, DRE e fluxo
+    koter-gestao-baixa-parcelas/          baixa de conta a pagar e a receber
+    koter-gestao-conciliacao/             extrato, conciliação e críticas
+    koter-gestao-repasse/                 do recebimento ao lote de repasse pago
+    koter-gestao-emprestimos-antecipacao/ antecipação, empréstimo e débito de estorno
+    koter-gestao-campanhas/               metas e premiação
+    koter-gestao-automacao/               o que roda sozinho no Gestão
+    koter-proposta/                       proposta e beneficiários
+    koter-contrato/                       implantação, eventos do contrato e prévia de comissão
 
-  koter-crm-fundacao/                   equipes e o funil de cada equipe
-  koter-crm-origens-tags/               origens, tags e motivos de perda
-  koter-crm-campos/                     campos personalizados de lead e contato
-  koter-crm-lead/                       lead, tarefa, venda e perda
-  koter-crm-automacao/                  distribuição, transbordo e régua de follow-up
-  koter-crm-renovacao/                  a rotina que segura carteira
-  koter-formularios/                    formulários de captura do CRM e as respostas
+    koter-crm-fundacao/                   equipes e o funil de cada equipe
+    koter-crm-origens-tags/               origens, tags e motivos de perda
+    koter-crm-campos/                     campos personalizados de lead e contato
+    koter-crm-lead/                       lead, tarefa, venda e perda
+    koter-crm-automacao/                  distribuição, transbordo e régua de follow-up
+    koter-crm-renovacao/                  a rotina que segura carteira
+    koter-formularios/                    formulários de captura do CRM e as respostas
 
-  koter-zap-fundacao/                   os números, seus tipos e quem atende
-  koter-zap-conhecimento/               a base que o agente do WhatsApp consulta
-  koter-chatbot-fluxo/                  triagem, horário, desvio pelo CRM e transbordo
-  koter-chatbot-ia/                     o agente do cliente
+    koter-zap-fundacao/                   os números, seus tipos e quem atende
+    koter-zap-conhecimento/               a base que o agente do WhatsApp consulta
+    koter-chatbot-fluxo/                  triagem, horário, desvio pelo CRM e transbordo
+    koter-chatbot-ia/                     o agente do cliente
 
-  koter-multicalculo-auto/              cotação auto de pessoa física
-    references/parametros.md            parâmetros, opções e chaves de recotação
-    references/armadilhas.md            o que dá errado em silêncio
-    references/erros.md                 cada mensagem e a conduta
+    koter-multicalculo-auto/              cotação auto de pessoa física
+      references/parametros.md            parâmetros, opções e chaves de recotação
+      references/armadilhas.md            o que dá errado em silêncio
+      references/erros.md                 cada mensagem e a conduta
 
-  koter-importacao/                     migração em dois atos, planejar e confirmar
+    koter-importacao/                     migração em dois atos, planejar e confirmar
 
-  koter-especialistas/                  monta um especialista na IA do corretor
-    references/catalogo.md              as 9 fichas
-    references/hospedeiros.md           o que cada IA permite e as cinco entregas
-  koter-superpoderes/                   o gargalo e as 3 técnicas
-    references/tecnicas.md              as técnicas, cada uma com "faça hoje"
-    references/receitas.md              receitas prontas de agente
-    references/grok-bot.md              o caminho do Grok Bot
-    references/fontes.md                de onde veio cada técnica
-  koter-prova/                          a prova de um agente
+    koter-especialistas/                  monta um especialista na IA do corretor
+      references/catalogo.md              as 9 fichas
+      references/hospedeiros.md           o que cada IA permite e as cinco entregas
+    koter-superpoderes/                   o gargalo e as 3 técnicas
+      references/tecnicas.md              as técnicas, cada uma com "faça hoje"
+      references/receitas.md              receitas prontas de agente
+      references/grok-bot.md              o caminho do Grok Bot
+      references/fontes.md                de onde veio cada técnica
+    koter-prova/                          a prova de um agente
 ```
 
 ## O contrato de toda skill filha
@@ -86,7 +88,7 @@ valida relendo → grava o estado → sugere a próxima
 
 ## A passada única
 
-As trilhas são uma conversa só, em atos (`skills/introducao/references/passada-unica.md`):
+As trilhas são uma conversa só, em atos (`plugins/koter/skills/introducao/references/passada-unica.md`):
 
 ```
 ATO 0 · Handshake e diagnóstico           uma sessão, nenhuma escrita
