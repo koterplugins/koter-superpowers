@@ -2,6 +2,13 @@
 
 All notable changes to this plugin, generated from the commit history. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.2.1](https://github.com/koterplugins/koter-superpowers/compare/v0.2.0...v0.2.1) (2026-11-19)
+
+
+### Bug Fixes
+
+* **skills:** say that Grok and Claude Code can run writes without asking ([#4](https://github.com/koterplugins/koter-superpowers/issues/4)) ([c37f522](https://github.com/koterplugins/koter-superpowers/commit/c37f522f0cbfd0b541b5143117b5e2e8a893b661))
+
 ## [0.2.0](https://github.com/koterplugins/koter-superpowers/compare/v0.1.0...v0.2.0) (2026-11-19)
 
 
