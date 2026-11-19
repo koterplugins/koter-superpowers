@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "koter": {
+      "type": "http",
+      "url": "https://api.koter.app/mcp-user/koter"
+    }
+  }
+}

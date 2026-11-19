@@ -1,0 +1,2154 @@
+[
+  {
+    "name": "admin_cargos_delete_company_role",
+    "title": "Excluir cargo",
+    "toolset": "admin-cargos",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_cargos_fetch_admin_roles_context",
+    "title": "Buscar contexto de cargos",
+    "toolset": "admin-cargos",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_cargos_list_company_roles",
+    "title": "Listar cargos",
+    "toolset": "admin-cargos",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_cargos_save_company_role",
+    "title": "Salvar cargo",
+    "toolset": "admin-cargos",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_cargos_set_role_wallet_scope",
+    "title": "Definir carteira do cargo",
+    "toolset": "admin-cargos",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_usuarios_delete_admin_users_records",
+    "title": "Excluir registros de usuários",
+    "toolset": "admin-usuarios",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_usuarios_fetch_admin_users_context",
+    "title": "Buscar contexto de usuários",
+    "toolset": "admin-usuarios",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_usuarios_list_company_insurance_companies",
+    "title": "Listar seguradoras da corretora",
+    "toolset": "admin-usuarios",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_usuarios_list_company_people",
+    "title": "Listar pessoas da corretora",
+    "toolset": "admin-usuarios",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_usuarios_list_informatives",
+    "title": "Listar informativos",
+    "toolset": "admin-usuarios",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_usuarios_list_invitations",
+    "title": "Listar convites",
+    "toolset": "admin-usuarios",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_usuarios_list_users",
+    "title": "Listar usuários",
+    "toolset": "admin-usuarios",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_usuarios_merge_company_people",
+    "title": "Mesclar pessoas da corretora",
+    "toolset": "admin-usuarios",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_usuarios_resolve_hierarchy_pending_link",
+    "title": "Resolver vínculo de hierarquia pendente",
+    "toolset": "admin-usuarios",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_usuarios_save_company_person",
+    "title": "Salvar pessoa da corretora",
+    "toolset": "admin-usuarios",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_usuarios_save_informative",
+    "title": "Salvar informativo",
+    "toolset": "admin-usuarios",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_usuarios_send_invitations",
+    "title": "Enviar convites",
+    "toolset": "admin-usuarios",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "admin_usuarios_set_company_insurance_companies_status",
+    "title": "Definir status das seguradoras",
+    "toolset": "admin-usuarios",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_usuarios_set_company_segment_management_status",
+    "title": "Definir status do segmento na gestão",
+    "toolset": "admin-usuarios",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_usuarios_set_hide_future_insurance_companies",
+    "title": "Ocultar seguradoras futuras",
+    "toolset": "admin-usuarios",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_usuarios_set_hierarchy_links",
+    "title": "Definir vínculos de hierarquia",
+    "toolset": "admin-usuarios",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "admin_usuarios_update_user_membership",
+    "title": "Atualizar vínculo do usuário",
+    "toolset": "admin-usuarios",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "cotacao_auto_create_auto_quote",
+    "title": "Criar cotação auto",
+    "toolset": "cotacao-auto",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "cotacao_auto_create_auto_quote_version",
+    "title": "Criar versão da cotação auto",
+    "toolset": "cotacao-auto",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "cotacao_auto_dispatch_auto_quote",
+    "title": "Disparar cotação auto",
+    "toolset": "cotacao-auto",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "cotacao_auto_find_vehicle",
+    "title": "Buscar veículo",
+    "toolset": "cotacao-auto",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "cotacao_auto_get_auto_insurer_availability",
+    "title": "Ver seguradoras disponíveis no auto",
+    "toolset": "cotacao-auto",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "cotacao_auto_get_auto_quote_insurer_pdf",
+    "title": "Obter PDF da seguradora",
+    "toolset": "cotacao-auto",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "cotacao_auto_get_fipe_catalog",
+    "title": "Consultar tabela FIPE",
+    "toolset": "cotacao-auto",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "cotacao_auto_list_auto_coverage_templates",
+    "title": "Listar modelos de cobertura auto",
+    "toolset": "cotacao-auto",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "cotacao_auto_list_auto_previous_insurers",
+    "title": "Listar seguradoras anteriores",
+    "toolset": "cotacao-auto",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "cotacao_auto_list_auto_quotes",
+    "title": "Listar cotações auto",
+    "toolset": "cotacao-auto",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "cotacao_auto_set_auto_quote_chosen_offer",
+    "title": "Escolher oferta da cotação auto",
+    "toolset": "cotacao-auto",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_automation_delete_automation",
+    "title": "Excluir automação",
+    "toolset": "crm-automation",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_automation_delete_email_template",
+    "title": "Excluir template de e-mail",
+    "toolset": "crm-automation",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_automation_fetch_automation_context",
+    "title": "Buscar contexto das automações",
+    "toolset": "crm-automation",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_automation_fetch_email_context",
+    "title": "Buscar contexto de e-mail",
+    "toolset": "crm-automation",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_automation_import_automation",
+    "title": "Importar automação",
+    "toolset": "crm-automation",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_automation_import_email_image",
+    "title": "Importar imagem de e-mail",
+    "toolset": "crm-automation",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "crm_automation_list_automation_logs",
+    "title": "Listar logs de automação",
+    "toolset": "crm-automation",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_automation_list_automation_runs",
+    "title": "Listar execuções de automação",
+    "toolset": "crm-automation",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_automation_list_automations",
+    "title": "Listar automações",
+    "toolset": "crm-automation",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_automation_list_email_senders",
+    "title": "Listar remetentes de e-mail",
+    "toolset": "crm-automation",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_automation_list_email_templates",
+    "title": "Listar templates de e-mail",
+    "toolset": "crm-automation",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_automation_preview_email_template",
+    "title": "Pré-visualizar template de e-mail",
+    "toolset": "crm-automation",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_automation_save_automation",
+    "title": "Salvar automação",
+    "toolset": "crm-automation",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "crm_automation_save_email_footer",
+    "title": "Salvar rodapé de e-mail",
+    "toolset": "crm-automation",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "crm_automation_save_email_template",
+    "title": "Salvar template de e-mail",
+    "toolset": "crm-automation",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "crm_automation_validate_automation",
+    "title": "Validar automação",
+    "toolset": "crm-automation",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_config_delete_crm_config_records",
+    "title": "Excluir registros da configuração do CRM",
+    "toolset": "crm-config",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_config_fetch_crm_config_context",
+    "title": "Buscar contexto da configuração do CRM",
+    "toolset": "crm-config",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_config_list_custom_field_groups",
+    "title": "Listar grupos de campos personalizados do CRM",
+    "toolset": "crm-config",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_config_list_team_queue_history",
+    "title": "Listar histórico da fila do time",
+    "toolset": "crm-config",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_config_reorder_lead_statuses",
+    "title": "Reordenar etapas do funil",
+    "toolset": "crm-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_config_save_custom_field_category",
+    "title": "Salvar categoria de campo personalizado do CRM",
+    "toolset": "crm-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_config_save_custom_field_definition",
+    "title": "Salvar campo personalizado do CRM",
+    "toolset": "crm-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_config_save_custom_field_group",
+    "title": "Salvar grupo de campos personalizados do CRM",
+    "toolset": "crm-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_config_save_custom_field_layout",
+    "title": "Salvar layout de campos personalizados do CRM",
+    "toolset": "crm-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_config_save_lead_status",
+    "title": "Salvar etapa do funil",
+    "toolset": "crm-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_config_save_lead_tag",
+    "title": "Salvar etiqueta de lead",
+    "toolset": "crm-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_config_save_loss_reason",
+    "title": "Salvar motivo de perda",
+    "toolset": "crm-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_config_save_origin",
+    "title": "Salvar origem de lead",
+    "toolset": "crm-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_config_save_team",
+    "title": "Salvar time",
+    "toolset": "crm-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_config_set_company_interest",
+    "title": "Definir interesse da corretora",
+    "toolset": "crm-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_delete_crm_records",
+    "title": "Excluir registros do CRM",
+    "toolset": "crm",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_fetch_crm_context",
+    "title": "Buscar contexto do CRM",
+    "toolset": "crm",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_get_lead_deal_options",
+    "title": "Ver opções de venda do lead",
+    "toolset": "crm",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_list_contacts",
+    "title": "Listar contatos",
+    "toolset": "crm",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_list_leads",
+    "title": "Listar leads",
+    "toolset": "crm",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_list_my_proposals",
+    "title": "Listar minhas propostas",
+    "toolset": "crm",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_list_tasks",
+    "title": "Listar tarefas",
+    "toolset": "crm",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_save_contact",
+    "title": "Salvar contato",
+    "toolset": "crm",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_save_lead",
+    "title": "Salvar lead",
+    "toolset": "crm",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_save_note",
+    "title": "Salvar nota",
+    "toolset": "crm",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "crm_save_task",
+    "title": "Salvar tarefa",
+    "toolset": "crm",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "disable_toolset",
+    "title": "Desligar área da conexão",
+    "toolset": "koter",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "enable_toolset",
+    "title": "Ligar área da conexão",
+    "toolset": "koter",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "formularios_create_form_question",
+    "title": "Criar pergunta de formulário",
+    "toolset": "formularios",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "formularios_delete_form",
+    "title": "Excluir formulário",
+    "toolset": "formularios",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "formularios_fetch_form_context",
+    "title": "Buscar contexto dos formulários",
+    "toolset": "formularios",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "formularios_list_form_responses",
+    "title": "Listar respostas do formulário",
+    "toolset": "formularios",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "formularios_list_forms",
+    "title": "Listar formulários",
+    "toolset": "formularios",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "formularios_save_form",
+    "title": "Salvar formulário",
+    "toolset": "formularios",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "gestao_archive_proposal",
+    "title": "Arquivar proposta",
+    "toolset": "gestao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_automacao_delete_email_template",
+    "title": "Excluir template de e-mail",
+    "toolset": "gestao-automacao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_automacao_delete_management_automation",
+    "title": "Excluir automação da gestão",
+    "toolset": "gestao-automacao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_automacao_fetch_email_context",
+    "title": "Buscar contexto de e-mail",
+    "toolset": "gestao-automacao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_automacao_fetch_management_automation_context",
+    "title": "Buscar contexto das automações da gestão",
+    "toolset": "gestao-automacao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_automacao_fork_system_automation",
+    "title": "Copiar automação padrão",
+    "toolset": "gestao-automacao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_automacao_import_email_image",
+    "title": "Importar imagem de e-mail",
+    "toolset": "gestao-automacao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "gestao_automacao_list_automation_logs",
+    "title": "Listar logs de automação",
+    "toolset": "gestao-automacao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_automacao_list_email_senders",
+    "title": "Listar remetentes de e-mail",
+    "toolset": "gestao-automacao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_automacao_list_email_templates",
+    "title": "Listar templates de e-mail",
+    "toolset": "gestao-automacao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_automacao_list_management_automations",
+    "title": "Listar automações da gestão",
+    "toolset": "gestao-automacao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_automacao_preview_email_template",
+    "title": "Pré-visualizar template de e-mail",
+    "toolset": "gestao-automacao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_automacao_save_email_footer",
+    "title": "Salvar rodapé de e-mail",
+    "toolset": "gestao-automacao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "gestao_automacao_save_email_template",
+    "title": "Salvar template de e-mail",
+    "toolset": "gestao-automacao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "gestao_automacao_save_management_automation",
+    "title": "Salvar automação da gestão",
+    "toolset": "gestao-automacao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "gestao_automacao_set_system_automation_state",
+    "title": "Definir estado da automação padrão",
+    "toolset": "gestao-automacao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "gestao_automacao_validate_management_automation",
+    "title": "Validar automação da gestão",
+    "toolset": "gestao-automacao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_apply_seller_deviation",
+    "title": "Desviar regra de repasse do vendedor",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_archive_commission_grade",
+    "title": "Arquivar grade de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_cancel_scheduled_commission_table",
+    "title": "Cancelar tabela de comissão agendada",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_create_campaign_receivable",
+    "title": "Criar recebível da campanha",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_create_payout_variant",
+    "title": "Criar variante de repasse",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_create_proposal_payout_agreement",
+    "title": "Criar acordo de repasse da proposta",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_delete_commission_bank_fee_rule",
+    "title": "Excluir regra de tarifa bancária",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_delete_commission_campaign",
+    "title": "Excluir campanha de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_end_seller_loan",
+    "title": "Encerrar empréstimo a vendedor",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_get_commission_campaign_accrual",
+    "title": "Ver apuração da campanha de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_get_commission_settings",
+    "title": "Ver configurações de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_get_commission_summary",
+    "title": "Ver resumo de comissões",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_get_contract_commission_status",
+    "title": "Ver situação da comissão do contrato",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_get_receivables_provision",
+    "title": "Ver provisão de recebíveis",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_get_seller_payout_statement",
+    "title": "Ver extrato de repasse do vendedor",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_get_statement_line_remuneration",
+    "title": "Ver remuneração da linha do extrato",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_list_chargeback_policies",
+    "title": "Listar políticas de estorno",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_list_commission_campaigns",
+    "title": "Listar campanhas de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_list_commission_expectations",
+    "title": "Listar comissões previstas",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_list_commission_grades",
+    "title": "Listar grades de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_list_commission_pendencies",
+    "title": "Listar pendências de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_list_commission_receipts",
+    "title": "Listar recebimentos de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_list_commission_rule_sets",
+    "title": "Listar regras de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_list_commission_statements",
+    "title": "Listar extratos de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_list_payer_parties",
+    "title": "Listar pagadores",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_list_payout_batches",
+    "title": "Listar lotes de repasse",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_list_seller_loans",
+    "title": "Listar empréstimos a vendedores",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_list_settlement_lots",
+    "title": "Listar lotes de conciliação",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_list_statement_layouts",
+    "title": "Listar layouts de extrato",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_pay_payout_batch",
+    "title": "Pagar lote de repasse",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "gestao_comissao_publish_commission_table",
+    "title": "Publicar tabela de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "gestao_comissao_recompute_commission_campaign",
+    "title": "Recalcular campanha de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_recompute_contract_commission",
+    "title": "Recalcular comissão do contrato",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_register_seller_loan_payment",
+    "title": "Registrar pagamento de empréstimo",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_remove_market_commission_table",
+    "title": "Remover tabela de comissão da praça",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_reopen_settlement_lot",
+    "title": "Reabrir lote de conciliação",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_resolve_commission",
+    "title": "Ver regra de comissão efetiva",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_resolve_commission_pendency",
+    "title": "Resolver pendência de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_reverse_commission_allocation",
+    "title": "Estornar alocação de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_reverse_commission_receipt",
+    "title": "Estornar recebimento de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_reverse_commission_statement",
+    "title": "Estornar extrato de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_revert_seller_loan_payment",
+    "title": "Estornar pagamento de empréstimo",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_chargeback_confirmation",
+    "title": "Confirmar estorno",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_chargeback_policy",
+    "title": "Salvar política de estorno",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_commission_allocation",
+    "title": "Salvar alocação de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_commission_campaign",
+    "title": "Salvar campanha de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_commission_receipt",
+    "title": "Salvar recebimento de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_commission_settings",
+    "title": "Salvar configurações de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_commission_statement",
+    "title": "Salvar extrato de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_contract_tracked_from",
+    "title": "Definir início do acompanhamento do contrato",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_lot_conference",
+    "title": "Conferir baixas de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_payer_party",
+    "title": "Salvar pagador",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_payout_batch",
+    "title": "Salvar lote de repasse",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_payout_batch_adjustments",
+    "title": "Salvar ajustes do lote de repasse",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_payout_share_advance",
+    "title": "Antecipar repasse ao vendedor",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_premium_payment",
+    "title": "Salvar pagamento de prêmio",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_premium_settlement",
+    "title": "Registrar baixa com prêmio",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_receipt_statement_link",
+    "title": "Vincular recebimento ao extrato",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_seller_debit_waiver",
+    "title": "Perdoar débito do vendedor",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_seller_debt_adjustment",
+    "title": "Ajustar débito do vendedor",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_seller_loan",
+    "title": "Salvar empréstimo a vendedor",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_settlement_lot",
+    "title": "Salvar lote de conciliação",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_statement_layout",
+    "title": "Salvar layout de extrato",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_save_statement_offset",
+    "title": "Compensar saldo de extrato",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_set_payout_batch_invoice",
+    "title": "Definir nota fiscal do lote de repasse",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_undo_payout_batch",
+    "title": "Desfazer lote de repasse",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_comissao_update_commission_grade",
+    "title": "Atualizar grade de comissão",
+    "toolset": "gestao-comissao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_config_bulk_set_sellers_pass_tax",
+    "title": "Definir repasse de imposto dos vendedores",
+    "toolset": "gestao-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_config_delete_gestao_config_records",
+    "title": "Excluir registros da configuração da gestão",
+    "toolset": "gestao-config",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_config_fetch_gestao_config_context",
+    "title": "Buscar contexto da configuração da gestão",
+    "toolset": "gestao-config",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_config_import_sellers",
+    "title": "Importar vendedores",
+    "toolset": "gestao-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_config_link_seller_company",
+    "title": "Vincular vendedor PJ a uma corretora",
+    "toolset": "gestao-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_config_list_custom_field_groups",
+    "title": "Listar grupos de campos personalizados da gestão",
+    "toolset": "gestao-config",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_config_list_sellers",
+    "title": "Listar vendedores",
+    "toolset": "gestao-config",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_config_reorder_management_statuses",
+    "title": "Reordenar status da gestão",
+    "toolset": "gestao-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_config_save_custom_field_category",
+    "title": "Salvar categoria de campo personalizado da gestão",
+    "toolset": "gestao-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_config_save_custom_field_definition",
+    "title": "Salvar campo personalizado da gestão",
+    "toolset": "gestao-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_config_save_custom_field_group",
+    "title": "Salvar grupo de campos personalizados da gestão",
+    "toolset": "gestao-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_config_save_custom_field_layout",
+    "title": "Salvar layout de campos personalizados da gestão",
+    "toolset": "gestao-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_config_save_management_entity",
+    "title": "Salvar entidade de proposta",
+    "toolset": "gestao-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_config_save_management_status",
+    "title": "Salvar status da gestão",
+    "toolset": "gestao-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_config_save_seller",
+    "title": "Salvar vendedor",
+    "toolset": "gestao-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_config_transfer_proposals_status",
+    "title": "Transferir propostas de status",
+    "toolset": "gestao-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "gestao_config_update_proposal_fields",
+    "title": "Atualizar campos da proposta",
+    "toolset": "gestao-config",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_contratos_get_contract_rate_choices",
+    "title": "Ver escolhas de taxa do contrato",
+    "toolset": "gestao-contratos",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_contratos_list_contract_commission_overrides",
+    "title": "Listar exceções de comissão do contrato",
+    "toolset": "gestao-contratos",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_contratos_list_contracts",
+    "title": "Listar contratos",
+    "toolset": "gestao-contratos",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_contratos_preview_contract_commission",
+    "title": "Pré-visualizar comissão do contrato",
+    "toolset": "gestao-contratos",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_contratos_remove_contract_commission_override",
+    "title": "Remover exceção de comissão do contrato",
+    "toolset": "gestao-contratos",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_contratos_reverse_contract_implantation",
+    "title": "Desfazer implantação do contrato",
+    "toolset": "gestao-contratos",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_contratos_save_contract",
+    "title": "Salvar contrato",
+    "toolset": "gestao-contratos",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_contratos_save_contract_coinsurers",
+    "title": "Salvar cosseguradoras do contrato",
+    "toolset": "gestao-contratos",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_contratos_save_contract_commission_override",
+    "title": "Salvar exceção de comissão do contrato",
+    "toolset": "gestao-contratos",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_contratos_save_contract_event",
+    "title": "Registrar evento do contrato",
+    "toolset": "gestao-contratos",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_contratos_save_contract_participants",
+    "title": "Salvar participantes do contrato",
+    "toolset": "gestao-contratos",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_contratos_save_contract_rate_choices",
+    "title": "Salvar escolhas de taxa do contrato",
+    "toolset": "gestao-contratos",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_delete_proposal_records",
+    "title": "Excluir registros de proposta",
+    "toolset": "gestao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_fetch_gestao_context",
+    "title": "Buscar contexto da gestão",
+    "toolset": "gestao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_deactivate_finance_recurrence",
+    "title": "Desativar recorrência financeira",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_delete_counterparty_rule",
+    "title": "Excluir regra de contraparte",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_delete_finance_records",
+    "title": "Excluir registros do financeiro",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_fetch_finance_context",
+    "title": "Buscar contexto do financeiro",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_get_finance_issue_settings",
+    "title": "Ver configurações de pendências do financeiro",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_get_finance_report",
+    "title": "Ver relatório financeiro",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_get_reconcile_suggestions",
+    "title": "Ver sugestões de conciliação",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_import_bank_statement",
+    "title": "Importar extrato bancário",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_list_bank_statements",
+    "title": "Listar extratos bancários",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_list_bank_transactions",
+    "title": "Listar transações bancárias",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_list_counterparty_rules",
+    "title": "Listar regras de contraparte",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_list_finance_entries",
+    "title": "Listar lançamentos financeiros",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_list_finance_issues",
+    "title": "Listar pendências do financeiro",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_list_finance_recurrences",
+    "title": "Listar recorrências financeiras",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_reconcile_bank_transactions",
+    "title": "Conciliar transações bancárias",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_resolve_finance_issue",
+    "title": "Resolver pendência do financeiro",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_save_bank_account",
+    "title": "Salvar conta bancária",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_save_finance_category",
+    "title": "Salvar categoria financeira",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_save_finance_cost_center",
+    "title": "Salvar centro de custo",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_save_finance_entry",
+    "title": "Salvar lançamento financeiro",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_save_finance_issue_settings",
+    "title": "Salvar configurações de pendências do financeiro",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_save_finance_payee",
+    "title": "Salvar favorecido",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_save_finance_recurrence",
+    "title": "Salvar recorrência financeira",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_settle_finance_entries",
+    "title": "Baixar lançamentos financeiros",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_undo_finance_entry",
+    "title": "Desfazer lançamento financeiro",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_unreconcile_bank_transaction",
+    "title": "Desfazer conciliação bancária",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_financeiro_update_counterparty_rule",
+    "title": "Atualizar regra de contraparte",
+    "toolset": "gestao-financeiro",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_list_proposals",
+    "title": "Listar propostas",
+    "toolset": "gestao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_list_segment_catalog",
+    "title": "Listar catálogo de segmentos",
+    "toolset": "gestao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_save_proposal",
+    "title": "Salvar proposta",
+    "toolset": "gestao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_save_proposal_beneficiary",
+    "title": "Salvar beneficiário da proposta",
+    "toolset": "gestao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_save_proposal_note",
+    "title": "Salvar nota da proposta",
+    "toolset": "gestao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_search_beneficiary_contacts",
+    "title": "Buscar contatos para beneficiário",
+    "toolset": "gestao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_set_proposal_links",
+    "title": "Definir vínculos da proposta",
+    "toolset": "gestao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "gestao_set_proposal_status",
+    "title": "Definir status da proposta",
+    "toolset": "gestao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "importacao_confirm_import",
+    "title": "Confirmar importação",
+    "toolset": "importacao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "importacao_fetch_import_context",
+    "title": "Buscar contexto da importação",
+    "toolset": "importacao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "importacao_get_import_schema",
+    "title": "Ver formato da importação",
+    "toolset": "importacao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "importacao_get_import_status",
+    "title": "Ver status da importação",
+    "toolset": "importacao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "importacao_preview_import_undo",
+    "title": "Pré-visualizar desfazer importação",
+    "toolset": "importacao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "importacao_submit_import",
+    "title": "Enviar importação",
+    "toolset": "importacao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "importacao_undo_import",
+    "title": "Desfazer importação",
+    "toolset": "importacao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_atendimento_get_message_attachment_url",
+    "title": "Obter link do anexo da mensagem",
+    "toolset": "koterzap-atendimento",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_atendimento_list_conversation_messages",
+    "title": "Listar mensagens da conversa",
+    "toolset": "koterzap-atendimento",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_atendimento_list_conversations",
+    "title": "Listar conversas",
+    "toolset": "koterzap-atendimento",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_atendimento_list_reply_templates",
+    "title": "Listar respostas rápidas",
+    "toolset": "koterzap-atendimento",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_atendimento_search_inbox_messages",
+    "title": "Buscar mensagens na caixa de entrada",
+    "toolset": "koterzap-atendimento",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_atendimento_transcribe_audio_message",
+    "title": "Transcrever áudio da mensagem",
+    "toolset": "koterzap-atendimento",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_configuracao_delete_koterzap_config_records",
+    "title": "Excluir registros da configuração do KoterZap",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_configuracao_fetch_koterzap_config_context",
+    "title": "Buscar contexto da configuração do KoterZap",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_configuracao_get_knowledge_source_content",
+    "title": "Ver conteúdo da fonte de conhecimento",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_configuracao_get_knowledge_source_file_url",
+    "title": "Obter link do arquivo da fonte de conhecimento",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_configuracao_import_chatbot",
+    "title": "Importar chatbot",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_configuracao_import_knowledge_url",
+    "title": "Importar URL para a base de conhecimento",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "koterzap_configuracao_list_chatbots",
+    "title": "Listar chatbots",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_configuracao_list_inboxes",
+    "title": "Listar caixas de entrada",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_configuracao_list_knowledge_sources",
+    "title": "Listar fontes de conhecimento",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_configuracao_list_message_templates",
+    "title": "Listar respostas rápidas",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_configuracao_list_meta_message_templates",
+    "title": "Listar templates da Meta",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "koterzap_configuracao_reextract_knowledge_source",
+    "title": "Reextrair fonte de conhecimento",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "koterzap_configuracao_restore_knowledge_source_version",
+    "title": "Restaurar versão da fonte de conhecimento",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_configuracao_save_chatbot",
+    "title": "Salvar chatbot",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "koterzap_configuracao_save_chatbot_flow",
+    "title": "Salvar fluxo do chatbot",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": true
+  },
+  {
+    "name": "koterzap_configuracao_save_knowledge_base",
+    "title": "Salvar base de conhecimento",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_configuracao_save_knowledge_source",
+    "title": "Salvar fonte de conhecimento",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_configuracao_save_message_template",
+    "title": "Salvar resposta rápida",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_configuracao_simulate_chatbot",
+    "title": "Simular chatbot",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": true
+  },
+  {
+    "name": "koterzap_configuracao_test_knowledge_search",
+    "title": "Testar busca na base de conhecimento",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_configuracao_update_inbox",
+    "title": "Atualizar caixa de entrada",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "koterzap_configuracao_validate_chatbot_flow",
+    "title": "Validar fluxo do chatbot",
+    "toolset": "koterzap-configuracao",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  },
+  {
+    "name": "list_toolsets",
+    "title": "Listar áreas da conexão",
+    "toolset": "koter",
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "openWorldHint": false
+  }
+]

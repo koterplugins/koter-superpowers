@@ -1,0 +1,24 @@
+{
+  "interface": {
+    "displayName": "Koter",
+    "shortDescription": "Run your insurance brokerage",
+    "longDescription": "Set up and run an insurance brokerage on Koter, the CRM and back-office platform for brokers in Brazil, by talking to ChatGPT: guided setup, auto insurance multi-quote, contracts and commissions, payouts, cash flow, CRM leads and tasks, capture forms, WhatsApp (KoterZap) knowledge bases and chatbots, and data import from another system. The connection signs in with OAuth on your own Koter account and only reaches what your role allows and the areas you approve. The skills ask before any write that reaches your customers, such as a WhatsApp message, an e-mail or turning on a chatbot. The skills are written in Brazilian Portuguese, for brokers in Brazil. Requires a Koter account.",
+    "developerName": "Koter",
+    "category": "Productivity",
+    "websiteURL": "https://koter.app/ia",
+    "supportURL": "https://koter.app/ajuda",
+    "privacyPolicyURL": "https://koter.app/privacidade",
+    "termsOfServiceURL": "https://koter.app/termos",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
+  },
+  "publication": {
+    "countries": [],
+    "translations": {
+      "pt-BR": {
+        "subtitle": "Toque sua corretora no Koter",
+        "description": "Configure e toque a sua corretora no Koter conversando com o ChatGPT: configuração guiada, multicálculo auto, contrato e comissão, repasse, caixa, lead e tarefa do CRM, formulários de captura, base de conhecimento e chatbot do KoterZap e importação de outro sistema. A conexão entra com o seu login do Koter e só alcança o que o seu cargo permite e as áreas que você marcou. As skills pedem a sua confirmação antes de qualquer gravação que chegue ao seu cliente, como mensagem de WhatsApp, e-mail ou chatbot ligado. Precisa de uma conta no Koter."
+      }
+    }
+  }
+}

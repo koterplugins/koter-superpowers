@@ -13,3 +13,6 @@ Thumbs.db
 # Ambiente
 .env
 .env.*
+
+# Pacotes gerados por scripts/build-openai.sh
+dist/
