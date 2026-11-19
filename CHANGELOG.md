@@ -2,6 +2,13 @@
 
 All notable changes to this plugin, generated from the commit history. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.0.1](https://github.com/koterplugins/koter-superpowers/compare/v1.0.0...v1.0.1) (2026-11-19)
+
+
+### Bug Fixes
+
+* **plugin:** move the plugin into its own folder for the directory ([#10](https://github.com/koterplugins/koter-superpowers/issues/10)) ([d4941e6](https://github.com/koterplugins/koter-superpowers/commit/d4941e6f29af4a60961207c6340fae1d86a55acf))
+
 ## [1.0.0](https://github.com/koterplugins/koter-superpowers/compare/v0.2.1...v1.0.0) (2026-11-19)
 
 
