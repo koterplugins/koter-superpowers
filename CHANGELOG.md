@@ -2,6 +2,13 @@
 
 All notable changes to this plugin, generated from the commit history. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.2.0](https://github.com/koterplugins/koter-superpowers/compare/v0.1.0...v0.2.0) (2026-11-19)
+
+
+### Features
+
+* package the plugin for Claude and ChatGPT with automatic releases ([80ff95e](https://github.com/koterplugins/koter-superpowers/commit/80ff95e5e91e529619990f00af3ddb53fa65df8b))
+
 ## [0.1.0](https://github.com/koterplugins/koter-superpowers/releases/tag/v0.1.0) (2026-11-18)
 
 First release in this repository.
