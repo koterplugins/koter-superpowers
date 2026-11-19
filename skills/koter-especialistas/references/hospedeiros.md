@@ -45,7 +45,7 @@ Quem não souber o plano abre as configurações e manda um print.
 | **ChatGPT Pro** | Confira no seu plano: conecte e rode `list_toolsets` | Teste. Falhou: C, sem Koter | Tratar como uma só | 15 tarefas. Idem | Confira no app |
 | **ChatGPT Business, Enterprise, Edu** | Sim, adicionado na web | S e B. Confira se o plano tem Skill | Tratar como uma só | 10 a 15 tarefas. Idem | Confira no app |
 | **Gemini**, qualquer plano | **Não no Brasil.** MCP próprio só nos EUA, em inglês | C, sem Koter | Nenhuma | Pro e Ultra | Sim, sem Koter |
-| **Grok, chat** | Provável, por conector personalizado. Confira com `list_toolsets` | C | Tratar como uma só | Automations, todos os planos | Sim |
+| **Grok, chat** | Sim, por conector personalizado. Grava e exclui sem pedir confirmação, e o conector não tem ajuste de aprovação: peça que mostre o que vai gravar antes, e exclusão fora do Grok | C | Tratar como uma só | Automations, todos os planos | Sim |
 | **Grok Bot** (Premium, Super e Ultra da Assinatura X. Plus não inclui) | A doc aceita MCP remoto: confira com `list_toolsets`. Confirme a disponibilidade no Brasil | **G** | Uma, e vale para a conta inteira | Rotina, intervalo mínimo de 5 minutos | iPhone, iPad e Android completos |
 | **Cursor** pago | Sim, com `.cursor/mcp.json` | A, no formato dele | URL do arquivo. `readonly` é a única trava no agente | Automations | iOS em beta |
 | **n8n, Make** | Sim, com um técnico | Agente no fluxo | **Recorte por nó** | Sim | Não consta |
@@ -288,8 +288,9 @@ Aplique logo depois de conectar. **Precisa de aprovação é todo o resto**: o q
 | Produto | Como aplicar |
 |---|---|
 | Claude, chat e Cowork | Customizar > Conectores: "Sempre permitir", "Precisa de aprovação" ou "Bloqueada", por ferramenta. Reconfira depois de cada mudança no Koter: há relato de "Always allow" zerado |
-| Claude Code | `tools` e `disallowedTools` no agente. O resto pede aprovação. Nada de pular aprovações com dado real |
+| Claude Code | `tools` e `disallowedTools` no agente. O resto pede aprovação só se o modo de permissão não aprovar sozinho: confira com `/permissions` e deixe a gravação do Koter em "Ask". Nada de pular aprovações com dado real |
 | ChatGPT | Escrita pede confirmação por padrão, e a decisão lembrada vale só naquela conversa. Toda ferramenta sem marca de leitura conta como escrita |
+| Grok, chat | Sem ajuste de aprovação no conector: grava e exclui sem perguntar. Peça que mostre o que vai gravar antes, e exclua pelo Koter, não pelo Grok |
 | Grok Bot | Regras "Ask first" da entrega G. Sem escolha por ferramenta |
 | n8n | "Tools to Include": Selecionadas. Aprovação humana por ferramenta |
 | Sem permissão por ferramenta | Diga ao corretor que a trava é só o texto da ficha |

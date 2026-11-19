@@ -11,7 +11,7 @@ Você digita `/introducao`. O plugin lê a sua corretora no Koter, mostra o que 
 <details>
 <summary><b>English summary</b></summary>
 
-Official plugin of [Koter](https://koter.app), the CRM and back-office platform for insurance brokerages in Brazil. It ships 30 skills and 5 commands that let an AI assistant set up and run a brokerage through the Koter MCP server at `https://api.koter.app/mcp-user/koter`: guided onboarding, auto insurance multi-quote, commissions and payouts, CRM, WhatsApp (KoterZap) and specialist agents. The connection signs in with OAuth on the user's own Koter account and only reaches what that user's role allows. Writes that reach the end customer are flagged so the assistant asks before running them. Claude and Claude Code install it as a plugin, which brings the MCP connection with it; other assistants add the same connection by URL, and each release ships a ChatGPT package. The skills are written in Brazilian Portuguese, for Brazilian brokers. Licensed under Apache 2.0; the Koter name and logo are not (see [TRADEMARKS.md](TRADEMARKS.md)). Security reports: [SECURITY.md](SECURITY.md).
+Official plugin of [Koter](https://koter.app), the CRM and back-office platform for insurance brokerages in Brazil. It ships 30 skills and 5 commands that let an AI assistant set up and run a brokerage through the Koter MCP server at `https://api.koter.app/mcp-user/koter`: guided onboarding, auto insurance multi-quote, commissions and payouts, CRM, WhatsApp (KoterZap) and specialist agents. The connection signs in with OAuth on the user's own Koter account and only reaches what that user's role allows. Writes that reach the end customer are flagged so the skills ask before running them, but approval prompts come from the assistant's own settings, and some assistants, such as Grok, run writes without asking. Claude and Claude Code install it as a plugin, which brings the MCP connection with it; other assistants add the same connection by URL, and each release ships a ChatGPT package. The skills are written in Brazilian Portuguese, for Brazilian brokers. Licensed under Apache 2.0; the Koter name and logo are not (see [TRADEMARKS.md](TRADEMARKS.md)). Security reports: [SECURITY.md](SECURITY.md).
 
 </details>
 
@@ -71,7 +71,7 @@ Cada comando aceita um complemento: `/introducao continuar` retoma de onde parou
 
 ## Segurança: o que a IA pode fazer
 
-**A sua IA age com o seu login e só alcança o que o seu cargo alcança.** Toda conexão nasce podendo gravar, então configure a permissão por ferramenta na sua IA:
+**A sua IA age com o seu login e só alcança o que o seu cargo alcança.** Toda conexão nasce podendo gravar. Quem decide se pede a sua aprovação antes de uma ferramenta é a sua IA, não o Koter, e algumas executam direto. Configure a permissão por ferramenta na sua IA:
 
 | Tipo de ferramenta | Recomendação |
 |---|---|
@@ -87,6 +87,10 @@ Cada comando aceita um complemento: `/introducao continuar` retoma de onde parou
 - chatbot ligado.
 
 As skills sempre pedem a sua confirmação antes delas, mas a trava de verdade é a permissão na sua IA.
+
+**Onde a IA pode executar sem perguntar:**
+- **Grok:** grava e exclui sem pedir confirmação, e o conector não tem ajuste de aprovação. Peça sempre que ele mostre o que vai gravar antes, e evite usar o Koter no Grok para exclusões.
+- **Claude Code:** pode estar configurado para aprovar sozinho. Confira o modo de permissão (por exemplo, com `/permissions`) e deixe as ferramentas de gravação do Koter em "Ask" (perguntar).
 
 **Dois agentes, dois riscos.** O agente do corretor mora na sua IA e fala com você: ele prepara o texto, e quem manda ao cliente é você. O agente do cliente mora no KoterZap e fala com o segurado no WhatsApp; o plugin só ajuda a configurar e testar esse agente no simulador. O multicálculo auto nunca vai ao WhatsApp: o link da cotação é tela interna.
 
