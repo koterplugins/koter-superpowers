@@ -2,6 +2,13 @@
 
 All notable changes to this plugin, generated from the commit history. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.1.0](https://github.com/koterplugins/koter-superpowers/compare/v1.0.2...v1.1.0) (2026-11-20)
+
+
+### Features
+
+* add per-assistant setup guides and a Grok skills package ([#14](https://github.com/koterplugins/koter-superpowers/issues/14)) ([b572f0f](https://github.com/koterplugins/koter-superpowers/commit/b572f0ff47f76236baaef4a9aabe7f9f0280852e))
+
 ## [1.0.2](https://github.com/koterplugins/koter-superpowers/compare/v1.0.1...v1.0.2) (2026-11-19)
 
 
