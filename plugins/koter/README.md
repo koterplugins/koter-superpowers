@@ -11,7 +11,7 @@ Você digita `/introducao`. O plugin lê a sua corretora no Koter, mostra o que 
 <details>
 <summary><b>English summary</b></summary>
 
-Official plugin of [Koter](https://koter.app), the CRM and back-office platform for insurance brokerages in Brazil. It ships 30 skills and 5 commands that let an AI assistant set up and run a brokerage through the Koter MCP server at `https://api.koter.app/mcp-user/koter`: guided onboarding, auto insurance multi-quote, commissions and payouts, CRM, WhatsApp (KoterZap) and specialist agents. The connection signs in with OAuth on the user's own Koter account and only reaches what that user's role allows. Writes that reach the end customer are flagged so the skills ask before running them, but approval prompts come from the assistant's own settings, and some assistants, such as Grok, run writes without asking. Claude and Claude Code install it as a plugin, which brings the MCP connection with it; other assistants add the same connection by URL, and each release ships a ChatGPT package. The skills are written in Brazilian Portuguese, for Brazilian brokers. Licensed under Apache 2.0; the Koter name and logo are not (see [TRADEMARKS.md](https://github.com/koterplugins/koter-superpowers/blob/main/TRADEMARKS.md)). Security reports: [SECURITY.md](https://github.com/koterplugins/koter-superpowers/blob/main/SECURITY.md).
+Official plugin of [Koter](https://koter.app), the CRM and back-office platform for insurance brokerages in Brazil. It ships 30 skills and 5 commands that let an AI assistant set up and run a brokerage through the Koter MCP server at `https://api.koter.app/mcp-user/koter`: guided onboarding, auto insurance multi-quote, commissions and payouts, CRM, WhatsApp (KoterZap) and specialist agents. The connection signs in with OAuth on the user's own Koter account and only reaches what that user's role allows. Writes that reach the end customer are flagged so the skills ask before running them, but approval prompts come from the assistant's own settings, and some assistants, such as Grok, run writes without asking. Claude and Claude Code install it as a plugin, which brings the MCP connection with it; other assistants add the same connection by URL, and each release ships a ChatGPT package and a Grok skills package. The skills are written in Brazilian Portuguese, for Brazilian brokers. Licensed under Apache 2.0; the Koter name and logo are not (see [TRADEMARKS.md](https://github.com/koterplugins/koter-superpowers/blob/main/TRADEMARKS.md)). Security reports: [SECURITY.md](https://github.com/koterplugins/koter-superpowers/blob/main/SECURITY.md).
 
 </details>
 
@@ -31,23 +31,39 @@ São 30 skills e 5 comandos. Você não precisa decorar nada: pedir "cria um lea
 
 ## Comece em 3 passos
 
-### 1. Instale o Koter na sua IA
+### 1. Use na sua IA
 
-| Sua IA | Como |
-|---|---|
-| **Claude** (planos pagos: claude.ai, Desktop, Cowork) | Customizar > Plugins > adicionar o marketplace `koterplugins/koter-superpowers` e instalar `koter` |
-| **Claude Code** | `/plugin marketplace add koterplugins/koter-superpowers` e depois `/plugin install koter@koter` |
-| **Claude Free** | Não instala plugin. Adicione a conexão em Customizar > Conectores > Adicionar conector personalizado, com a URL abaixo. Uma skill avulsa sobe em Customizar > Skills, se quiser |
-| **ChatGPT** | Configurações > Conectores, com o modo de desenvolvedor, nos planos que liberam conector próprio, e cole a URL abaixo. O pacote com as skills está na [release](https://github.com/koterplugins/koter-superpowers/releases) de cada versão e chega ao diretório do ChatGPT quando for publicado |
-| **Grok** | grok.com/connectors > New Connector > Custom, e cole a URL abaixo. O Grok não tem skills |
+Cada IA precisa de duas coisas: a **conexão** com o Koter e as **skills**, que ensinam a IA a usar a conexão.
 
-No Claude e no Claude Code, o plugin traz as skills e a conexão juntas: não adicione o conector à mão. Se você já tinha um conector do Koter adicionado à mão, remova-o, para não ficar com duas conexões.
+| Sua IA | Conexão | Skills |
+|---|---|---|
+| **Claude** (planos pagos: claude.ai, Desktop, Cowork) | Vem com o plugin | Customizar > Plugins > adicionar o marketplace `koterplugins/koter-superpowers` e instalar `koter`. Quando o Koter for publicado no diretório de plugins do Claude, dá para instalar por lá também |
+| **Claude Code** | Vem com o plugin | `/plugin marketplace add koterplugins/koter-superpowers` e depois `/plugin install koter@koter` |
+| **Claude Free** | Customizar > Conectores > Adicionar conector personalizado, com a URL abaixo | Uma skill avulsa (a pasta dela, com o `SKILL.md`) em Customizar > Skills |
+| **ChatGPT** | Vem com o pacote. Sem ele: em chatgpt.com/plugins, botão **+** > Add custom MCP server, com a URL abaixo, no ChatGPT web e nos planos que liberam servidor MCP próprio | O pacote `koter-openai-x.y.z.zip` da [release](https://github.com/koterplugins/koter-superpowers/releases/latest), enviado em Plugins por quem tem permissão de enviar plugin. Nos planos com Skills, uma skill avulsa sobe em Skills > Create > Upload from your computer |
+| **Grok** (inclusive o gratuito) | Configurações > Connect Apps > Add a custom connector, com um nome e a URL abaixo | Configurações > **Habilidades** > **Nova Habilidade**, com o pacote `koter-grok-x.y.z.zip` da [release](https://github.com/koterplugins/koter-superpowers/releases/latest). Veja o passo a passo abaixo |
+| **Outras IAs com MCP** (Cursor e outras) | Servidor MCP remoto com a URL abaixo | Os `SKILL.md` de [`skills/`](skills) como instruções, no recurso de regras ou de skills da IA |
 
-Nas outras IAs, é uma conexão só, com esta URL:
+No Claude, no Claude Code e com o pacote do ChatGPT, as skills e a conexão vêm juntas: não adicione o conector à mão. Se você já tinha um conector do Koter adicionado à mão, remova-o, para não ficar com duas conexões.
+
+Nas outras IAs, a conexão usa esta URL:
 
 ```
 https://api.koter.app/mcp-user/koter
 ```
+
+**No Grok, passo a passo:**
+
+1. Adicione a conexão: em grok.com, Configurações > Connect Apps > Add a custom connector. Dê o nome Koter e cole a URL.
+2. Baixe o `koter-grok-x.y.z.zip` da [última release](https://github.com/koterplugins/koter-superpowers/releases/latest) e descompacte. Cada pasta é uma skill, com `nome.txt`, `descricao.txt` e `instrucoes.txt`, e cada skill já traz o material de apoio dela.
+3. Crie a habilidade de um destes jeitos:
+   - **Pelos campos:** em Configurações > Habilidades > Nova Habilidade, cole cada arquivo no campo dele: Nome, Descrição e Instruções.
+   - **Pela conversa:** abra uma conversa, anexe ou cole o `instrucoes.txt` e peça ao Grok para criar a habilidade com aquele nome e aquela descrição, usando o Skill Creator.
+4. Comece pelas 3 a 5 skills do seu dia a dia, não pelas 30. O `LEIA-ME.txt` do pacote sugere a ordem.
+
+O Grok não publica limite de tamanho para a habilidade. Se ele recusar uma skill grande, divida o `instrucoes.txt` pelas seções e crie uma habilidade para cada parte.
+
+**Cuidado:** o Grok grava e exclui sem pedir confirmação, e o conector não tem ajuste de aprovação. Peça sempre que ele mostre o que vai gravar antes, e evite usar o Koter no Grok para exclusões.
 
 ### 2. Entre com o seu login do Koter
 
@@ -55,7 +71,7 @@ No primeiro uso, a IA abre o login do Koter. Você entra e marca as áreas que e
 
 ### 3. Digite `/introducao`
 
-No Claude Code, o comando pode aparecer como `/koter:introducao`. No seu Koter, você precisa de um cargo com permissão nos módulos que for configurar. O plugin lê as permissões no início e deixa de fora o que o seu cargo não alcança. Para cotar auto, também precisa do módulo de auto e das credenciais das seguradoras, que se resolvem na tela do Koter.
+No Claude Code, o comando pode aparecer como `/koter:introducao`. Nas IAs que recebem skill avulsa, como o Grok, ele funciona depois que você adiciona a skill `introducao`. No seu Koter, você precisa de um cargo com permissão nos módulos que for configurar. O plugin lê as permissões no início e deixa de fora o que o seu cargo não alcança. Para cotar auto, também precisa do módulo de auto e das credenciais das seguradoras, que se resolvem na tela do Koter.
 
 ## Os comandos
 
@@ -143,7 +159,7 @@ O especialista é escrito na sua IA, não no Koter: como agente, como skill, com
 - **Quer mudar ou escrever uma skill?** Leia o [CONTRIBUTING.md](https://github.com/koterplugins/koter-superpowers/blob/main/CONTRIBUTING.md) e a [arquitetura do plugin](https://github.com/koterplugins/koter-superpowers/blob/main/docs/ARQUITETURA.md).
 - **Falha de segurança:** em privado, pelo [SECURITY.md](https://github.com/koterplugins/koter-superpowers/blob/main/SECURITY.md). Nunca em issue pública.
 - **Dúvida da sua conta no Koter** (login, cobrança, módulos): [koter.app/ajuda](https://koter.app/ajuda) ou suporte@koter.app.
-- **O que mudou em cada versão:** [CHANGELOG.md](https://github.com/koterplugins/koter-superpowers/blob/main/CHANGELOG.md). Cada versão tem uma [release](https://github.com/koterplugins/koter-superpowers/releases) com o pacote do ChatGPT.
+- **O que mudou em cada versão:** [CHANGELOG.md](https://github.com/koterplugins/koter-superpowers/blob/main/CHANGELOG.md). Cada versão tem uma [release](https://github.com/koterplugins/koter-superpowers/releases) com os pacotes do ChatGPT e do Grok.
 
 Quem participa segue o [Código de conduta](https://github.com/koterplugins/koter-superpowers/blob/main/CODE_OF_CONDUCT.md).
 

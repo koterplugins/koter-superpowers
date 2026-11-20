@@ -39,5 +39,11 @@ jobs:
       - name: Test the ChatGPT package
         run: scripts/test-openai-zip.sh
 
+      - name: Build the Grok package
+        run: scripts/build-grok.sh
+
+      - name: Test the Grok package
+        run: scripts/test-grok-zip.sh
+
       - name: Check for internal process notes
         run: scripts/check-public-content.sh
