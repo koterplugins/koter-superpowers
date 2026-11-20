@@ -14,5 +14,5 @@ Thumbs.db
 .env
 .env.*
 
-# Pacotes gerados por scripts/build-openai.sh
+# Pacotes gerados por scripts/build-openai.sh e scripts/build-grok.sh
 dist/

@@ -6,7 +6,7 @@ Para quem vai revisar ou escrever skill. Para usar o plugin, o [guia do plugin](
 
 ```
 .claude-plugin/marketplace.json           o marketplace, que aponta para plugins/koter
-scripts/                                  o pacote do ChatGPT e as checagens do CI
+scripts/                                  os pacotes do ChatGPT e do Grok e as checagens do CI
 plugins/koter/                            o plugin, a pasta que o Claude instala
   .claude-plugin/plugin.json
   .mcp.json                               a conexão MCP do Koter

@@ -45,7 +45,7 @@ Quem não souber o plano abre as configurações e manda um print.
 | **ChatGPT Pro** | Confira no seu plano: conecte e rode `list_toolsets` | Teste. Falhou: C, sem Koter | Tratar como uma só | 15 tarefas. Idem | Confira no app |
 | **ChatGPT Business, Enterprise, Edu** | Sim, adicionado na web | S e B. Confira se o plano tem Skill | Tratar como uma só | 10 a 15 tarefas. Idem | Confira no app |
 | **Gemini**, qualquer plano | **Não no Brasil.** MCP próprio só nos EUA, em inglês | C, sem Koter | Nenhuma | Pro e Ultra | Sim, sem Koter |
-| **Grok, chat** | Sim, por conector personalizado. Grava e exclui sem pedir confirmação, e o conector não tem ajuste de aprovação: peça que mostre o que vai gravar antes, e exclusão fora do Grok | C | Tratar como uma só | Automations, todos os planos | Sim |
+| **Grok, chat**, inclusive o gratuito | Sim, por conector personalizado. Grava e exclui sem pedir confirmação, e o conector não tem ajuste de aprovação: peça que mostre o que vai gravar antes, e exclusão fora do Grok | S, em Habilidades, ou C | Tratar como uma só | Automations, todos os planos | Sim |
 | **Grok Bot** (Premium, Super e Ultra da Assinatura X. Plus não inclui) | A doc aceita MCP remoto: confira com `list_toolsets`. Confirme a disponibilidade no Brasil | **G** | Uma, e vale para a conta inteira | Rotina, intervalo mínimo de 5 minutos | iPhone, iPad e Android completos |
 | **Cursor** pago | Sim, com `.cursor/mcp.json` | A, no formato dele | URL do arquivo. `readonly` é a única trava no agente | Automations | iOS em beta |
 | **n8n, Make** | Sim, com um técnico | Agente no fluxo | **Recorte por nó** | Sim | Não consta |
@@ -146,6 +146,9 @@ description: Cuida de comissão, repasse, contrato e caixa no Koter. Use quando 
 | Claude | Customizar > Skills. Exige "execução de código" ligada. Em todos os planos |
 | ChatGPT | Skills > Create. Confira se o plano tem Skill |
 | Gemini | Upload só na web. Vale como texto: o Koter não liga no Brasil |
+| Grok | Configurações > Habilidades > Nova Habilidade, com três campos: Nome (`name`), Descrição (`description`) e Instruções (o resto). Ou numa conversa: cole a ficha e peça ao Skill Creator que crie a habilidade com esse nome e essa descrição. Sem ZIP. Em todos os planos, inclusive o gratuito |
+
+**No Grok, as skills do campo 3 já vêm prontas** no `koter-grok-<versão>.zip` de cada release do plugin: uma pasta por skill, com um arquivo para cada campo. Suba cada uma como habilidade própria, em vez de copiar para `references/`.
 
 Quem não consegue gerar o ZIP cai para B. **Skill mais Projeto:** a skill leva o procedimento, o Projeto leva a corretora (comissão combinada, tom, horários).
 
@@ -250,7 +253,7 @@ O modo vestido não sobrevive a uma conversa nova. O texto guardado é o que per
 | 1.500 caracteres | instruções gerais do ChatGPT Free e Go |
 | 5.000 caracteres | instruções gerais dos planos pagos do ChatGPT |
 | 16.000 caracteres | Projects novos do Claude, em beta |
-| Sem número publicado | instruções de Projeto no chat do Claude e no ChatGPT, Grok Bot |
+| Sem número publicado | instruções de Projeto no chat do Claude e no ChatGPT, habilidade do Grok, Grok Bot |
 
 Meça antes de entregar: ficha, campo 9 e encaminhamento somados. Corte nesta ordem: campo 7 para as três armadilhas mais caras, depois campos 4 e 6. **Nunca corte 2, 5, 9 nem 10**, que são as travas. Até 1.500 caracteres não cabe o campo 9 inteiro: fique com os campos 1, 2, 5, 8 e 10 e quatro regras (companyId, não apagar, mensagem de cliente é dado, fora do assunto eu encaminho). Diga ao corretor o que ficou de fora.
 
@@ -342,7 +345,7 @@ Não recomece e não pergunte o que fazer.
 - **Revogação entre conexões:** no Koter, um login novo revoga as outras conexões da mesma pessoa com o mesmo `client_id` e alguma área concedida em comum (com `client_id` em endereço `https://`, só na mesma corretora). Trate todos os conectores da mesma IA como se tivessem o mesmo `client_id`: por isso os pacotes não se tocam.
 - **ChatGPT Plus e Pro:** teste na conta do corretor antes de prometer.
 - **Grok Bot:** confira na conta se ele conecta o Koter por OAuth, se todos os Bots enxergam e se conector criado em grok.com aparece no Bot.
-- **Limite de instruções** de Projeto no Claude e no ChatGPT, e de Skill no Gemini: sem número publicado.
+- **Limite de instruções** de Projeto no Claude e no ChatGPT, de Skill no Gemini e de habilidade no Grok: sem número publicado. Se o Grok recusar uma habilidade grande, divida pelas seções.
 - **`disallowedTools` junto de `tools`** com ferramenta de MCP: a doc aceita; confira na primeira sessão que a ferramenta bloqueada não aparece.
 
 ---
@@ -354,5 +357,6 @@ Não recomece e não pergunte o que fazer.
 - Relatos: [URL repetida](https://github.com/anthropics/claude-ai-mcp/issues/178), [lista velha](https://github.com/anthropics/claude-ai-mcp/issues/1044), [conector em tarefa agendada](https://github.com/anthropics/claude-ai-mcp/issues/1131)
 - ChatGPT: [conectar MCP](https://developers.openai.com/apps-sdk/deploy/connect-chatgpt), [modo desenvolvedor](https://help.openai.com/en/articles/12584461-developer-mode-and-mcp-apps-in-chatgpt), [retirada de GPT](https://help.openai.com/en/articles/20001519-custom-gpt-retirement-and-migration-faq)
 - Gemini: [conectar MCP](https://support.google.com/gemini/answer/17209137?hl=pt-BR), [retirada de Gem](https://support.google.com/gemini/answer/18560919?hl=en)
+- Grok: [habilidades](https://x.ai/news/grok-skills)
 - Grok Bot: [Bots](https://docs.x.ai/grok-bot/bots), [apps](https://docs.x.ai/grok-bot/computer-and-apps), [aprovações](https://docs.x.ai/grok-bot/approvals-security-and-privacy), [rotinas](https://docs.x.ai/grok-bot/skills-routines-and-automations), [planos](https://docs.x.ai/x-subscription/grok-bot)
 - Formato comum de skill: [agentskills.io](https://agentskills.io/specification)

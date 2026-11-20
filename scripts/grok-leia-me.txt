@@ -1,0 +1,47 @@
+Koter no Grok
+
+Este pacote traz as skills do plugin Koter prontas para virar habilidades do Grok. Cada pasta é uma skill, com um arquivo para cada campo da habilidade:
+
+  nome.txt        Nome
+  descricao.txt   Descrição (quando o Grok deve usar esta habilidade)
+  instrucoes.txt  Instruções
+
+Algumas instruções terminam em anexos: é o material de apoio da skill, que já vem junto.
+
+
+1. Conecte o Koter
+
+Em grok.com, abra Configurações > Connect Apps > Add a custom connector. Dê o nome Koter e cole esta URL:
+
+  https://api.koter.app/mcp-user/koter
+
+No primeiro uso, entre com o seu login do Koter e marque as áreas que o Grok pode usar.
+
+
+2. Crie as habilidades, de um destes jeitos
+
+a) Pelos campos: em Configurações > Habilidades > Nova Habilidade, copie cada arquivo para o campo dele (Nome, Descrição e Instruções) e salve.
+
+b) Pela conversa: abra uma conversa, anexe ou cole o instrucoes.txt e peça ao Grok para criar a habilidade com o nome de nome.txt e a descrição de descricao.txt, usando o Skill Creator.
+
+O Grok não publica limite de tamanho para as instruções. Se ele recusar uma skill grande, divida o instrucoes.txt pelas seções (as linhas que começam com #) e crie uma habilidade para cada parte.
+
+
+3. Comece por poucas
+
+Suba primeiro as 3 a 5 skills do seu dia a dia, não todas. Uma ordem que funciona:
+
+  koter-crm-lead            o dia a dia do lead
+  koter-multicalculo-auto   cotação auto, se você cota auto
+  koter-proposta            cadastrar proposta
+  koter-crm-renovacao       não perder renovação
+  koter-gestao-repasse      fechar o mês e pagar o vendedor
+
+Para configurar a conta do zero, use a introducao: ela conduz a configuração e diz qual skill vem depois.
+
+
+Cuidado
+
+O Grok grava e exclui sem pedir confirmação, e o conector não tem ajuste de aprovação. Peça sempre que ele mostre o que vai gravar antes, e evite usar o Koter no Grok para exclusões.
+
+O guia completo do plugin: https://github.com/koterplugins/koter-superpowers/blob/main/plugins/koter/README.md

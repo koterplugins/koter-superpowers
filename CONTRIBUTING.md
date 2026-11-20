@@ -56,7 +56,7 @@ Uma PR por assunto. Na descrição, diga o que mudou, como foi conferido (conex�
 
 O título da PR segue o mesmo formato, porque é ele que vira a entrada do [CHANGELOG](CHANGELOG.md). O CHANGELOG é gerado pelos commits: não edite à mão. Só `feat` e `fix` entram nele.
 
-A versão sai sozinha a cada merge na `main` com `feat` ou `fix`: tag, release no GitHub e o pacote do ChatGPT anexado.
+A versão sai sozinha a cada merge na `main` com `feat` ou `fix`: tag, release no GitHub e os pacotes do ChatGPT e do Grok anexados.
 
 ## Código de conduta
 

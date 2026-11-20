@@ -62,10 +62,12 @@ jobs:
           ref: ${{ env.TAG }}
           persist-credentials: false
 
-      - name: Build and test the ChatGPT package
+      - name: Build and test the ChatGPT and Grok packages
         run: |
           scripts/build-openai.sh
           scripts/test-openai-zip.sh
+          scripts/build-grok.sh
+          scripts/test-grok-zip.sh
 
-      - name: Attach the package to the release
-        run: gh release upload "$TAG" dist/koter-openai-*.zip -R "$GITHUB_REPOSITORY" --clobber
+      - name: Attach the packages to the release
+        run: gh release upload "$TAG" dist/koter-openai-*.zip dist/koter-grok-*.zip -R "$GITHUB_REPOSITORY" --clobber
