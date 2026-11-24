@@ -2,6 +2,13 @@
 
 All notable changes to this plugin, generated from the commit history. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.2.0](https://github.com/koterplugins/koter-superpowers/compare/v1.1.0...v1.2.0) (2026-11-24)
+
+
+### Features
+
+* **openai:** ship review test cases and release notes in the ZIP ([3987457](https://github.com/koterplugins/koter-superpowers/commit/398745799ba8af647c4a919db76783cc53588324))
+
 ## [1.1.0](https://github.com/koterplugins/koter-superpowers/compare/v1.0.2...v1.1.0) (2026-11-20)
 
 
