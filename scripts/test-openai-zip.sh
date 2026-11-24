@@ -36,6 +36,11 @@ jq -e --arg url "$(jq -r .mcpServers.koter.url "$plugin/.mcp.json")" '
   and .mcpServers.koter.extensions["com.openai"].auth == {type: "oauth", client: {mode: "cimd"}}
 ' "$pkg/mcp.json" > /dev/null || fail "mcp.json does not point to the Koter server with OAuth (CIMD)"
 
+jq -e '.extensions["com.openai"].review.test_cases
+  | (.positive | length == 5 and all(.description and .prompt and .tools_triggered and .expected_behavior))
+    and (.negative | length == 3 and all(.description and .prompt))
+' "$pkg/plugin.json" > /dev/null || fail "review needs exactly 5 complete positive and 3 negative test cases"
+
 for icon in $(jq -r '.extensions["com.openai"].interface | .composerIcon, .logo' "$pkg/plugin.json"); do
   [ -f "$pkg/$icon" ] || fail "missing icon $icon"
 done

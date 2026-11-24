@@ -19,6 +19,57 @@
         "subtitle": "Toque sua corretora no Koter",
         "description": "Configure e toque a sua corretora no Koter conversando com o ChatGPT: configuração guiada, multicálculo auto, contrato e comissão, repasse, caixa, lead e tarefa do CRM, formulários de captura, base de conhecimento e chatbot do KoterZap e importação de outro sistema. A conexão entra com o seu login do Koter e só alcança o que o seu cargo permite e as áreas que você marcou. As skills pedem a sua confirmação antes de qualquer gravação que chegue ao seu cliente, como mensagem de WhatsApp, e-mail ou chatbot ligado. Precisa de uma conta no Koter."
       }
+    },
+    "release_notes": "First version of the Koter plugin for ChatGPT: 30 skills in Brazilian Portuguese plus the Koter connector (OAuth). Covers guided setup, CRM, proposals, commissions and payouts, WhatsApp chatbots and knowledge bases, auto insurance multi-quote and data import."
+  },
+  "review": {
+    "test_cases": {
+      "positive": [
+        {
+          "description": "Shows which Koter areas the connection reaches.",
+          "prompt": "Which Koter areas can you access?",
+          "tools_triggered": "list_toolsets",
+          "expected_behavior": "Lists the brokerage's toolsets (CRM, management, KoterZap, auto quote and others) and shows that they are all enabled. Nothing is written."
+        },
+        {
+          "description": "Reads the most recent CRM leads.",
+          "prompt": "List the 5 most recent leads in my brokerage.",
+          "tools_triggered": "crm_list_leads",
+          "expected_behavior": "A table with 5 leads (name, stage, source, created at) and the total number of leads. Nothing is written."
+        },
+        {
+          "description": "Creates a CRM task and deletes it, asking before each write.",
+          "prompt": "Create a task called 'Review test' for tomorrow at 10am, with no actions and no guests, then delete it.",
+          "tools_triggered": "crm_save_task, crm_delete_crm_records",
+          "expected_behavior": "Asks for confirmation before creating the task and again before deleting it. After both steps, the task no longer exists."
+        },
+        {
+          "description": "Reads the commission summary of the month.",
+          "prompt": "Show me this month's commission summary by insurer.",
+          "tools_triggered": "gestao_comissao_get_commission_summary",
+          "expected_behavior": "A summary grouped by insurer with expected, received and pending commission for the current month. Nothing is written."
+        },
+        {
+          "description": "Tests the WhatsApp chatbot in the simulator, without messaging anyone.",
+          "prompt": "Simulate a customer saying 'hi, I want a health plan quote' on my WhatsApp chatbot.",
+          "tools_triggered": "koterzap_configuracao_list_chatbots, koterzap_configuracao_simulate_chatbot",
+          "expected_behavior": "Picks the brokerage's chatbot, runs the message in the simulator and shows the simulated reply and path. No message is sent to anyone."
+        }
+      ],
+      "negative": [
+        {
+          "description": "General consumer advice, not a task in the broker's Koter account. The plugin should not be invoked; ChatGPT answers generally or asks for context.",
+          "prompt": "What health insurance plan should I buy for my family of four in São Paulo?"
+        },
+        {
+          "description": "Drafting text only. No Koter tool is needed and nothing should be sent; ChatGPT writes the message for the user to copy.",
+          "prompt": "Write a short WhatsApp message I can send to a customer reminding them that their car insurance renews next month."
+        },
+        {
+          "description": "General knowledge about Brazilian insurance regulation. The plugin should not be invoked.",
+          "prompt": "Explain how SUSEP licenses insurance brokers in Brazil."
+        }
+      ]
     }
   }
 }
