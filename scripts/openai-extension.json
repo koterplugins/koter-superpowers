@@ -41,7 +41,7 @@
           "description": "Creates a CRM task and deletes it, asking before each write.",
           "prompt": "Create a task called 'Review test' for tomorrow at 10am, with no actions and no guests, then delete it.",
           "tools_triggered": "crm_save_task, crm_delete_crm_records",
-          "expected_behavior": "Asks for confirmation before creating the task and again before deleting it. After both steps, the task no longer exists."
+          "expected_behavior": "Creates the task and then deletes it. ChatGPT asks for approval before each write when the user's approval settings require it. Afterwards, the task no longer exists."
         },
         {
           "description": "Reads the commission summary of the month.",
