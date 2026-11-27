@@ -2,6 +2,13 @@
 
 All notable changes to this plugin, generated from the commit history. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.2.1](https://github.com/koterplugins/koter-superpowers/compare/v1.2.0...v1.2.1) (2026-11-27)
+
+
+### Bug Fixes
+
+* **openai:** match test case 3 to the host approval flow ([39943b5](https://github.com/koterplugins/koter-superpowers/commit/39943b57f7e684b5125dcb302841ff6938af2e98))
+
 ## [1.2.0](https://github.com/koterplugins/koter-superpowers/compare/v1.1.0...v1.2.0) (2026-11-24)
 
 
